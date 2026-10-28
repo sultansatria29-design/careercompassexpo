@@ -5,6 +5,7 @@ import DocumSlider from "@/components/DocumSlider";
 import EventInfoBook from "@/components/EventInfoBook";
 import FeatureCards from "@/components/FeatureCards";
 import TactlinkSection from "@/components/TactlinkSection";
+import Navbar from "@/components/Navbar";
 
 const features = [
   {
@@ -56,45 +57,8 @@ const features = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#1E0C36] text-white">
-      {/* Header Sticky / Fixed ketika di-scroll */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#1E0C36]/90 backdrop-blur-md transition-all">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-3.5">
-          <a href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="flex h-11 w-24 sm:h-14 sm:w-32 items-center justify-center rounded-xl bg-white p-1.5 sm:p-2 shadow-sm">
-              <img
-                src="/images/logo-puskar.png"
-                alt="Logo Pusat Karier"
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <span className="text-base sm:text-xl font-black tracking-tight whitespace-nowrap">
-              CCE<span className="text-[#EF17D8]"> 2026</span>
-            </span>
-          </a>
-
-          <nav className="hidden items-center gap-6 text-sm font-semibold md:flex lg:gap-8">
-            <Link href="/" className="text-white/80 transition-colors hover:text-white">
-              Beranda
-            </Link>
-            <a href="#tentang" className="text-white/80 transition-colors hover:text-white">
-              Tentang
-            </a>
-            <a href="#informasi" className="text-white/80 transition-colors hover:text-white">
-              Informasi Acara
-            </a>
-            <a href="#lowongan" className="text-white/80 transition-colors hover:text-white">
-              Lowongan Pekerjaan
-            </a>
-          </nav>
-
-          <Link
-            href="/registrasi"
-            className="rounded-full bg-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-[#1E0C36] shadow-md transition-all duration-200 hover:bg-white/90 hover:scale-105 shrink-0 whitespace-nowrap"
-          >
-            Registrasi Peserta
-          </Link>
-        </div>
-      </header>
+      {/* Header Sticky / Navbar Responsif dengan Hamburger Mobile */}
+      <Navbar />
 
       <section className="relative overflow-hidden bg-gradient-to-br from-[#4B1E85] via-[#7226FF] to-[#EF17D8] px-4 py-16 sm:px-6 sm:py-24 text-center">
         <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-pink-400/30 blur-3xl" />

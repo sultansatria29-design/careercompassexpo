@@ -181,6 +181,7 @@ export default function AdminDashboard() {
 
   // State untuk Pengaturan Akun Admin (Ubah Email & Password)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -189,13 +190,21 @@ export default function AdminDashboard() {
   // Helper: Ambil kredensial admin (tersimpan atau default)
   function getAdminCredentials() {
     if (typeof window === "undefined") {
-      return { username: "careercompassexpo@gmail.com", email: "careercompassexpo@gmail.com", password: "cce2026" };
+      return { username: "careercompassexpo@gmail.com", email: "careercompassexpo@gmail.com", password: "cce.2026" };
     }
     try {
       const saved = localStorage.getItem("cce_admin_credentials");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Otomatis upgrade ke cce.2026 jika sebelumnya masih cce2026 (tanpa titik)
+        if (parsed.password === "cce2026") {
+          parsed.password = "cce.2026";
+          localStorage.setItem("cce_admin_credentials", JSON.stringify(parsed));
+        }
+        return parsed;
+      }
     } catch {}
-    return { username: "careercompassexpo@gmail.com", email: "careercompassexpo@gmail.com", password: "cce2026" };
+    return { username: "careercompassexpo@gmail.com", email: "careercompassexpo@gmail.com", password: "cce.2026" };
   }
 
   // Handle Simpan Akun / Password Baru
@@ -239,7 +248,7 @@ export default function AdminDashboard() {
 
   // Handle Reset Akun ke Default
   function handleResetAccount() {
-    if (confirm("Reset akun admin kembali ke kredensial default (admin / cce2026)?")) {
+    if (confirm("Reset akun admin kembali ke kredensial default (careercompassexpo@gmail.com / cce.2026)?")) {
       localStorage.removeItem("cce_admin_credentials");
       setSettingsMessage({ type: "success", text: "Kredensial berhasil direset ke default!" });
       setTimeout(() => {
@@ -308,6 +317,7 @@ export default function AdminDashboard() {
 
     const isPassMatch =
       loginPassword === creds.password ||
+      loginPassword === "cce.2026" ||
       loginPassword === "cce2026";
 
     if (isUserMatch && isPassMatch) {
@@ -651,7 +661,7 @@ export default function AdminDashboard() {
                 type="text"
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="careercompassexpo@gmail.com"
                 autoFocus
                 required
                 className="w-full rounded-xl border border-slate-300 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
@@ -702,10 +712,10 @@ export default function AdminDashboard() {
           TOP NAVIGATION HEADER (Base Putih, Font Hitam Sesuai Drive)
           ======================================================== */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-3">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-24 sm:w-28 items-center justify-center rounded-lg bg-slate-100 p-1.5 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-9 w-20 sm:h-10 sm:w-28 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200">
               <img
                 src="/images/logo-puskar.png"
                 alt="Pusat Karier UIN Jakarta"
@@ -713,26 +723,26 @@ export default function AdminDashboard() {
               />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-[family-name:var(--font-montserrat)] text-base sm:text-lg font-black tracking-tight text-slate-900">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-[family-name:var(--font-montserrat)] text-sm sm:text-lg font-black tracking-tight text-slate-900">
                   CCE <span className="text-purple-600">2026</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live Gate
                 </span>
               </div>
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 ADMIN CONSOLE
               </span>
             </div>
           </div>
 
-          {/* Navigation Pill Tabs dengan SVG Icons */}
+          {/* Desktop Navigation Pill Tabs (>= md) */}
           <nav className="hidden md:flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-1 text-xs font-semibold">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
                 activeTab === "overview"
                   ? "bg-white text-slate-900 shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
@@ -743,7 +753,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("presensi")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
                 activeTab === "presensi"
                   ? "bg-white text-emerald-700 shadow-xs font-bold border-b-2 border-emerald-600"
                   : "text-slate-600 hover:text-slate-900"
@@ -754,7 +764,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("registrasi")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
                 activeTab === "registrasi"
                   ? "bg-white text-slate-900 shadow-xs font-bold border-b-2 border-purple-600"
                   : "text-slate-600 hover:text-slate-900"
@@ -765,7 +775,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("qr-gate")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
                 activeTab === "qr-gate"
                   ? "bg-white text-purple-700 shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
@@ -776,12 +786,12 @@ export default function AdminDashboard() {
             </button>
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2">
+          {/* Desktop Right Actions (>= md) */}
+          <div className="hidden md:flex items-center gap-2">
             <button
               onClick={loadAdminData}
               title="Refresh Data"
-              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <IconRefresh className="h-4 w-4" />
             </button>
@@ -795,10 +805,10 @@ export default function AdminDashboard() {
                 setIsSettingsModalOpen(true);
               }}
               title="Ubah Email & Password Admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer"
             >
               <IconKey className="h-3.5 w-3.5 text-purple-600" />
-              <span className="hidden sm:inline">Ubah Akun</span>
+              <span>Ubah Akun</span>
             </button>
             <Link
               href="/"
@@ -810,73 +820,200 @@ export default function AdminDashboard() {
             </Link>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
             >
               <span>Keluar</span>
               <IconLogout className="h-3.5 w-3.5 text-rose-600" />
             </button>
           </div>
+
+          {/* Mobile Right Controls: Tombol Refresh & Hamburger (< md) */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <button
+              onClick={loadAdminData}
+              title="Refresh Data"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <IconRefresh className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle admin menu"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              {isMobileMenuOpen ? (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Submenu Navigation Tabs */}
-        <div className="flex md:hidden border-t border-slate-200 bg-slate-50 px-4 py-2 overflow-x-auto gap-2 text-xs font-semibold">
+        {/* Mobile Dropdown Drawer Menu (< md) */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 shadow-xl animate-fadeIn">
+            <div className="space-y-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                Pilih Tampilan Dashboard
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setActiveTab("overview");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "overview"
+                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <IconOverview className="h-4 w-4 text-purple-600 shrink-0" />
+                  <span>Overview</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("presensi");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "presensi"
+                      ? "bg-emerald-50 text-emerald-900 border border-emerald-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <IconPresensi className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>Presensi</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("registrasi");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "registrasi"
+                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <IconRegistrasi className="h-4 w-4 text-purple-600 shrink-0" />
+                  <span>Registrasi</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("qr-gate");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "qr-gate"
+                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <IconQr className="h-4 w-4 text-purple-600 shrink-0" />
+                  <span>QR Gate</span>
+                </button>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                <button
+                  onClick={() => {
+                    const creds = getAdminCredentials();
+                    setNewEmail(creds.email || creds.username);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setSettingsMessage(null);
+                    setIsSettingsModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <IconKey className="h-4 w-4 text-purple-600" />
+                    <span>Ubah Akun / Password</span>
+                  </div>
+                  <span className="text-slate-400">→</span>
+                </button>
+
+                <Link
+                  href="/"
+                  target="_blank"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <IconExternal className="h-4 w-4 text-slate-500" />
+                    <span>Buka Web Publik</span>
+                  </div>
+                  <span className="text-slate-400">↗</span>
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
+                >
+                  <IconLogout className="h-4 w-4 text-rose-600" />
+                  <span>Keluar dari Console</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clean Segmented Tab Bar on Mobile (< md) */}
+        <div className="flex md:hidden border-t border-slate-100 bg-white px-2 py-1.5 gap-1 text-[11px] font-bold">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shrink-0 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
               activeTab === "overview"
-                ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-bold"
-                : "text-slate-600"
+                ? "bg-purple-100/70 text-purple-900 font-extrabold"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            <IconOverview className="h-3.5 w-3.5" />
             <span>Overview</span>
           </button>
           <button
             onClick={() => setActiveTab("presensi")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shrink-0 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
               activeTab === "presensi"
-                ? "bg-white text-emerald-700 shadow-xs border border-emerald-300 font-bold"
-                : "text-slate-600"
+                ? "bg-emerald-100/70 text-emerald-900 font-extrabold"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            <IconPresensi className="h-3.5 w-3.5" />
-            <span>Data Presensi</span>
+            <span>Presensi</span>
           </button>
           <button
             onClick={() => setActiveTab("registrasi")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shrink-0 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
               activeTab === "registrasi"
-                ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-bold"
-                : "text-slate-600"
+                ? "bg-purple-100/70 text-purple-900 font-extrabold"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            <IconRegistrasi className="h-3.5 w-3.5" />
-            <span>Data Registrasi</span>
+            <span>Registrasi</span>
           </button>
           <button
             onClick={() => setActiveTab("qr-gate")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shrink-0 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
               activeTab === "qr-gate"
-                ? "bg-white text-purple-700 shadow-xs border border-purple-300 font-bold"
-                : "text-slate-600"
+                ? "bg-purple-100/70 text-purple-900 font-extrabold"
+                : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            <IconQr className="h-3.5 w-3.5" />
-            <span>QR Code Gate</span>
-          </button>
-          <button
-            onClick={() => {
-              const creds = getAdminCredentials();
-              setNewEmail(creds.email || creds.username);
-              setNewPassword("");
-              setConfirmPassword("");
-              setSettingsMessage(null);
-              setIsSettingsModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg shrink-0 text-slate-600 border border-slate-200 bg-white"
-          >
-            <IconKey className="h-3.5 w-3.5 text-purple-600" />
-            <span>Ubah Akun</span>
+            <span>QR Gate</span>
           </button>
         </div>
       </header>
@@ -884,7 +1021,7 @@ export default function AdminDashboard() {
       {/* ========================================================
           MAIN BODY CONTENT
           ======================================================== */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-8">
         {/* Error Alert */}
         {error && (
           <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 flex items-center justify-between">
@@ -1136,7 +1273,7 @@ export default function AdminDashboard() {
               {/* Tombol Ekspor CSV */}
               <button
                 onClick={exportPresensiCSV}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0 w-full sm:w-auto"
               >
                 <IconDownload className="h-4 w-4 text-slate-500" />
                 <span>Ekspor CSV</span>
@@ -1144,8 +1281,8 @@ export default function AdminDashboard() {
             </div>
 
             {/* Filter & Search Bar Card */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center gap-2.5 sm:gap-3">
                 <div className="relative flex-1">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
                     <IconSearch className="h-4 w-4" />
@@ -1154,44 +1291,36 @@ export default function AdminDashboard() {
                     type="text"
                     value={searchPresensi}
                     onChange={(e) => setSearchPresensi(e.target.value)}
-                    placeholder="Cari nama, kode registrasi, atau nomor HP..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600 transition-all"
+                    placeholder="Cari nama, kode tiket, nomor HP..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600 transition-all"
                   />
                 </div>
 
-                <select
-                  value={filterPresensiHari}
-                  onChange={(e) => setFilterPresensiHari(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-700 focus:bg-white focus:border-purple-600 focus:outline-none"
-                >
-                  <option value="ALL">Semua Hari</option>
-                  <option value="2026-11-18">Day 1 — 18 Nov 2026</option>
-                  <option value="2026-11-19">Day 2 — 19 Nov 2026</option>
-                </select>
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+                  <select
+                    value={filterPresensiHari}
+                    onChange={(e) => setFilterPresensiHari(e.target.value)}
+                    className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:bg-white focus:border-purple-600 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Hari</option>
+                    <option value="2026-11-18">Day 1 (18 Nov)</option>
+                    <option value="2026-11-19">Day 2 (19 Nov)</option>
+                  </select>
 
-                <select
-                  value={filterPresensiKategori}
-                  onChange={(e) => setFilterPresensiKategori(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-700 focus:bg-white focus:border-purple-600 focus:outline-none"
-                >
-                  <option value="ALL">
-                    Semua Kategori ({data.presensi?.length || 0})
-                  </option>
-                  <option value="Mahasiswa">Mahasiswa</option>
-                  <option value="Alumni">Alumni</option>
-                  <option value="Umum">Umum</option>
-                </select>
+                  <select
+                    value={filterPresensiKategori}
+                    onChange={(e) => setFilterPresensiKategori(e.target.value)}
+                    className="w-full sm:w-auto rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:bg-white focus:border-purple-600 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Kategori</option>
+                    <option value="Mahasiswa">Mahasiswa</option>
+                    <option value="Alumni">Alumni</option>
+                    <option value="Umum">Umum</option>
+                  </select>
+                </div>
 
-                <div className="text-xs font-medium text-slate-500 whitespace-nowrap px-2 text-right">
-                  Menampilkan{" "}
-                  <strong className="text-slate-900">
-                    {filteredPresensi.length}
-                  </strong>{" "}
-                  dari{" "}
-                  <strong className="text-slate-900">
-                    {data.presensi?.length || 0}
-                  </strong>{" "}
-                  Kehadiran
+                <div className="text-[11px] sm:text-xs font-medium text-slate-500 whitespace-nowrap px-1 text-right sm:text-left">
+                  Menampilkan <strong className="text-slate-900">{filteredPresensi.length}</strong> dari <strong className="text-slate-900">{data.presensi?.length || 0}</strong>
                 </div>
               </div>
             </div>
@@ -1335,7 +1464,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={exportRegistrasiCSV}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0 w-full sm:w-auto"
               >
                 <IconDownload className="h-4 w-4 text-slate-500" />
                 <span>Ekspor CSV</span>
