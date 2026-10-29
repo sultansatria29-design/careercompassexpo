@@ -827,16 +827,8 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          {/* Mobile Right Controls: Tombol Refresh & Hamburger (< md) */}
-          <div className="flex md:hidden items-center gap-1.5">
-            <button
-              onClick={loadAdminData}
-              title="Refresh Data"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <IconRefresh className="h-4 w-4" />
-            </button>
-
+          {/* Mobile Right Controls: Tombol Hamburger (< md) */}
+          <div className="flex md:hidden items-center">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -856,27 +848,33 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer Menu (< md) */}
+        {/* Mobile Dropdown Drawer Menu (< md) - Masuk ke Hamburger Semua */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 shadow-xl animate-fadeIn">
             <div className="space-y-3">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Pilih Tampilan Dashboard
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                <span>Navigasi Menu Konsol</span>
+                <span className="text-purple-600 font-extrabold capitalize">{activeTab}</span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1.5">
                 <button
                   onClick={() => {
                     setActiveTab("overview");
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
                     activeTab === "overview"
-                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
                       : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
                   }`}
                 >
-                  <IconOverview className="h-4 w-4 text-purple-600 shrink-0" />
-                  <span>Overview</span>
+                  <div className="flex items-center gap-2.5">
+                    <IconOverview className="h-4 w-4 text-purple-600 shrink-0" />
+                    <span>Overview Statistik</span>
+                  </div>
+                  {activeTab === "overview" && (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
                 </button>
 
                 <button
@@ -884,14 +882,19 @@ export default function AdminDashboard() {
                     setActiveTab("presensi");
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
                     activeTab === "presensi"
-                      ? "bg-emerald-50 text-emerald-900 border border-emerald-200 shadow-xs"
+                      ? "bg-emerald-50 text-emerald-950 border border-emerald-300 shadow-xs"
                       : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
                   }`}
                 >
-                  <IconPresensi className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>Presensi</span>
+                  <div className="flex items-center gap-2.5">
+                    <IconPresensi className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>Data Presensi Gate</span>
+                  </div>
+                  {activeTab === "presensi" && (
+                    <span className="rounded-full bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
                 </button>
 
                 <button
@@ -899,14 +902,19 @@ export default function AdminDashboard() {
                     setActiveTab("registrasi");
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
                     activeTab === "registrasi"
-                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
                       : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
                   }`}
                 >
-                  <IconRegistrasi className="h-4 w-4 text-purple-600 shrink-0" />
-                  <span>Registrasi</span>
+                  <div className="flex items-center gap-2.5">
+                    <IconRegistrasi className="h-4 w-4 text-purple-600 shrink-0" />
+                    <span>Data Registrasi Peserta</span>
+                  </div>
+                  {activeTab === "registrasi" && (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
                 </button>
 
                 <button
@@ -914,18 +922,37 @@ export default function AdminDashboard() {
                     setActiveTab("qr-gate");
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`flex items-center gap-2 rounded-xl p-2.5 text-xs font-bold transition text-left cursor-pointer ${
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
                     activeTab === "qr-gate"
-                      ? "bg-purple-50 text-purple-900 border border-purple-200 shadow-xs"
+                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
                       : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
                   }`}
                 >
-                  <IconQr className="h-4 w-4 text-purple-600 shrink-0" />
-                  <span>QR Gate</span>
+                  <div className="flex items-center gap-2.5">
+                    <IconQr className="h-4 w-4 text-purple-600 shrink-0" />
+                    <span>QR Code Gate & Validasi</span>
+                  </div>
+                  {activeTab === "qr-gate" && (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
                 </button>
               </div>
 
               <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                <button
+                  onClick={() => {
+                    loadAdminData();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <IconRefresh className="h-4 w-4 text-purple-600" />
+                    <span>Muat Ulang Data (Refresh)</span>
+                  </div>
+                  <span className="text-slate-400">↻</span>
+                </button>
+
                 <button
                   onClick={() => {
                     const creds = getAdminCredentials();
@@ -936,11 +963,11 @@ export default function AdminDashboard() {
                     setIsSettingsModalOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition cursor-pointer"
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <IconKey className="h-4 w-4 text-purple-600" />
-                    <span>Ubah Akun / Password</span>
+                    <span>Ubah Akun / Password Admin</span>
                   </div>
                   <span className="text-slate-400">→</span>
                 </button>
@@ -949,11 +976,11 @@ export default function AdminDashboard() {
                   href="/"
                   target="_blank"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition"
+                  className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-100 transition"
                 >
                   <div className="flex items-center gap-2">
                     <IconExternal className="h-4 w-4 text-slate-500" />
-                    <span>Buka Web Publik</span>
+                    <span>Buka Halaman Web Publik</span>
                   </div>
                   <span className="text-slate-400">↗</span>
                 </Link>
@@ -963,7 +990,7 @@ export default function AdminDashboard() {
                     setIsMobileMenuOpen(false);
                     handleLogout();
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
                 >
                   <IconLogout className="h-4 w-4 text-rose-600" />
                   <span>Keluar dari Console</span>
@@ -972,50 +999,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-
-        {/* Clean Segmented Tab Bar on Mobile (< md) */}
-        <div className="flex md:hidden border-t border-slate-100 bg-white px-2 py-1.5 gap-1 text-[11px] font-bold">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
-              activeTab === "overview"
-                ? "bg-purple-100/70 text-purple-900 font-extrabold"
-                : "text-slate-500 hover:text-slate-900"
-            }`}
-          >
-            <span>Overview</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("presensi")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
-              activeTab === "presensi"
-                ? "bg-emerald-100/70 text-emerald-900 font-extrabold"
-                : "text-slate-500 hover:text-slate-900"
-            }`}
-          >
-            <span>Presensi</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("registrasi")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
-              activeTab === "registrasi"
-                ? "bg-purple-100/70 text-purple-900 font-extrabold"
-                : "text-slate-500 hover:text-slate-900"
-            }`}
-          >
-            <span>Registrasi</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("qr-gate")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition cursor-pointer ${
-              activeTab === "qr-gate"
-                ? "bg-purple-100/70 text-purple-900 font-extrabold"
-                : "text-slate-500 hover:text-slate-900"
-            }`}
-          >
-            <span>QR Gate</span>
-          </button>
-        </div>
       </header>
 
       {/* ========================================================
@@ -1641,7 +1624,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-8 shadow-xs overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Kolom Kiri: Poster Standee QR Code Printable (Persis Gambar 3) */}
                 <div className="lg:col-span-5 flex flex-col items-center">
@@ -1686,16 +1669,16 @@ export default function AdminDashboard() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                       Token Gerbang (Gate Token):
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         readOnly
                         value="CCE2026-GATE-REGISTRASI-MAIN"
-                        className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-mono font-bold text-slate-800"
+                        className="w-full sm:flex-1 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm font-mono font-bold text-slate-800"
                       />
                       <button
                         onClick={() => copyToClipboard("CCE2026-GATE-REGISTRASI-MAIN", "token")}
-                        className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0"
+                        className="w-full sm:w-auto justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <IconCopy className="h-3.5 w-3.5" />
                         <span>{copiedToken ? "Tersalin!" : "Salin Token"}</span>
@@ -1711,7 +1694,7 @@ export default function AdminDashboard() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                       URL Tujuan QR Registrasi:
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         readOnly
@@ -1720,7 +1703,7 @@ export default function AdminDashboard() {
                             ? `${window.location.origin}/registrasi?source=gate_standee`
                             : "https://cce2026.uinjkt.ac.id/registrasi"
                         }
-                        className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs sm:text-sm font-mono text-slate-700 truncate"
+                        className="w-full sm:flex-1 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm font-mono text-slate-700 truncate"
                       />
                       <button
                         onClick={() =>
@@ -1729,7 +1712,7 @@ export default function AdminDashboard() {
                             "url"
                           )
                         }
-                        className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0"
+                        className="w-full sm:w-auto justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <IconCopy className="h-3.5 w-3.5" />
                         <span>{copiedUrl ? "Tersalin!" : "Salin URL"}</span>
@@ -1789,7 +1772,7 @@ export default function AdminDashboard() {
                 Pindai kode QR tiket pengunjung atau masukkan nomor registrasi untuk verifikasi keabsahan tiket dan pencatatan presensi.
               </p>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs max-w-3xl">
+              <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-8 shadow-xs max-w-3xl overflow-hidden">
                 <form onSubmit={handleScanSubmit} className="space-y-5">
                   {/* Tanggal Pelaksanaan Gate */}
                   <div>
@@ -1800,26 +1783,26 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setScanDate("2026-11-18")}
-                        className={`rounded-2xl p-3.5 text-center border transition-all ${
+                        className={`rounded-2xl p-3 sm:p-3.5 text-center border transition-all cursor-pointer ${
                           scanDate === "2026-11-18"
                             ? "border-purple-600 bg-purple-50 text-purple-900 font-bold shadow-xs"
                             : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                         }`}
                       >
                         <div className="text-xs font-extrabold uppercase tracking-wider">DAY 1</div>
-                        <div className="text-sm mt-0.5">Rabu, 18 Nov 2026</div>
+                        <div className="text-xs sm:text-sm mt-0.5 truncate">Rabu, 18 Nov 2026</div>
                       </button>
                       <button
                         type="button"
                         onClick={() => setScanDate("2026-11-19")}
-                        className={`rounded-2xl p-3.5 text-center border transition-all ${
+                        className={`rounded-2xl p-3 sm:p-3.5 text-center border transition-all cursor-pointer ${
                           scanDate === "2026-11-19"
                             ? "border-purple-600 bg-purple-50 text-purple-900 font-bold shadow-xs"
                             : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
                         }`}
                       >
                         <div className="text-xs font-extrabold uppercase tracking-wider">DAY 2</div>
-                        <div className="text-sm mt-0.5">Kamis, 19 Nov 2026</div>
+                        <div className="text-xs sm:text-sm mt-0.5 truncate">Kamis, 19 Nov 2026</div>
                       </button>
                     </div>
                   </div>
@@ -1829,18 +1812,18 @@ export default function AdminDashboard() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
                       Nomor Registrasi / Scan Hasil QR Code
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2.5">
                       <input
                         type="text"
                         value={scanInput}
                         onChange={(e) => setScanInput(e.target.value)}
                         placeholder="Contoh: CCE2026-00006"
-                        className="flex-1 rounded-xl border border-slate-300 bg-slate-50/70 px-4 py-3 text-base font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+                        className="w-full sm:flex-1 min-w-0 rounded-xl border border-slate-300 bg-slate-50/70 px-4 py-3 text-sm sm:text-base font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/20"
                       />
                       <button
                         type="submit"
                         disabled={isScanning || !scanInput.trim()}
-                        className="rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 px-6 py-3 text-sm font-bold text-white shadow-md transition-all shrink-0"
+                        className="w-full sm:w-auto rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 px-6 py-3 text-sm font-bold text-white shadow-md transition-all shrink-0 flex items-center justify-center cursor-pointer"
                       >
                         {isScanning ? "Memeriksa..." : "Verifikasi Masuk"}
                       </button>
@@ -1903,7 +1886,7 @@ export default function AdminDashboard() {
                 )}
 
                 {/* Tombol Kamera Scanner Penuh */}
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between">
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <h5 className="font-bold text-xs sm:text-sm text-slate-900">
                       Gunakan Kamera Barcode Scanner Penuh
@@ -1915,7 +1898,7 @@ export default function AdminDashboard() {
                   <Link
                     href="/scan"
                     target="_blank"
-                    className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition-colors shrink-0"
+                    className="w-full sm:w-auto text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-xs font-bold transition-colors shrink-0"
                   >
                     Buka Kamera Scanner →
                   </Link>

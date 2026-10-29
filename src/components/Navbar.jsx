@@ -78,15 +78,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile Right Controls: Tombol Hamburger & Mini CTA (< md) */}
-        <div className="flex items-center gap-2 md:hidden">
-          <Link
-            href="/registrasi"
-            className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-[#1E0C36] shadow-sm hover:bg-white/90 whitespace-nowrap"
-          >
-            Daftar
-          </Link>
-
+        {/* Mobile Right Controls: Tombol Hamburger (< md) */}
+        <div className="flex items-center md:hidden">
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
