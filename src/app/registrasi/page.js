@@ -409,31 +409,24 @@ export default function RegistrasiPage() {
           </p>
 
           {/* Tombol Aksi */}
-          <div className="mt-6 flex flex-col gap-2.5">
-            <Link
-              href={`/scan?reg=${encodeURIComponent(result.registration_number)}`}
-              target="_blank"
-              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.01]"
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => typeof window !== "undefined" && window.print()}
+              className="flex-1 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>🔍 Uji Coba Scan Tiket Ini (Halaman Panitia)</span>
-              <span>→</span>
+              <svg className="h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span>Cetak / Simpan E-Ticket</span>
+            </button>
+            <Link
+              href="/"
+              className="flex-1 rounded-xl bg-gray-100 hover:bg-gray-200 border border-gray-200 px-5 py-3.5 text-sm font-bold text-gray-700 transition flex items-center justify-center gap-1.5"
+            >
+              <span>←</span>
+              <span>Kembali ke Beranda</span>
             </Link>
-
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              <button
-                type="button"
-                onClick={() => typeof window !== "undefined" && window.print()}
-                className="flex-1 rounded-xl border border-purple-200 bg-purple-50 px-5 py-3 text-xs font-bold text-purple-700 transition hover:bg-purple-100 cursor-pointer"
-              >
-                🖨️ Cetak / Simpan E-Ticket
-              </button>
-              <Link
-                href="/"
-                className="flex-1 rounded-xl bg-gray-100 px-5 py-3 text-xs font-bold text-gray-700 transition hover:bg-gray-200 flex items-center justify-center"
-              >
-                ← Kembali ke Beranda
-              </Link>
-            </div>
           </div>
         </div>
       </main>

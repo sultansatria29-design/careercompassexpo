@@ -152,15 +152,23 @@ export default function Home() {
             </p>
             <div className="pt-2 flex flex-wrap gap-3 text-xs sm:text-sm text-purple-200">
               <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
-                <span className="text-base">🏢</span>
+                <svg className="h-4 w-4 text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
                 <span className="font-semibold text-white">28+ Perusahaan Ternama</span>
               </div>
               <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
-                <span className="text-base">🤝</span>
+                <svg className="h-4 w-4 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 2L3 14h8l-2 8 10-12h-8l2-8z" />
+                </svg>
                 <span className="font-semibold text-white">Walk-in Interview Langsung</span>
               </div>
               <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
-                <span className="text-base">🎓</span>
+                <svg className="h-4 w-4 text-[#EF17D8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" />
+                </svg>
                 <span className="font-semibold text-white">Seminar & Career Talk</span>
               </div>
             </div>
@@ -251,21 +259,15 @@ export default function Home() {
       <footer className="border-t border-white/10 px-6 py-8 text-center text-sm text-white/60">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
           <span>© 2026 Career Compass Expo — UIN Syarif Hidayatullah Jakarta</span>
-          <div className="flex items-center gap-4 text-xs text-white/50">
-            <Link href="/registrasi" className="hover:text-white transition-colors">
-              Registrasi Peserta
-            </Link>
-            <span>•</span>
-            <Link href="/scan" className="hover:text-white transition-colors">
-              Scan Tiket
-            </Link>
-            <span>•</span>
+          <div className="flex items-center text-xs">
             <Link
               href="/admin"
-              className="text-[#EF17D8] hover:text-white transition-colors font-medium flex items-center gap-1"
+              className="text-[#EF17D8] hover:text-white transition-colors font-medium flex items-center gap-1.5"
             >
+              <svg className="h-3.5 w-3.5 text-[#EF17D8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
               <span>Admin Console</span>
-              <span>🔒</span>
             </Link>
           </div>
         </div>
@@ -370,8 +372,12 @@ async function JobsSection() {
               <span className="text-xs font-bold text-[#EF17D8]">
                 {job.employment_type || "Full-Time"}
               </span>
-              <span className="text-xs text-white/60">
-                📍 {job.location || "Jakarta"}
+              <span className="text-xs text-white/60 flex items-center gap-1">
+                <svg className="h-3.5 w-3.5 text-[#EF17D8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>{job.location || "Jakarta"}</span>
               </span>
             </div>
             <h3 className="text-xl font-bold text-white group-hover:text-[#EF17D8] transition-colors">

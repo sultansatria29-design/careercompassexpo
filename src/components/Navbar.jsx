@@ -63,9 +63,6 @@ export default function Navbar() {
           <a href="#fitur" className="text-white/80 transition-colors hover:text-white">
             Panduan
           </a>
-          <a href="#tactlink" className="text-white/80 transition-colors hover:text-white">
-            TactLink
-          </a>
         </nav>
 
         {/* Desktop Action Button (>= md) */}
@@ -144,19 +141,6 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Panduan & Fitur</span>
-                <span className="text-xs text-purple-400">→</span>
-              </a>
-              <a
-                href="#tactlink"
-                onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
-              >
-                <div className="flex items-center gap-2">
-                  <span>TactLink</span>
-                  <span className="rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 border border-emerald-500/30">
-                    App Partner
-                  </span>
-                </div>
                 <span className="text-xs text-purple-400">→</span>
               </a>
             </nav>

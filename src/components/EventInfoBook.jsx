@@ -3,6 +3,114 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 
+function EventIcon({ name, className = "h-4 w-4" }) {
+  switch (name) {
+    case "building":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      );
+    case "lightning":
+      return (
+        <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+          <path d="M13 2L3 14h8l-2 8 10-12h-8l2-8z" />
+        </svg>
+      );
+    case "target":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+        </svg>
+      );
+    case "academic":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" />
+        </svg>
+      );
+    case "bridge":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 17h16M4 12h16M7 12v5m10-5v5M4 17c2.5-3.5 5.5-5 8-5s5.5 1.5 8 5" />
+        </svg>
+      );
+    case "trend":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      );
+    case "globe":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="9" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9m0-18a15.3 15.3 0 00-4 9 15.3 15.3 0 004 9" />
+        </svg>
+      );
+    case "handshake":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      );
+    case "sparkles":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+      );
+    case "rocket":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.926 14.926 0 01-5.84 2.58m0 0a6 6 0 01-7.38-5.84h4.8m2.58 5.84a14.98 14.98 0 00-2.58-5.84" />
+        </svg>
+      );
+    case "store":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      );
+    case "compass":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="9" />
+          <polygon points="12,8 15,12 12,16 9,12" fill="currentColor" opacity="0.3" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2m-9-9h2m14 0h2" />
+        </svg>
+      );
+    case "link":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      );
+    case "trophy":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h14v4a7 7 0 01-14 0V3zM3 5a3 3 0 003 3h1M21 5a3 3 0 01-3 3h-1M12 14v4m-4 3h8" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      );
+  }
+}
+
 const bookPages = [
   {
     chapter: "BAB 01",
@@ -13,10 +121,10 @@ const bookPages = [
     dateVenue: "18–19 November 2026 • Auditorium Harun Nasution",
     desc: "Career Campus Expo (CCE) 2026 merupakan pameran bursa kerja dan karier tahunan terbesar yang diselenggarakan oleh Pusat Karier UIN Syarif Hidayatullah Jakarta. Menghadirkan 28+ perusahaan mitra terkemuka dari sektor BUMN, multinasional, dan swasta nasional untuk membuka peluang rekrutmen tatap muka bagi mahasiswa, alumni, dan pencari kerja umum.",
     keyPoints: [
-      { icon: "🏢", label: "28+ Perusahaan Mitra", desc: "Berbagai industri terkemuka" },
-      { icon: "⚡", label: "Walk-In Interview", desc: "Wawancara langsung on-site" },
-      { icon: "🎯", label: "Bursa Lowongan Kerja", desc: "Akses ratusan posisi karir" },
-      { icon: "🎓", label: "Career Talk & Seminar", desc: "Wawasan langsung dari HR praktisi" },
+      { icon: "building", color: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30", label: "28+ Perusahaan Mitra", desc: "Berbagai industri terkemuka" },
+      { icon: "lightning", color: "text-amber-300 bg-amber-500/15 border-amber-500/30", label: "Walk-In Interview", desc: "Wawancara langsung on-site" },
+      { icon: "target", color: "text-[#EF17D8] bg-[#EF17D8]/15 border-[#EF17D8]/30", label: "Bursa Lowongan Kerja", desc: "Akses ratusan posisi karir" },
+      { icon: "academic", color: "text-purple-300 bg-purple-500/15 border-purple-500/30", label: "Career Talk & Seminar", desc: "Wawasan langsung dari HR praktisi" },
     ],
     ctaText: "Daftar Peserta CCE Sekarang",
     ctaLink: "/registrasi",
@@ -33,10 +141,10 @@ const bookPages = [
     dateVenue: "Pusat Karier • UIN Syarif Hidayatullah Jakarta",
     desc: "Pusat Karier UIN Jakarta adalah lembaga yang berfokus pada pengembangan karier mahasiswa dan alumni melalui berbagai program bimbingan, pelatihan, serta fasilitasi rekrutmen. Pusat Karier berperan sebagai jembatan antara dunia akademik dan dunia kerja dengan tujuan meningkatkan kompetensi, kemandirian, dan daya saing lulusan UIN Jakarta di tingkat nasional maupun global.",
     keyPoints: [
-      { icon: "🌉", label: "Jembatan Akademik & Industri", desc: "Menghubungkan kampus & dunia kerja" },
-      { icon: "📈", label: "Kompetensi Lulusan", desc: "Pelatihan hard skills & soft skills" },
-      { icon: "🌍", label: "Daya Saing Global", desc: "Kesiapan menghadapi industri modern" },
-      { icon: "🤝", label: "Fasilitasi Rekrutmen", desc: "Kemitraan strategis dunia usaha" },
+      { icon: "bridge", color: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30", label: "Jembatan Akademik & Industri", desc: "Menghubungkan kampus & dunia kerja" },
+      { icon: "trend", color: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30", label: "Kompetensi Lulusan", desc: "Pelatihan hard skills & soft skills" },
+      { icon: "globe", color: "text-indigo-400 bg-indigo-500/15 border-indigo-500/30", label: "Daya Saing Global", desc: "Kesiapan menghadapi industri modern" },
+      { icon: "handshake", color: "text-[#EF17D8] bg-[#EF17D8]/15 border-[#EF17D8]/30", label: "Fasilitasi Rekrutmen", desc: "Kemitraan strategis dunia usaha" },
     ],
     ctaText: "Kunjungi Profil Resmi",
     ctaLink: "https://karier.uinjkt.ac.id/id/profil-pusat-karier-uin-jakarta",
@@ -53,10 +161,10 @@ const bookPages = [
     dateVenue: "Inovasi Program Berkelanjutan Mahasiswa & Alumni",
     desc: "Pusat Karier UIN Jakarta menyelenggarakan berbagai program pengembangan karier seperti Tracer Study, Campus Hiring, Job Fair, dan Bursa Kerja Online. Selain itu, terdapat layanan Konseling Karier, Sosial, dan Akademik, serta pelatihan pengembangan diri melalui Training Soft Skills. Program lainnya meliputi Growth Buddy, PERSAMI, Pekan Konseling, Career Preparation, Kunjungan Industri (NGANTRI), dan Localpreneur Fest yang mendukung peningkatan kompetensi, kesiapan kerja, serta semangat kewirausahaan mahasiswa dan alumni.",
     keyPoints: [
-      { icon: "🎯", label: "Job Fair & Campus Hiring", desc: "Peluang kerja on-campus rutin" },
-      { icon: "🧠", label: "Konseling & Soft Skills", desc: "Bimbingan karier personal & grup" },
-      { icon: "🚀", label: "Growth Buddy & PERSAMI", desc: "Pendampingan persiapan kerja" },
-      { icon: "🏭", label: "NGANTRI & Localpreneur", desc: "Kunjungan industri & wirausaha" },
+      { icon: "target", color: "text-[#EF17D8] bg-[#EF17D8]/15 border-[#EF17D8]/30", label: "Job Fair & Campus Hiring", desc: "Peluang kerja on-campus rutin" },
+      { icon: "sparkles", color: "text-amber-300 bg-amber-500/15 border-amber-500/30", label: "Konseling & Soft Skills", desc: "Bimbingan karier personal & grup" },
+      { icon: "rocket", color: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30", label: "Growth Buddy & PERSAMI", desc: "Pendampingan persiapan kerja" },
+      { icon: "store", color: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30", label: "NGANTRI & Localpreneur", desc: "Kunjungan industri & wirausaha" },
     ],
     ctaText: "Pelajari Seluruh Program",
     ctaLink: "https://karier.uinjkt.ac.id/id",
@@ -73,10 +181,10 @@ const bookPages = [
     dateVenue: "Kepengurusan & Divisi Kerja Pusat Karier",
     desc: "Executive Board Pusat Karier UIN Jakarta yang bertanggung jawab mengelola seluruh program dan kegiatan pengembangan karier mahasiswa dan alumni. Executive Board berperan dalam perencanaan strategis, koordinasi antar divisi, serta pengambilan keputusan untuk memastikan tercapainya visi Pusat Karier dalam mempersiapkan lulusan UIN Jakarta yang kompeten, profesional, dan siap bersaing di dunia kerja.",
     keyPoints: [
-      { icon: "🧭", label: "Perencanaan Strategis", desc: "Penyusunan peta jalan program karier" },
-      { icon: "🔗", label: "Koordinasi Antar Divisi", desc: "Sinergi layanan tracer & rekrutmen" },
-      { icon: "🏆", label: "Pencapaian Visi Unggul", desc: "Mencetak lulusan siap kerja & adaptif" },
-      { icon: "⚖️", label: "Tata Kelola Profesional", desc: "Pelayanan transparan & akuntabel" },
+      { icon: "compass", color: "text-cyan-400 bg-cyan-500/15 border-cyan-500/30", label: "Perencanaan Strategis", desc: "Penyusunan peta jalan program karier" },
+      { icon: "link", color: "text-indigo-400 bg-indigo-500/15 border-indigo-500/30", label: "Koordinasi Antar Divisi", desc: "Sinergi layanan tracer & rekrutmen" },
+      { icon: "trophy", color: "text-amber-300 bg-amber-500/15 border-amber-500/30", label: "Pencapaian Visi Unggul", desc: "Mencetak lulusan siap kerja & adaptif" },
+      { icon: "shield", color: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30", label: "Tata Kelola Profesional", desc: "Pelayanan transparan & akuntabel" },
     ],
     ctaText: "Struktur Kepengurusan",
     ctaLink: "https://karier.uinjkt.ac.id/id/executive-board",
@@ -300,7 +408,13 @@ export default function EventInfoBook() {
                         key={i}
                         className="flex items-start gap-2.5 rounded-xl bg-purple-950/50 p-2.5 border border-purple-700/30 backdrop-blur-sm"
                       >
-                        <span className="text-lg leading-none shrink-0">{pt.icon}</span>
+                        <div
+                          className={`flex h-7 w-7 items-center justify-center rounded-lg shrink-0 border shadow-xs ${
+                            pt.color || "text-[#EF17D8] bg-purple-900/40 border-purple-500/30"
+                          }`}
+                        >
+                          <EventIcon name={pt.icon} className="h-4 w-4" />
+                        </div>
                         <div>
                           <strong className="block text-xs font-bold text-white leading-tight">
                             {pt.label}
@@ -343,7 +457,9 @@ export default function EventInfoBook() {
                     className="group relative flex items-center gap-2 rounded-xl bg-purple-950/70 hover:bg-[#7226FF]/30 px-3.5 py-2 text-xs font-bold text-purple-200 hover:text-white border border-purple-500/30 transition-all cursor-pointer"
                     title="Buka Lembar Selanjutnya"
                   >
-                    <span className="text-sm">📖</span>
+                    <svg className="h-4 w-4 text-[#EF17D8] transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
                     <span>Balik Halaman</span>
                     <span className="transition-transform group-hover:translate-x-1">→</span>
                   </button>
