@@ -167,7 +167,10 @@ export default function Navbar() {
                 onClick={handleNavClick}
                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-900/40 py-3 text-center text-xs sm:text-sm font-bold text-purple-200 hover:bg-purple-850/60 hover:text-white transition"
               >
-                <span>🏢 Gabung Menjadi Mitra Perusahaan</span>
+                <svg className="h-4 w-4 text-fuchsia-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span>Gabung Menjadi Mitra Perusahaan</span>
                 <span>→</span>
               </Link>
 
@@ -176,7 +179,10 @@ export default function Navbar() {
                 onClick={handleNavClick}
                 className="flex items-center justify-center gap-1.5 text-xs text-purple-300/80 hover:text-white py-1 transition"
               >
-                <span>🔐 Portal Admin Gate Console</span>
+                <svg className="h-3.5 w-3.5 text-[#EF17D8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Portal Admin Gate Console</span>
               </Link>
             </div>
           </div>

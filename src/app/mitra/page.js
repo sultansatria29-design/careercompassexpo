@@ -177,36 +177,44 @@ export default function MitraAuthPage() {
         </div>
 
         {/* Hero Section with 3D Accessories */}
-        <div className="relative text-center max-w-4xl mx-auto mb-12">
-          {/* Aksesoris 3D Skyscraper Build 1 (Kanan) */}
-          <div className="hidden lg:block absolute -right-16 -top-4 w-36 xl:w-44 pointer-events-none select-none z-10 animate-float-slow">
-            <img
-              src="/images/icons/build%201.png"
-              alt="Aksesoris Gedung Mitra"
-              className="w-full h-auto drop-shadow-[0_15px_35px_rgba(114,38,255,0.5)]"
-            />
-          </div>
+        <div className="relative mx-auto max-w-5xl mb-12">
+          <div className="flex items-center justify-between gap-4 sm:gap-6 lg:gap-8">
+            {/* Aksesoris 3D Tech Prism (Kiri) - Tampil rapi di sisi kiri tanpa menghalangi teks */}
+            <div className="hidden md:flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 lg:w-32 pointer-events-none select-none animate-float-reverse">
+              <img
+                src="/images/icons/tech%202.png"
+                alt="Aksesoris Tech Prism"
+                className="w-full h-auto drop-shadow-[0_10px_25px_rgba(239,23,216,0.5)]"
+              />
+            </div>
 
-          {/* Aksesoris 3D Tech Prism (Kiri) */}
-          <div className="hidden lg:block absolute -left-16 top-6 w-28 xl:w-36 pointer-events-none select-none z-10 animate-float-reverse">
-            <img
-              src="/images/icons/tech%202.png"
-              alt="Aksesoris Tech Prism"
-              className="w-full h-auto drop-shadow-[0_10px_30px_rgba(239,23,216,0.55)]"
-            />
-          </div>
+            {/* Teks Hero Utama (Tengah) */}
+            <div className="flex-1 text-center max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/60 px-4 py-1.5 text-xs font-bold text-purple-200 mb-4 backdrop-blur-md shadow-lg shadow-purple-900/30">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Kemitraan Perusahaan &amp; Rekrutmen Kampus</span>
+              </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/60 px-4 py-1.5 text-xs font-bold text-purple-200 mb-4 backdrop-blur-md shadow-lg shadow-purple-900/30">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>Kemitraan Perusahaan &amp; Rekrutmen Kampus</span>
-          </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+                Gabung Menjadi{" "}
+                <span className="bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] bg-clip-text text-transparent">
+                  Mitra Perusahaan
+                </span>
+              </h1>
+              <p className="mt-4 text-xs sm:text-sm md:text-base text-purple-200/80 leading-relaxed max-w-xl mx-auto">
+                Dapatkan akses langsung ke lebih dari 5.000 talenta mahasiswa dan alumni berprestasi UIN Syarif Hidayatullah Jakarta. Publikasikan lowongan, kelola pelamar, dan pantau tahapan seleksi dalam satu dashboard terpadu.
+              </p>
+            </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Gabung Menjadi <span className="bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] bg-clip-text text-transparent">Mitra Perusahaan</span>
-          </h1>
-          <p className="mt-4 text-sm sm:text-base text-purple-200/80 leading-relaxed max-w-2xl mx-auto">
-            Dapatkan akses langsung ke lebih dari 5.000 talenta mahasiswa dan alumni berprestasi UIN Syarif Hidayatullah Jakarta. Publikasikan lowongan, kelola pelamar, dan pantau tahapan seleksi dalam satu dashboard terpadu.
-          </p>
+            {/* Aksesoris 3D Skyscraper Build 1 (Kanan) - Tampil rapi di sisi kanan tanpa menghalangi teks */}
+            <div className="hidden md:flex flex-col items-center justify-center shrink-0 w-20 sm:w-24 lg:w-32 pointer-events-none select-none animate-float-slow">
+              <img
+                src="/images/icons/build%201.png"
+                alt="Aksesoris Gedung Mitra"
+                className="w-full h-auto drop-shadow-[0_15px_30px_rgba(114,38,255,0.45)]"
+              />
+            </div>
+          </div>
 
           {/* Value Highlights with SVG Vector Icons */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left max-w-3xl mx-auto">
@@ -249,8 +257,8 @@ export default function MitraAuthPage() {
 
         {/* Main Card with Tabs & 3D Accessories */}
         <div className="relative mx-auto max-w-3xl rounded-3xl border border-white/10 bg-[#160A2C]/90 p-6 sm:p-10 shadow-2xl shadow-purple-950/60 backdrop-blur-xl">
-          {/* Aksesoris 3D Tech Orb (Floating di pojok bawah kanan kartu) */}
-          <div className="hidden sm:block absolute -bottom-10 -right-8 w-24 xl:w-28 pointer-events-none select-none z-20 animate-pulse">
+          {/* Aksesoris 3D Tech Orb (Subtle Ambient Glow di belakang kartu) */}
+          <div className="hidden xl:block absolute -bottom-10 -right-12 w-28 pointer-events-none select-none -z-10 opacity-30 animate-pulse">
             <img
               src="/images/icons/tech%204.png"
               alt="Aksesoris Tech Orb"
