@@ -191,7 +191,7 @@ function ScannerContent() {
       <header className="sticky top-0 z-40 border-b border-purple-900/50 bg-[#160B29]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/admin?tab=qr-gate" className="flex items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#7226FF] to-[#EF17D8] p-1.5 shadow-lg shadow-purple-900/40">
                 <img
                   src="/images/icons/robot%204.png"
@@ -212,10 +212,11 @@ function ScannerContent() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/"
-              className="rounded-xl border border-purple-800 bg-purple-950/60 px-3.5 py-1.5 text-xs font-bold text-purple-200 transition hover:bg-purple-900 hover:text-white"
+              href="/admin?tab=qr-gate"
+              className="rounded-xl border border-purple-800 bg-purple-950/60 px-3.5 py-1.5 text-xs font-bold text-purple-200 transition hover:bg-purple-900 hover:text-white flex items-center gap-1.5"
             >
-              ← Beranda CCE
+              <span>←</span>
+              <span>Dashboard QR Admin</span>
             </Link>
             <Link
               href="/registrasi"

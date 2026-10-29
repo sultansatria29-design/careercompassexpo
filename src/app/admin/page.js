@@ -300,6 +300,17 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  // Sinkronisasi Tab dari Query URL (misal: /admin?tab=qr-gate)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && ["overview", "presensi", "registrasi", "qr-gate"].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
   // Handle Login
   function handleLoginSubmit(e) {
     e.preventDefault();
