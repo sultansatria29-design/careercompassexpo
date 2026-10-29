@@ -66,7 +66,14 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop Action Button (>= md) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2.5">
+          <Link
+            href="/mitra"
+            className="flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-950/50 px-3.5 py-2 text-xs font-bold text-purple-200 transition hover:border-fuchsia-400/60 hover:bg-purple-900/60 hover:text-white"
+          >
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Gabung Mitra</span>
+          </Link>
           <Link
             href="/registrasi"
             className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-105 hover:shadow-lg"
@@ -152,6 +159,15 @@ export default function Navbar() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
               >
                 <span>Registrasi Peserta (E-Ticket)</span>
+                <span>→</span>
+              </Link>
+
+              <Link
+                href="/mitra"
+                onClick={handleNavClick}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-400/40 bg-purple-900/40 py-3 text-center text-xs sm:text-sm font-bold text-purple-200 hover:bg-purple-850/60 hover:text-white transition"
+              >
+                <span>🏢 Gabung Menjadi Mitra Perusahaan</span>
                 <span>→</span>
               </Link>
 
