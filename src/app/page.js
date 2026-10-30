@@ -266,16 +266,16 @@ export default function Home() {
       <footer className="border-t border-white/10 px-6 py-8 text-center text-sm text-white/60">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
           <span>© 2026 Career Compass Expo — UIN Syarif Hidayatullah Jakarta</span>
-          <div className="flex items-center gap-5 text-xs">
-            <Link
-              href="/admin"
-              className="text-[#EF17D8] hover:text-white transition-colors font-medium flex items-center gap-1.5"
+          <div className="flex items-center text-xs text-white/70">
+            <span>Dev by&nbsp;</span>
+            <a
+              href="https://www.instagram.com/satriaalbantanii"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-[#EF17D8] hover:text-white hover:underline transition-colors"
             >
-              <svg className="h-3.5 w-3.5 text-[#EF17D8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span>Admin Console</span>
-            </Link>
+              Sultan Satria
+            </a>
           </div>
         </div>
       </footer>
