@@ -63,6 +63,9 @@ export default function Navbar() {
           <a href="#fitur" className="text-white/80 transition-colors hover:text-white">
             Panduan
           </a>
+          <a href="#mitra" className="text-white/80 transition-colors hover:text-white">
+            Mitra
+          </a>
         </nav>
 
         {/* Desktop Action Button (>= md) */}
@@ -109,7 +112,9 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Beranda</span>
-                <span className="text-xs text-purple-400">→</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
               <a
                 href="#tentang"
@@ -117,7 +122,9 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Tentang Acara</span>
-                <span className="text-xs text-purple-400">→</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </a>
               <a
                 href="#informasi"
@@ -125,7 +132,9 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Informasi Acara</span>
-                <span className="text-xs text-purple-400">→</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </a>
               <a
                 href="#lowongan"
@@ -133,7 +142,9 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Lowongan Pekerjaan</span>
-                <span className="text-xs text-purple-400">→</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </a>
               <a
                 href="#fitur"
@@ -141,7 +152,19 @@ export default function Navbar() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
                 <span>Panduan & Fitur</span>
-                <span className="text-xs text-purple-400">→</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+              <a
+                href="#mitra"
+                onClick={handleNavClick}
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+              >
+                <span>Mitra Perusahaan</span>
+                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </a>
             </nav>
 
@@ -152,7 +175,9 @@ export default function Navbar() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
               >
                 <span>Registrasi Peserta (E-Ticket)</span>
-                <span>→</span>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </Link>
             </div>
           </div>

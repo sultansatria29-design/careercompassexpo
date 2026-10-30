@@ -369,7 +369,9 @@ export default function RegistrasiPage() {
             {/* Badge Hari Kehadiran */}
             <div className="mb-3 inline-block">
               <span className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r ${dayBadgeStyle} px-4 py-1.5 text-xs font-black uppercase tracking-wider shadow-md`}>
-                <span>📅</span>
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 <span>{dayTitle}</span>
               </span>
             </div>
@@ -394,8 +396,10 @@ export default function RegistrasiPage() {
 
             {/* Peringatan Hari Scan */}
             <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left">
-              <div className="flex items-start gap-2 text-amber-800">
-                <span className="text-base shrink-0">⚠️</span>
+              <div className="flex items-start gap-2.5 text-amber-800">
+                <svg className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
                 <p className="text-xs leading-relaxed font-medium">
                   <strong>PENTING:</strong> Tiket ini <strong>hanya valid dan hanya bisa masuk ketika discan pada tanggal yang sesuai ({dayTitle})</strong>. Sistem scanner panitia akan otomatis menolak jika dipindai di luar jadwal terdaftar.
                 </p>
@@ -1034,8 +1038,11 @@ export default function RegistrasiPage() {
                           />
                         </div>
                         <div className="flex-1 text-center sm:text-left">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 mb-1">
-                            ✓ Berkas Siap Diunggah
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 mb-1">
+                            <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Berkas Siap Diunggah</span>
                           </span>
                           <p className="font-bold text-sm text-gray-800 truncate max-w-xs sm:max-w-md">
                             {form.tactlink_filename || "bukti-tactlink.jpg"}

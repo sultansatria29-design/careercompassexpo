@@ -48,29 +48,10 @@ export default function MitraDashboardPage() {
   const [toastMsg, setToastMsg] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  // Load Session Perusahaan saat mount & guard akses publik
+  // Load Session Perusahaan saat mount & guard akses
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isLocalhost =
-        window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1";
-      const params = new URLSearchParams(window.location.search);
-      const hasDevParam =
-        params.get("dev") === "true" ||
-        params.get("preview") === "true" ||
-        params.get("key") === "cce2026";
-      const hasDevStorage = localStorage.getItem("cce_mitra_dev_unlocked") === "true";
       const stored = localStorage.getItem("cce_mitra_session");
-
-      // Jika di production publik dan belum ada izin dev/sesi, arahkan ke halaman info /mitra
-      if (!isLocalhost && !hasDevParam && !hasDevStorage && !stored) {
-        router.push("/mitra");
-        return;
-      }
-
-      if (hasDevParam) {
-        localStorage.setItem("cce_mitra_dev_unlocked", "true");
-      }
 
       if (stored) {
         try {
@@ -80,10 +61,10 @@ export default function MitraDashboardPage() {
           fetchApplicants(parsed.id);
           fetchProfile(parsed.id);
         } catch {
-          setupFallbackCompany();
+          router.push("/mitra");
         }
       } else {
-        setupFallbackCompany();
+        router.push("/mitra");
       }
     }
   }, [router]);
@@ -107,30 +88,6 @@ export default function MitraDashboardPage() {
     } catch (err) {
       console.error("Gagal sinkronisasi profil perusahaan:", err);
     }
-  }
-
-  function setupFallbackCompany() {
-    // Sediakan default profil demo jika belum ada sesi
-    const defaultDemo = {
-      id: "demo-mitra-uin",
-      name: "PT Nusantara Digital Solusindo",
-      industry: "Teknologi & Informasi (IT)",
-      pic_name: "Rian Hendrawan (HR)",
-      email: "recruitment@nusantaradigital.id",
-      phone: "081299887766",
-      website: "https://nusantaradigital.id",
-      address: "Jakarta Selatan",
-      company_size: "51-200 Karyawan",
-      bio: "Perusahaan mitra rekrutmen resmi Career Compas Expo 2026 UIN Syarif Hidayatullah Jakarta.",
-      logo_url: "",
-      verification_status: "verified",
-    };
-    setCompany(defaultDemo);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cce_mitra_session", JSON.stringify(defaultDemo));
-    }
-    fetchJobs(defaultDemo.id);
-    fetchApplicants(defaultDemo.id);
   }
 
   function showToast(msg) {
@@ -933,7 +890,13 @@ export default function MitraDashboardPage() {
                                               : "border border-white/20 bg-white/5 text-purple-300"
                                           }`}
                                         >
-                                          {isPassed ? "✓" : stg.step}
+                                          {isPassed ? (
+                                            <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          ) : (
+                                            stg.step
+                                          )}
                                         </div>
                                         <span className="text-[10px] font-semibold text-purple-200 hidden md:block">
                                           {stg.label.split(" ")[0]}
@@ -948,9 +911,11 @@ export default function MitraDashboardPage() {
                                     disabled={isUpdatingStatus}
                                     onClick={() => handleUpdateApplicantStage(app.id, "rejected", app.full_name)}
                                     title="Tandai tidak lolos"
-                                    className="ml-1 rounded-lg border border-red-500/20 bg-red-950/30 p-1.5 text-xs text-red-300 hover:bg-red-900/50 hover:text-white transition"
+                                    className="ml-1 rounded-lg border border-red-500/20 bg-red-950/30 p-1.5 text-xs text-red-300 hover:bg-red-900/50 hover:text-white transition flex items-center justify-center"
                                   >
-                                    ✕
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                   </button>
                                 </div>
                               )}
@@ -1273,9 +1238,11 @@ export default function MitraDashboardPage() {
               <button
                 type="button"
                 onClick={() => setJobModalOpen(false)}
-                className="text-purple-300 hover:text-white text-lg font-bold"
+                className="rounded-lg p-1 text-purple-300 hover:bg-white/10 hover:text-white transition"
               >
-                ✕
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -1399,9 +1366,11 @@ export default function MitraDashboardPage() {
               <button
                 type="button"
                 onClick={() => setDetailModalApplicant(null)}
-                className="text-purple-300 hover:text-white text-lg font-bold"
+                className="rounded-lg p-1 text-purple-300 hover:bg-white/10 hover:text-white transition"
               >
-                ✕
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -1485,14 +1454,18 @@ export default function MitraDashboardPage() {
                             detailModalApplicant.full_name
                           )
                         }
-                        className={`rounded-xl py-2 px-2 text-center font-bold text-[11px] transition ${
+                        className={`rounded-xl py-2 px-2 text-center font-bold text-[11px] transition flex items-center justify-center gap-1.5 ${
                           isSelected
                             ? `${stg.color} text-white shadow-md scale-105`
                             : "bg-white/10 text-purple-200 hover:bg-white/20"
                         }`}
                       >
-                        {isSelected ? "✓ " : ""}
-                        {stg.label}
+                        {isSelected && (
+                          <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        <span>{stg.label}</span>
                       </button>
                     );
                   })}

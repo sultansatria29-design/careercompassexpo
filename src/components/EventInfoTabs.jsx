@@ -217,7 +217,9 @@ export default function EventInfoTabs() {
                     key={idx}
                     className="flex items-center gap-2 rounded-xl bg-purple-950/60 border border-purple-800/40 px-3 py-2 text-xs text-purple-100"
                   >
-                    <span className="text-emerald-400 font-bold">✓</span>
+                    <svg className="h-3.5 w-3.5 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
                     <span>{item}</span>
                   </div>
                 ))}

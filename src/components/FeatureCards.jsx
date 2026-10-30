@@ -147,7 +147,9 @@ export default function FeatureCards({ items }) {
                     className="mt-6 pt-4 border-t border-white/15 flex items-center justify-center gap-2 text-sm font-bold text-[#EF17D8] hover:text-white transition-colors"
                   >
                     <span>{item.cta || "Pelajari lebih lanjut"}</span>
-                    <span className="text-lg">→</span>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </Link>
                 </div>
               </div>
@@ -158,16 +160,20 @@ export default function FeatureCards({ items }) {
           <button
             onClick={prevSlide}
             aria-label="Slide Sebelumnya"
-            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg"
+            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg cursor-pointer"
           >
-            ‹
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
           <button
             onClick={nextSlide}
             aria-label="Slide Berikutnya"
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg"
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg cursor-pointer"
           >
-            ›
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
 
@@ -234,10 +240,12 @@ export default function FeatureCards({ items }) {
 
             <Link
               href={item.link || "#alur"}
-              className="mt-6 pt-4 border-t border-white/10 flex items-center text-xs font-semibold text-[#EF17D8] group-hover:translate-x-1 transition-transform"
+              className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-[#EF17D8] group-hover:text-white transition-colors"
             >
               <span>{item.cta || "Pelajari lebih lanjut"}</span>
-              <span className="ml-1 text-base leading-none">→</span>
+              <svg className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </div>
         ))}
