@@ -48,10 +48,30 @@ export default function MitraDashboardPage() {
   const [toastMsg, setToastMsg] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  // Load Session Perusahaan saat mount
+  // Load Session Perusahaan saat mount & guard akses publik
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const params = new URLSearchParams(window.location.search);
+      const hasDevParam =
+        params.get("dev") === "true" ||
+        params.get("preview") === "true" ||
+        params.get("key") === "cce2026";
+      const hasDevStorage = localStorage.getItem("cce_mitra_dev_unlocked") === "true";
       const stored = localStorage.getItem("cce_mitra_session");
+
+      // Jika di production publik dan belum ada izin dev/sesi, arahkan ke halaman info /mitra
+      if (!isLocalhost && !hasDevParam && !hasDevStorage && !stored) {
+        router.push("/mitra");
+        return;
+      }
+
+      if (hasDevParam) {
+        localStorage.setItem("cce_mitra_dev_unlocked", "true");
+      }
+
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -65,7 +85,7 @@ export default function MitraDashboardPage() {
         setupFallbackCompany();
       }
     }
-  }, []);
+  }, [router]);
 
   function setupFallbackCompany() {
     // Sediakan default profil demo jika belum ada sesi
