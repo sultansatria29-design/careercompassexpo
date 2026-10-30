@@ -197,6 +197,7 @@ const bookPages = [
 export default function EventInfoBook() {
   const [currentPage, setCurrentPage] = useState(0);
   const [flipDirection, setFlipDirection] = useState("next"); // 'next' atau 'prev'
+  const [openMobileIdx, setOpenMobileIdx] = useState(0); // Accordion aktif di tampilan mobile
   const touchStartXRef = useRef(null);
 
   const totalPages = bookPages.length;
@@ -277,9 +278,166 @@ export default function EventInfoBook() {
       </div>
 
       {/* ============================================================ */}
-      {/* TAB PEMBATAS BUKU (BOOKMARK TABS) DI ATAS BUKU              */}
+      {/* TAMPILAN MOBILE (< lg): ACCORDION PERSIS SEPERTI GAMBAR 2    */}
       {/* ============================================================ */}
-      <div className="relative z-20 flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-4">
+      <div className="lg:hidden space-y-3.5 relative z-20 mx-auto max-w-xl">
+        {bookPages.map((item, idx) => {
+          const isOpen = openMobileIdx === idx;
+          return (
+            <div
+              key={idx}
+              className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                isOpen
+                  ? "border-[#EF17D8]/60 bg-gradient-to-b from-[#251042] via-[#1B0A33] to-[#140728] shadow-[0_10px_35px_rgba(239,23,216,0.25)]"
+                  : "border-white/10 bg-[#160A29]/90 hover:bg-[#200D3B] hover:border-purple-500/40"
+              }`}
+            >
+              {/* Header Accordion: Klik untuk buka/tutup */}
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenMobileIdx(isOpen ? null : idx);
+                  setCurrentPage(idx);
+                }}
+                className="w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-left cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-mono text-xs font-bold transition-all ${
+                      isOpen
+                        ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-md shadow-purple-600/40"
+                        : "bg-white/10 text-purple-300"
+                    }`}
+                  >
+                    0{idx + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                      {item.tabLabel}
+                    </h3>
+                    <p className="text-[11px] text-purple-300/70 mt-0.5 font-medium">
+                      {item.tag} • Hal. {idx * 2 + 1}-{idx * 2 + 2}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tombol Bulat Toggle Chevron (Persis Contoh Gambar 2) */}
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 shadow-sm ${
+                    isOpen
+                      ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-[0_0_15px_rgba(239,23,216,0.5)] rotate-180"
+                      : "bg-white/10 text-purple-300 hover:bg-white/20 hover:text-white"
+                  }`}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Kolom Konten & Gambar yang Muncul di Bawah Saat di-Klik */}
+              {isOpen && (
+                <div className="px-4 pb-5 sm:px-5 sm:pb-6 pt-1 border-t border-white/10 animate-accordion space-y-4">
+                  {/* Kolom Gambar Dokumentasi / Landmark */}
+                  <div className="relative overflow-hidden rounded-xl border border-purple-500/30 shadow-xl aspect-[16/10] bg-black/60 group mt-2">
+                    <img
+                      src={item.leftImage}
+                      alt={item.leftCaption}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-2.5 py-0.5 text-[10px] font-black uppercase text-white shadow-md">
+                        {item.chapter}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 text-xs text-white">
+                      <span className="block text-[10px] text-purple-300 uppercase font-semibold">Dokumentasi</span>
+                      <strong className="block text-xs font-bold leading-tight mt-0.5">{item.leftCaption}</strong>
+                    </div>
+                  </div>
+
+                  {/* Info Teks Detail */}
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <h4 className="text-base sm:text-lg font-black text-white leading-snug">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs font-semibold text-[#EF17D8] mt-0.5">
+                        {item.subtitle}
+                      </p>
+                      <p className="text-[10px] font-mono text-white/50 mt-0.5">
+                        {item.dateVenue}
+                      </p>
+                    </div>
+
+                    {/* Paragraf Deskripsi */}
+                    <p className="text-xs leading-relaxed text-white/85 text-justify border-l-2 border-[#EF17D8] pl-3 py-1 bg-white/5 rounded-r-lg">
+                      {item.desc}
+                    </p>
+
+                    {/* Poin-Poin Kunci */}
+                    <div className="grid grid-cols-1 gap-2 pt-1">
+                      {item.keyPoints.map((pt, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-2.5 rounded-xl bg-purple-950/60 p-2.5 border border-purple-700/30"
+                        >
+                          <div
+                            className={`flex h-7 w-7 items-center justify-center rounded-lg shrink-0 border ${
+                              pt.color || "text-[#EF17D8] bg-purple-900/40 border-purple-500/30"
+                            }`}
+                          >
+                            <EventIcon name={pt.icon} className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <strong className="block text-xs font-bold text-white leading-tight">
+                              {pt.label}
+                            </strong>
+                            <span className="block text-[11px] text-purple-200/70 leading-tight">
+                              {pt.desc}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Tombol Aksi */}
+                    <div className="pt-2">
+                      {item.ctaLink.startsWith("http") ? (
+                        <a
+                          href={item.ctaLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
+                        >
+                          <span>{item.ctaText}</span>
+                          <span>→</span>
+                        </a>
+                      ) : (
+                        <Link
+                          href={item.ctaLink}
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
+                        >
+                          <span>{item.ctaText}</span>
+                          <span>→</span>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ============================================================ */}
+      {/* TAB PEMBATAS BUKU (BOOKMARK TABS) DI ATAS BUKU (DESKTOP ONLY) */}
+      {/* ============================================================ */}
+      <div className="hidden lg:flex relative z-20 flex-wrap items-center justify-center gap-2 sm:gap-3 mb-4">
         {bookPages.map((item, idx) => {
           const isActive = idx === currentPage;
           return (
@@ -308,9 +466,9 @@ export default function EventInfoBook() {
       </div>
 
       {/* ============================================================ */}
-      {/* BUKU TERBUKA (OPEN BOOK CONTAINER BERSIH TANPA GARIS TENGAH) */}
+      {/* BUKU TERBUKA (OPEN BOOK CONTAINER) (DESKTOP ONLY)             */}
       {/* ============================================================ */}
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="hidden lg:block relative z-10 mx-auto max-w-6xl">
         {/* Sampul Luar Buku (Hardcover Leather Glow) */}
         <div className="relative rounded-[2.5rem] p-3 sm:p-4 bg-gradient-to-br from-[#4B1E85] via-[#240D40] to-[#7226FF] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_50px_rgba(114,38,255,0.35)] border-2 border-white/15">
           
@@ -471,9 +629,9 @@ export default function EventInfoBook() {
       </div>
 
       {/* ============================================================ */}
-      {/* KONTROL NAVIGASI BUKU (TOMBOL BALIK KERTAS DI BAWAH)        */}
+      {/* KONTROL NAVIGASI BUKU (DESKTOP ONLY)                        */}
       {/* ============================================================ */}
-      <div className="relative z-20 mt-6 flex flex-wrap items-center justify-between gap-4 max-w-6xl mx-auto px-4">
+      <div className="hidden lg:flex relative z-20 mt-6 flex-wrap items-center justify-between gap-4 max-w-6xl mx-auto px-4">
         {/* Tombol Balik Mundur */}
         <button
           type="button"

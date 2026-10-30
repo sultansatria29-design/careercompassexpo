@@ -97,3 +97,18 @@ h1, h2, h3, h4 {
   animation: pageTurnPrevAnim 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes accordionOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-accordion {
+  animation: accordionOpen 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
