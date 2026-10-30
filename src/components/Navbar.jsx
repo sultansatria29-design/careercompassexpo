@@ -51,21 +51,21 @@ export default function Navbar() {
           <Link href="/" className="text-white/80 transition-colors hover:text-white">
             Beranda
           </Link>
-          <a href="#tentang" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#tentang" className="text-white/80 transition-colors hover:text-white">
             Tentang
-          </a>
-          <a href="#informasi" className="text-white/80 transition-colors hover:text-white">
+          </Link>
+          <Link href="/#informasi" className="text-white/80 transition-colors hover:text-white">
             Informasi Acara
-          </a>
-          <a href="#lowongan" className="text-white/80 transition-colors hover:text-white">
+          </Link>
+          <Link href="/#lowongan" className="text-white/80 transition-colors hover:text-white">
             Lowongan
-          </a>
-          <a href="#fitur" className="text-white/80 transition-colors hover:text-white">
+          </Link>
+          <Link href="/#fitur" className="text-white/80 transition-colors hover:text-white">
             Panduan
-          </a>
-          <a href="#mitra" className="text-white/80 transition-colors hover:text-white">
+          </Link>
+          <Link href="/#mitra" className="text-white/80 transition-colors hover:text-white">
             Mitra
-          </a>
+          </Link>
         </nav>
 
         {/* Desktop Action Button (>= md) */}
@@ -116,8 +116,8 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
-              <a
-                href="#tentang"
+              <Link
+                href="/#tentang"
                 onClick={handleNavClick}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
@@ -125,9 +125,9 @@ export default function Navbar() {
                 <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
-              <a
-                href="#informasi"
+              </Link>
+              <Link
+                href="/#informasi"
                 onClick={handleNavClick}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
@@ -135,9 +135,9 @@ export default function Navbar() {
                 <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
-              <a
-                href="#lowongan"
+              </Link>
+              <Link
+                href="/#lowongan"
                 onClick={handleNavClick}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
@@ -145,9 +145,9 @@ export default function Navbar() {
                 <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
-              <a
-                href="#fitur"
+              </Link>
+              <Link
+                href="/#fitur"
                 onClick={handleNavClick}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
@@ -155,9 +155,9 @@ export default function Navbar() {
                 <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
-              <a
-                href="#mitra"
+              </Link>
+              <Link
+                href="/#mitra"
                 onClick={handleNavClick}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
               >
@@ -165,7 +165,7 @@ export default function Navbar() {
                 <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-              </a>
+              </Link>
             </nav>
 
             <div className="pt-2 border-t border-purple-800/40">

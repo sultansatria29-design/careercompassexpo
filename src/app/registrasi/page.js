@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const initialForm = {
@@ -98,6 +98,15 @@ export default function RegistrasiPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [targetJobTitle, setTargetJobTitle] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const title = params.get("title");
+      if (title) setTargetJobTitle(title);
+    }
+  }, []);
 
   function updateField(name, value) {
     setForm((prev) => ({
@@ -476,6 +485,15 @@ export default function RegistrasiPage() {
                 ? "Tentukan rencana kunjungan dan preferensi agenda kamu selama acara."
                 : "Langkah terakhir sebelum klaim tiket Anda! Ikuti panduan video di bawah ini."}
             </p>
+
+            {targetJobTitle && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/20 px-3.5 py-1.5 text-xs font-bold text-white border border-white/25 backdrop-blur-sm">
+                <svg className="h-4 w-4 text-emerald-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Melamar Posisi: <strong>{targetJobTitle}</strong></span>
+              </div>
+            )}
 
             {/* Progress Bar */}
             <div className="mt-6 h-1.5 w-full rounded-full bg-white/25 overflow-hidden">

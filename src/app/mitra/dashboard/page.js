@@ -33,6 +33,10 @@ export default function MitraDashboardPage() {
     description: "",
     requirements: "",
     is_active: true,
+    poster_url: "",
+    poster_file: null,
+    poster_preview: "",
+    is_uploading_poster: false,
   });
 
   // State Pelamar (Applicants)
@@ -131,6 +135,73 @@ export default function MitraDashboardPage() {
     }
   }
 
+  // Upload Poster Lowongan dengan validasi maksimal 5MB (PNG, JPG, WEBP)
+  async function handlePosterFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      showToast("Format file tidak didukung. Harap pilih gambar PNG, JPG, atau WEBP.");
+      e.target.value = "";
+      return;
+    }
+
+    const maxBytes = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxBytes) {
+      showToast("Ukuran poster melebihi batas maksimal 5MB!");
+      e.target.value = "";
+      return;
+    }
+
+    // Buat URL preview lokal sementara
+    const localPreview = URL.createObjectURL(file);
+    setJobForm((prev) => ({
+      ...prev,
+      poster_file: file,
+      poster_preview: localPreview,
+      is_uploading_poster: true,
+    }));
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("company_id", company?.id || "mitra");
+
+      const res = await fetch("/api/mitra/upload-poster", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setJobForm((prev) => ({
+        ...prev,
+        poster_url: data.url,
+        poster_preview: data.url,
+        is_uploading_poster: false,
+      }));
+      showToast("Poster lowongan berhasil diunggah!");
+    } catch (err) {
+      showToast(`Gagal unggah poster: ${err.message}`);
+      setJobForm((prev) => ({
+        ...prev,
+        is_uploading_poster: false,
+      }));
+    }
+  }
+
+  function handleRemovePoster() {
+    setJobForm((prev) => ({
+      ...prev,
+      poster_url: "",
+      poster_file: null,
+      poster_preview: "",
+      is_uploading_poster: false,
+    }));
+  }
+
   // 3. Tambah / Edit Lowongan
   async function handleSaveJob(e) {
     e.preventDefault();
@@ -150,7 +221,23 @@ export default function MitraDashboardPage() {
       return;
     }
 
+    if (jobForm.is_uploading_poster) {
+      showToast("Harap tunggu proses pengunggahan poster selesai terlebih dahulu.");
+      return;
+    }
+
     try {
+      const payload = {
+        title: jobForm.title,
+        employment_type: jobForm.employment_type,
+        location: jobForm.location,
+        quota: jobForm.quota,
+        description: jobForm.description,
+        requirements: jobForm.requirements,
+        is_active: jobForm.is_active,
+        poster_url: jobForm.poster_url || "",
+      };
+
       if (editingJob) {
         // Mode Edit
         const res = await fetch("/api/mitra/jobs", {
@@ -159,7 +246,7 @@ export default function MitraDashboardPage() {
           body: JSON.stringify({
             id: editingJob.id,
             company_id: company.id,
-            ...jobForm,
+            ...payload,
           }),
         });
         const data = await res.json();
@@ -173,7 +260,7 @@ export default function MitraDashboardPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             company_id: company.id,
-            ...jobForm,
+            ...payload,
           }),
         });
         const data = await res.json();
@@ -200,6 +287,10 @@ export default function MitraDashboardPage() {
       description: "",
       requirements: "",
       is_active: true,
+      poster_url: "",
+      poster_file: null,
+      poster_preview: "",
+      is_uploading_poster: false,
     });
   }
 
@@ -213,6 +304,10 @@ export default function MitraDashboardPage() {
       description: job.description || "",
       requirements: job.requirements || "",
       is_active: job.is_active !== undefined ? job.is_active : true,
+      poster_url: job.poster_url || "",
+      poster_file: null,
+      poster_preview: job.poster_url || "",
+      is_uploading_poster: false,
     });
     setJobModalOpen(true);
   }
@@ -1034,6 +1129,20 @@ export default function MitraDashboardPage() {
                     className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#160A2C]/90 p-5 shadow-xl transition hover:border-purple-500/40"
                   >
                     <div>
+                      {/* Poster Preview Banner jika ada */}
+                      {job.poster_url && (
+                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl mb-3 bg-black/50 border border-white/10 group/img">
+                          <img
+                            src={job.poster_url}
+                            alt={`Poster ${job.title}`}
+                            className="h-full w-full object-cover object-top transition duration-300 group-hover/img:scale-105"
+                          />
+                          <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-purple-200 border border-white/15">
+                            Poster Terpasang
+                          </span>
+                        </div>
+                      )}
+
                       {/* Top Badges */}
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <span
@@ -1098,6 +1207,20 @@ export default function MitraDashboardPage() {
                       </button>
 
                       <div className="flex items-center gap-1.5">
+                        <a
+                          href={`/lowongan/${job.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition cursor-pointer"
+                          title="Lihat halaman detail lowongan publik"
+                        >
+                          <svg className="h-3.5 w-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span>Detail</span>
+                        </a>
+
                         <button
                           type="button"
                           onClick={() => handleToggleJobActive(job)}
@@ -1214,7 +1337,7 @@ export default function MitraDashboardPage() {
       {/* ============================================================== */}
       {jobModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-[#170A2D] p-6 sm:p-8 shadow-2xl">
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-[#170A2D] p-6 sm:p-8 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <h3 className="flex items-center gap-2 text-base font-black text-white">
                 {editingJob ? (
@@ -1320,6 +1443,76 @@ export default function MitraDashboardPage() {
                   placeholder="Contoh: Mahasiswa tingkat akhir / S1 semua jurusan, IPK min 3.00, menguasai komunikasi..."
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
                 />
+              </div>
+
+              {/* Upload Poster Lowongan (PNG, JPG, WEBP - Maks. 5MB) */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-purple-200">
+                    Poster / Brosur Lowongan
+                  </label>
+                  <span className="text-[10px] font-semibold text-purple-300/70">
+                    Maks. 5MB (PNG, JPG, WEBP)
+                  </span>
+                </div>
+
+                {jobForm.poster_preview ? (
+                  <div className="relative rounded-xl overflow-hidden border border-fuchsia-500/40 bg-black/40 p-2.5">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-black/60 flex items-center justify-center">
+                      <img
+                        src={jobForm.poster_preview}
+                        alt="Preview Poster Lowongan"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                      {jobForm.is_uploading_poster && (
+                        <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-2">
+                          <svg className="w-6 h-6 animate-spin text-fuchsia-400" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                          </svg>
+                          <span className="text-xs font-bold text-white">Mengunggah poster ke server...</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Poster terlampir</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRemovePoster}
+                        className="rounded-lg bg-red-950/40 border border-red-500/30 px-2.5 py-1 text-[11px] font-bold text-red-300 hover:bg-red-900/60 hover:text-white transition cursor-pointer"
+                      >
+                        Hapus Poster
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/5 p-5 text-center cursor-pointer hover:border-fuchsia-400 hover:bg-fuchsia-500/5 transition group">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-fuchsia-400 group-hover:scale-110 transition">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                    <div className="text-xs font-bold text-purple-200 group-hover:text-white">
+                      Klik untuk Unggah Poster Lowongan
+                    </div>
+                    <div className="text-[10px] text-purple-300/60">
+                      Format didukung: PNG, JPG, JPEG, WEBP (Maksimal 5MB)
+                    </div>
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                      onChange={handlePosterFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-1">

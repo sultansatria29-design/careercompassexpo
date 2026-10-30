@@ -14,6 +14,20 @@ function getSupabase() {
   );
 }
 
+function parseJobDescription(desc) {
+  if (!desc) return { text: "", poster_url: "" };
+  try {
+    if (typeof desc === "string" && desc.trim().startsWith("{")) {
+      const parsed = JSON.parse(desc);
+      return {
+        text: parsed.text || "",
+        poster_url: parsed.poster_url || "",
+      };
+    }
+  } catch {}
+  return { text: desc, poster_url: "" };
+}
+
 // GET: Ambil daftar lowongan milik perusahaan tertentu
 export async function GET(request) {
   try {
@@ -56,12 +70,18 @@ export async function GET(request) {
       }
     }
 
-    const enrichedJobs = (jobs || []).map((j) => ({
-      ...j,
-      applicant_count: applicationCounts[j.id]?.total || 0,
-      accepted_count: applicationCounts[j.id]?.accepted || 0,
-      review_count: applicationCounts[j.id]?.in_review || 0,
-    }));
+    const enrichedJobs = (jobs || []).map((j) => {
+      const descObj = parseJobDescription(j.description);
+      return {
+        ...j,
+        raw_description: j.description,
+        description: descObj.text,
+        poster_url: descObj.poster_url,
+        applicant_count: applicationCounts[j.id]?.total || 0,
+        accepted_count: applicationCounts[j.id]?.accepted || 0,
+        review_count: applicationCounts[j.id]?.in_review || 0,
+      };
+    });
 
     return NextResponse.json({
       success: true,
@@ -89,6 +109,7 @@ export async function POST(request) {
       employment_type,
       quota,
       is_active,
+      poster_url,
     } = body;
 
     if (!company_id || !title) {
@@ -127,12 +148,17 @@ export async function POST(request) {
       }
     }
 
+    const cleanDesc = (description || "").trim();
+    const formattedDescription = poster_url
+      ? JSON.stringify({ text: cleanDesc, poster_url })
+      : cleanDesc;
+
     const { data: newJob, error: jErr } = await supabase
       .from("jobs")
       .insert({
         company_id,
         title: title.trim(),
-        description: description || "",
+        description: formattedDescription,
         requirements: requirements || "",
         location: location || "Jakarta (Hybrid)",
         employment_type: employment_type || "Full-time",
@@ -144,11 +170,16 @@ export async function POST(request) {
 
     if (jErr) throw jErr;
 
+    const descObj = parseJobDescription(newJob.description);
+
     return NextResponse.json({
       success: true,
       message: `Lowongan "${newJob.title}" berhasil diterbitkan!`,
       job: {
         ...newJob,
+        raw_description: newJob.description,
+        description: descObj.text,
+        poster_url: descObj.poster_url,
         applicant_count: 0,
       },
     });
@@ -175,6 +206,7 @@ export async function PUT(request) {
       employment_type,
       quota,
       is_active,
+      poster_url,
     } = body;
 
     if (!id || !company_id) {
@@ -189,7 +221,7 @@ export async function PUT(request) {
     // Verifikasi lowongan milik perusahaan ini
     const { data: existing, error: checkErr } = await supabase
       .from("jobs")
-      .select("id, company_id")
+      .select("id, company_id, description")
       .eq("id", id)
       .eq("company_id", company_id)
       .single();
@@ -203,12 +235,21 @@ export async function PUT(request) {
 
     const updatePayload = {};
     if (title !== undefined) updatePayload.title = title.trim();
-    if (description !== undefined) updatePayload.description = description;
     if (requirements !== undefined) updatePayload.requirements = requirements;
     if (location !== undefined) updatePayload.location = location;
     if (employment_type !== undefined) updatePayload.employment_type = employment_type;
     if (quota !== undefined) updatePayload.quota = parseInt(quota, 10);
     if (is_active !== undefined) updatePayload.is_active = Boolean(is_active);
+
+    const existingDesc = parseJobDescription(existing.description);
+    const textToUse = description !== undefined ? description.trim() : existingDesc.text;
+    const posterToUse = poster_url !== undefined ? poster_url : existingDesc.poster_url;
+
+    if (description !== undefined || poster_url !== undefined) {
+      updatePayload.description = posterToUse
+        ? JSON.stringify({ text: textToUse, poster_url: posterToUse })
+        : textToUse;
+    }
 
     const { data: updatedJob, error: uErr } = await supabase
       .from("jobs")
@@ -219,10 +260,17 @@ export async function PUT(request) {
 
     if (uErr) throw uErr;
 
+    const descObj = parseJobDescription(updatedJob.description);
+
     return NextResponse.json({
       success: true,
       message: "Data lowongan berhasil diperbarui.",
-      job: updatedJob,
+      job: {
+        ...updatedJob,
+        raw_description: updatedJob.description,
+        description: descObj.text,
+        poster_url: descObj.poster_url,
+      },
     });
   } catch (err) {
     console.error("Error in PUT /api/mitra/jobs:", err);

@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import DocumSlider from "@/components/DocumSlider";
 import EventInfoBook from "@/components/EventInfoBook";
 import FeatureCards from "@/components/FeatureCards";
 import TactlinkSection from "@/components/TactlinkSection";
 import Navbar from "@/components/Navbar";
+import JobsDisplay from "@/components/JobsDisplay";
 
 const features = [
   {
@@ -355,140 +357,76 @@ export default function Home() {
   );
 }
 
+function getSupabaseServer() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const key =
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    "";
+
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
 async function JobsSection() {
   let jobs = [];
   try {
-    const { data } = await supabase
+    const supabase = getSupabaseServer();
+    const { data, error } = await supabase
       .from("jobs")
-      .select("*, companies(name, logo_url)")
+      .select("*, companies(name, logo_url, website, description)")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
-    if (data) jobs = data;
-  } catch {
+
+    if (error) {
+      console.error("Gagal memuat lowongan di landing page:", error);
+    }
+    if (data) {
+      jobs = data.map((j) => {
+        let meta = {};
+        try {
+          if (typeof j.companies?.description === "string" && j.companies.description.startsWith("{")) {
+            meta = JSON.parse(j.companies.description);
+          }
+        } catch {
+          meta = {};
+        }
+
+        let descText = j.description || "";
+        let posterUrl = "";
+        try {
+          if (typeof j.description === "string" && j.description.trim().startsWith("{")) {
+            const parsed = JSON.parse(j.description);
+            descText = parsed.text || "";
+            posterUrl = parsed.poster_url || "";
+          }
+        } catch {
+          descText = j.description || "";
+        }
+
+        return {
+          ...j,
+          raw_description: j.description,
+          description: descText,
+          poster_url: posterUrl,
+          company_name: j.companies?.name || "Perusahaan Rekanan",
+          company_logo: j.companies?.logo_url || "",
+          company_industry: meta.industry || "",
+          company_address: meta.address || "",
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error JobsSection server:", err);
     jobs = [];
   }
 
-  if (jobs.length === 0) {
-    return (
-      <div className="rounded-3xl border border-white/10 bg-[#4B1E85]/30 p-12 text-center backdrop-blur-sm">
-        {/* Icon Koper Tematik CCE (Gradien Neon & Glow) */}
-        <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7226FF]/25 via-[#4B1E85]/35 to-[#EF17D8]/25 p-4 border border-[#EF17D8]/40 shadow-[0_0_35px_rgba(239,23,216,0.3)]">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-[#7226FF] to-[#EF17D8] opacity-25 blur-lg animate-pulse pointer-events-none" />
-          <svg
-            className="relative z-10 h-10 w-10 drop-shadow-[0_4px_14px_rgba(239,23,216,0.7)]"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Badan Koper */}
-            <rect
-              x="2"
-              y="7"
-              width="20"
-              height="14"
-              rx="3"
-              fill="url(#cce-briefcase-body)"
-              stroke="url(#cce-briefcase-stroke)"
-              strokeWidth="1.5"
-            />
-            {/* Gagang / Pegangan Koper */}
-            <path
-              d="M16 7V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V7"
-              stroke="#FFFFFF"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            {/* Garis Tengah Lipatan Koper */}
-            <path
-              d="M2 13H22"
-              stroke="rgba(255, 255, 255, 0.45)"
-              strokeWidth="1.5"
-            />
-            {/* Kancing / Kunci Tengah Koper */}
-            <rect
-              x="10.5"
-              y="11.5"
-              width="3"
-              height="3"
-              rx="0.75"
-              fill="#FFFFFF"
-              stroke="#EF17D8"
-              strokeWidth="0.8"
-            />
-            {/* Definisi Gradien CCE */}
-            <defs>
-              <linearGradient id="cce-briefcase-body" x1="2" y1="7" x2="22" y2="21" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#7226FF" />
-                <stop offset="0.5" stopColor="#9C27B0" />
-                <stop offset="1" stopColor="#EF17D8" />
-              </linearGradient>
-              <linearGradient id="cce-briefcase-stroke" x1="2" y1="7" x2="22" y2="21" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#C338FF" />
-                <stop offset="1" stopColor="#FF66EB" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <h3 className="text-xl font-bold text-white">
-          Lowongan pekerjaan belum tersedia saat ini
-        </h3>
-        <p className="mx-auto mt-2 max-w-md text-sm text-white/60 leading-relaxed">
-          Daftar posisi lowongan pekerjaan dari perusahaan peserta akan segera dirilis menjelang hari H acara.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {jobs.map((job) => (
-        <div
-          key={job.id}
-          className="group flex flex-col justify-between rounded-3xl border border-white/10 bg-[#4B1E85]/40 p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-[#EF17D8]/50 hover:bg-[#4B1E85]/70 hover:shadow-2xl"
-        >
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <span className="text-xs font-bold text-[#EF17D8]">
-                {job.employment_type || "Full-Time"}
-              </span>
-              <span className="text-xs text-white/60 flex items-center gap-1">
-                <svg className="h-3.5 w-3.5 text-[#EF17D8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>{job.location || "Jakarta"}</span>
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-white group-hover:text-[#EF17D8] transition-colors">
-              {job.title}
-            </h3>
-            <p className="mt-1 text-sm font-semibold text-white/80">
-              {job.companies?.name || "Perusahaan Rekanan"}
-            </p>
-
-            {job.requirements && (
-              <p className="mt-4 text-xs text-white/60 line-clamp-2">
-                {job.requirements}
-              </p>
-            )}
-          </div>
-
-          <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between">
-            <span className="text-xs text-white/50">CCE 2026 Partner</span>
-            <Link
-              href="/registrasi"
-              className="rounded-xl bg-white/10 px-4 py-2 text-xs font-bold text-white transition hover:bg-[#EF17D8] hover:text-white flex items-center gap-1.5"
-            >
-              <span>Lamar Posisi</span>
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <JobsDisplay initialJobs={jobs} />;
 }
 
 function JobsFallback() {
