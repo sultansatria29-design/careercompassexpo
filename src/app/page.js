@@ -196,7 +196,7 @@ export default function Home() {
               Informasi Kegiatan CCE 2026
             </h2>
             <p className="mt-3 text-sm sm:text-base text-white/70">
-              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta & Agenda Pelaksanaan Career Campus Expo 2026
+              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta & Agenda Pelaksanaan Career Compas Expo 2026
             </p>
           </div>
 

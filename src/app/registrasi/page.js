@@ -451,7 +451,7 @@ export default function RegistrasiPage() {
           <div className="bg-gradient-to-r from-[#7226FF] to-[#EF17D8] p-8 text-white relative">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
-                CAREER CAMPUS EXPO 2026
+                CAREER COMPAS EXPO 2026
               </p>
               <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold backdrop-blur-sm">
                 Langkah {step} dari 3
@@ -462,7 +462,7 @@ export default function RegistrasiPage() {
               {step === 1
                 ? "Registrasi Peserta"
                 : step === 2
-                ? "Career Campus Expo"
+                ? "Career Compas Expo"
                 : "Siapkan TactLink"}
             </h1>
             <p className="mt-2 text-sm text-white/90">

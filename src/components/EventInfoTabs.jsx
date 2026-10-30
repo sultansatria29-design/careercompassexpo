@@ -13,9 +13,9 @@ const tabsData = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
-    title: "Kegiatan Career Campus Expo (CCE) 2026",
+    title: "Kegiatan Career Compas Expo (CCE) 2026",
     subtitle: "Auditorium Harun Nasution • 18–19 November 2026",
-    desc: "Career Campus Expo (CCE) 2026 merupakan pameran bursa kerja dan karier tahunan terbesar yang diselenggarakan oleh Pusat Karier UIN Syarif Hidayatullah Jakarta. Kegiatan ini menghadirkan 28+ perusahaan mitra BUMN, multinasional, dan swasta terkemuka, membuka akses rekrutmen langsung bagi ribuan mahasiswa, alumni, serta masyarakat umum. Rangkaian acara meliputi Job Fair akbar, Walk-in Interview on-site, Career Preparation, dan sesi konsultasi karier terpadu.",
+    desc: "Career Compas Expo (CCE) 2026 merupakan pameran bursa kerja dan karier tahunan terbesar yang diselenggarakan oleh Pusat Karier UIN Syarif Hidayatullah Jakarta. Kegiatan ini menghadirkan 28+ perusahaan mitra BUMN, multinasional, dan swasta terkemuka, membuka akses rekrutmen langsung bagi ribuan mahasiswa, alumni, serta masyarakat umum. Rangkaian acara meliputi Job Fair akbar, Walk-in Interview on-site, Career Preparation, dan sesi konsultasi karier terpadu.",
     highlights: [
       "28+ Perusahaan Mitra Ternama",
       "Walk-in Interview Langsung di Lokasi",
@@ -63,9 +63,9 @@ const tabsData = [
     ),
     title: "Program",
     subtitle: "Rangkaian Program Karier & Kesiapan Kerja Lulusan",
-    desc: "Pusat Karier UIN Jakarta menyelenggarakan berbagai program pengembangan karier seperti Tracer Study, Campus Hiring, Job Fair, dan Bursa Kerja Online. Selain itu, terdapat layanan Konseling Karier, Sosial, dan Akademik, serta pelatihan pengembangan diri melalui Training Soft Skills. Program lainnya meliputi Growth Buddy, PERSAMI, Pekan Konseling, Career Preparation, Kunjungan Industri (NGANTRI), dan Localpreneur Fest yang mendukung peningkatan kompetensi, kesiapan kerja, serta semangat kewirausahaan mahasiswa dan alumni.",
+    desc: "Pusat Karier UIN Jakarta menyelenggarakan berbagai program pengembangan karier seperti Tracer Study, Compas Hiring, Job Fair, dan Bursa Kerja Online. Selain itu, terdapat layanan Konseling Karier, Sosial, dan Akademik, serta pelatihan pengembangan diri melalui Training Soft Skills. Program lainnya meliputi Growth Buddy, PERSAMI, Pekan Konseling, Career Preparation, Kunjungan Industri (NGANTRI), dan Localpreneur Fest yang mendukung peningkatan kompetensi, kesiapan kerja, serta semangat kewirausahaan mahasiswa dan alumni.",
     highlights: [
-      "Job Fair, Campus Hiring & Bursa Kerja Online",
+      "Job Fair, Compas Hiring & Bursa Kerja Online",
       "Konseling Karier, Sosial & Akademik",
       "Training Soft Skills & Growth Buddy",
       "PERSAMI, Pekan Konseling & Localpreneur Fest",
