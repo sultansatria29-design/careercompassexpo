@@ -100,6 +100,33 @@ export async function POST(request) {
 
     const supabase = getSupabase();
 
+    // Verifikasi kelayakan mitra: Perusahaan harus sudah disetujui (verified) oleh admin
+    if (company_id !== "demo-mitra-uin") {
+      const { data: comp } = await supabase
+        .from("companies")
+        .select("name, description")
+        .eq("id", company_id)
+        .single();
+
+      let meta = {};
+      try {
+        meta = typeof comp?.description === "string" ? JSON.parse(comp.description) : comp?.description || {};
+      } catch {
+        meta = {};
+      }
+
+      const status = meta.verification_status || "pending";
+      if (status !== "verified") {
+        const statusLabel = status === "rejected" ? "Ditolak" : "Menunggu Verifikasi Admin";
+        return NextResponse.json(
+          {
+            error: `Akun perusahaan belum dapat menerbitkan lowongan (Status: ${statusLabel}). Pendaftaran kemitraan harus melalui proses verifikasi dan penyaringan admin Pusat Karier UIN Jakarta.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const { data: newJob, error: jErr } = await supabase
       .from("jobs")
       .insert({

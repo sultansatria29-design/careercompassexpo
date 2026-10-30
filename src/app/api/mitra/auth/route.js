@@ -76,6 +76,10 @@ export async function POST(request) {
         company_size: company_size || "51-200 Karyawan",
         bio: bio || "",
         registered_at: new Date().toISOString(),
+        verification_status: "pending", // 'pending' | 'verified' | 'rejected'
+        verified_at: null,
+        verified_by: null,
+        rejection_reason: null,
       };
 
       const { data: newCompany, error: insertErr } = await supabase
@@ -93,7 +97,7 @@ export async function POST(request) {
 
       return NextResponse.json({
         success: true,
-        message: "Pendaftaran kemitraan berhasil! Selamat datang di Career Campus Expo 2026.",
+        message: "Pendaftaran kemitraan berhasil diajukan! Akun Anda sedang dalam antrean verifikasi dan penyaringan oleh admin Pusat Karier UIN Jakarta.",
         company: {
           id: newCompany.id,
           name: newCompany.name,
@@ -149,15 +153,27 @@ export async function POST(request) {
         meta = {};
       }
 
+      const verificationStatus = meta.verification_status || "pending";
+      const isVerified = verificationStatus === "verified";
+
+      let loginMsg = `Selamat datang kembali, ${matched.name}!`;
+      if (verificationStatus === "pending") {
+        loginMsg = `Selamat datang, ${matched.name}! Akun perusahaan Anda saat ini sedang dalam proses penyaringan & verifikasi oleh admin CCE 2026.`;
+      } else if (verificationStatus === "rejected") {
+        loginMsg = `Akun perusahaan Anda belum disetujui oleh admin.`;
+      }
+
       return NextResponse.json({
         success: true,
-        message: `Selamat datang kembali, ${matched.name}!`,
+        message: loginMsg,
         company: {
           id: matched.id,
           name: matched.name,
           website: matched.website,
           logo_url: matched.logo_url,
           created_at: matched.created_at,
+          verification_status: verificationStatus,
+          is_verified: isVerified,
           ...meta,
         },
       });

@@ -78,6 +78,7 @@ export default function MitraDashboardPage() {
           setCompany(parsed);
           fetchJobs(parsed.id);
           fetchApplicants(parsed.id);
+          fetchProfile(parsed.id);
         } catch {
           setupFallbackCompany();
         }
@@ -86,6 +87,27 @@ export default function MitraDashboardPage() {
       }
     }
   }, [router]);
+
+  // Sinkronisasi status verifikasi & profil perusahaan real-time dari database
+  async function fetchProfile(companyId) {
+    if (!companyId || companyId.startsWith("demo-")) return;
+    try {
+      const res = await fetch("/api/mitra/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get_profile", company_id: companyId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.company) {
+        setCompany((prev) => ({ ...prev, ...data.company }));
+        if (typeof window !== "undefined") {
+          localStorage.setItem("cce_mitra_session", JSON.stringify(data.company));
+        }
+      }
+    } catch (err) {
+      console.error("Gagal sinkronisasi profil perusahaan:", err);
+    }
+  }
 
   function setupFallbackCompany() {
     // Sediakan default profil demo jika belum ada sesi
@@ -101,6 +123,7 @@ export default function MitraDashboardPage() {
       company_size: "51-200 Karyawan",
       bio: "Perusahaan mitra rekrutmen resmi Career Campus Expo 2026 UIN Syarif Hidayatullah Jakarta.",
       logo_url: "",
+      verification_status: "verified",
     };
     setCompany(defaultDemo);
     if (typeof window !== "undefined") {
@@ -155,6 +178,15 @@ export default function MitraDashboardPage() {
   async function handleSaveJob(e) {
     e.preventDefault();
     if (!company) return;
+
+    if (company.verification_status !== "verified") {
+      showToast(
+        company.verification_status === "rejected"
+          ? "Pendaftaran ditolak: Akun belum memenuhi syarat verifikasi kemitraan."
+          : "Penerbitan lowongan dibatasi: Akun Anda sedang dalam proses penyaringan & verifikasi admin."
+      );
+      return;
+    }
 
     if (!jobForm.title) {
       showToast("Judul posisi lowongan wajib diisi.");
@@ -402,9 +434,28 @@ export default function MitraDashboardPage() {
               <div>
                 <div className="text-sm font-black tracking-tight flex items-center gap-2">
                   <span>{company?.name || "Dashboard Mitra"}</span>
-                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30">
-                    Mitra Terverifikasi
-                  </span>
+                  {company?.verification_status === "verified" ? (
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                      <svg className="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Mitra Terverifikasi
+                    </span>
+                  ) : company?.verification_status === "rejected" ? (
+                    <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                      <svg className="h-3 w-3 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Pengajuan Ditolak
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30 flex items-center gap-1 animate-pulse">
+                      <svg className="h-3 w-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Menunggu Verifikasi Admin
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] text-purple-300/70 hidden sm:block">
                   {company?.industry || "Partner Rekrutmen CCE 2026"}
@@ -455,6 +506,74 @@ export default function MitraDashboardPage() {
             className="w-full h-auto drop-shadow-[0_10px_25px_rgba(239,23,216,0.4)]"
           />
         </div>
+
+        {/* Banner Status Verifikasi Akun Perusahaan */}
+        {company?.verification_status === "pending" && (
+          <div className="mb-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-purple-950/60 to-purple-900/30 p-4 sm:p-5 backdrop-blur-md shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-amber-200">
+                      Akun Perusahaan Dalam Proses Penyaringan &amp; Verifikasi Admin
+                    </h4>
+                    <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-400/30 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      Dalam Antrean Kurasi
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-200/80 mt-1 max-w-3xl leading-relaxed">
+                    Pusat Karier UIN Syarif Hidayatullah Jakarta sedang memverifikasi legalitas dan profil perusahaan Anda untuk memastikan keamanan peserta expo. Selama peninjauan, fitur pembuatan lowongan kerja dibatasi sementara hingga disetujui admin.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (company?.id) {
+                    fetchProfile(company.id);
+                    showToast("Memperbarui status verifikasi terkini dari server...");
+                  }
+                }}
+                className="shrink-0 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 px-3.5 py-2 text-xs font-bold text-amber-200 transition flex items-center gap-1.5 self-end sm:self-auto cursor-pointer"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Cek Status Sekarang</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {company?.verification_status === "rejected" && (
+          <div className="mb-6 rounded-2xl border border-rose-500/40 bg-gradient-to-r from-rose-500/20 via-rose-950/60 to-purple-950/40 p-4 sm:p-5 backdrop-blur-md shadow-xl">
+            <div className="flex items-start gap-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-bold text-rose-200">
+                  Pendaftaran Kemitraan Belum Disetujui (Ditolak)
+                </h4>
+                <p className="text-xs text-rose-200/90 mt-1 leading-relaxed">
+                  Catatan Tim Kurator: <strong>{company?.rejection_reason || "Profil perusahaan belum memenuhi standar kualifikasi kemitraan expo CCE 2026."}</strong>
+                </p>
+                <p className="text-xs text-purple-300/70 mt-1.5">
+                  Jika Anda meyakini ini adalah kekeliruan atau ingin melengkapi dokumen legalitas, silakan hubungi tim Pusat Karier UIN Jakarta.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* KPI / Metric Cards with SVG Icons */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur-sm">
@@ -565,13 +684,30 @@ export default function MitraDashboardPage() {
             <button
               type="button"
               onClick={() => {
+                if (company?.verification_status !== "verified") {
+                  showToast(
+                    company?.verification_status === "rejected"
+                      ? "Pendaftaran ditolak: Akun belum memenuhi syarat verifikasi kemitraan."
+                      : "Fitur dibatasi: Akun Anda sedang dalam proses penyaringan & verifikasi oleh admin Pusat Karier UIN Jakarta."
+                  );
+                  return;
+                }
                 setEditingJob(null);
                 resetJobForm();
                 setJobModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 cursor-pointer"
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition shadow-lg cursor-pointer ${
+                company?.verification_status === "verified"
+                  ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] shadow-purple-600/30 hover:scale-105"
+                  : "bg-purple-950/60 border border-amber-500/40 text-amber-200"
+              }`}
             >
               <span>+ Buat Lowongan Baru</span>
+              {company?.verification_status !== "verified" && (
+                <span className="text-[10px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded font-semibold border border-amber-400/30">
+                  Perlu Verifikasi
+                </span>
+              )}
             </button>
           )}
 

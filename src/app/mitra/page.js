@@ -130,7 +130,10 @@ export default function MitraAuthPage() {
         throw new Error(data.error || "Gagal mendaftarkan perusahaan.");
       }
 
-      setSuccessMsg("Pendaftaran berhasil! Mengalihkan ke Dashboard Mitra...");
+      setSuccessMsg(
+        data.message ||
+        "Pendaftaran berhasil! Akun Anda sedang dalam proses penyaringan & verifikasi admin Pusat Karier UIN Jakarta. Mengalihkan ke dashboard..."
+      );
       // Simpan session mitra ke localStorage
       if (typeof window !== "undefined") {
         localStorage.setItem("cce_mitra_session", JSON.stringify(data.company));
@@ -138,7 +141,7 @@ export default function MitraAuthPage() {
 
       setTimeout(() => {
         router.push("/mitra/dashboard");
-      }, 1200);
+      }, 1500);
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -173,7 +176,15 @@ export default function MitraAuthPage() {
         throw new Error(data.error || "Login gagal.");
       }
 
-      setSuccessMsg(`Login berhasil! Selamat datang, ${data.company.name}`);
+      const isVerified = data.company?.verification_status === "verified";
+      if (isVerified) {
+        setSuccessMsg(`Login berhasil! Selamat datang kembali, ${data.company.name}`);
+      } else if (data.company?.verification_status === "rejected") {
+        setSuccessMsg(`Login berhasil. Status akun: Pengajuan kemitraan belum disetujui admin.`);
+      } else {
+        setSuccessMsg(`Login berhasil! Status akun: Menunggu proses penyaringan & verifikasi admin.`);
+      }
+
       if (typeof window !== "undefined") {
         localStorage.setItem("cce_mitra_session", JSON.stringify(data.company));
       }
@@ -694,8 +705,21 @@ export default function MitraAuthPage() {
                 />
               </div>
 
+              {/* Info Proses Verifikasi & Skrining */}
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="text-xs text-amber-200/90 leading-relaxed">
+                  <strong className="text-amber-100 font-bold block mb-0.5">Ketentuan Proses Skrining &amp; Verifikasi:</strong>
+                  Setiap mitra pendaftar baru akan melalui proses peninjauan kelayakan profil oleh tim kurasi Pusat Karier UIN Jakarta sebelum fitur publikasi lowongan kerja dapat digunakan.
+                </div>
+              </div>
+
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isLoading}

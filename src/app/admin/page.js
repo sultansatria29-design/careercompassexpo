@@ -129,6 +129,63 @@ function IconKey({ className = "h-4 w-4" }) {
   );
 }
 
+function IconBuilding({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  );
+}
+
+function IconCheck({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function IconX({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function IconEye({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  );
+}
+
+function IconTrash({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+function IconClock({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function IconBriefcase({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
 // ========================================================
 // KOMPONEN UTAMA DASHBOARD ADMIN
 // ========================================================
@@ -186,6 +243,18 @@ export default function AdminDashboard() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [settingsMessage, setSettingsMessage] = useState(null);
+
+  // State untuk Tab Mitra Perusahaan & Verifikasi/Penyaringan
+  const [mitraList, setMitraList] = useState([]);
+  const [mitraStats, setMitraStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 });
+  const [loadingMitra, setLoadingMitra] = useState(false);
+  const [searchMitra, setSearchMitra] = useState("");
+  const [filterMitraStatus, setFilterMitraStatus] = useState("ALL");
+  const [selectedMitraDetail, setSelectedMitraDetail] = useState(null);
+  const [rejectModalMitra, setRejectModalMitra] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [mitraToast, setMitraToast] = useState(null);
 
   // Helper: Ambil kredensial admin (tersimpan atau default)
   function getAdminCredentials() {
@@ -282,6 +351,102 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+    // Muat juga data mitra pendaftar
+    loadMitraData();
+  }
+
+  // Fetch data mitra dari API admin
+  async function loadMitraData() {
+    try {
+      setLoadingMitra(true);
+      const res = await fetch("/api/admin/mitra");
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setMitraList(json.companies || []);
+        setMitraStats(json.stats || { total: 0, pending: 0, verified: 0, rejected: 0 });
+      }
+    } catch (err) {
+      console.error("Gagal memuat data mitra:", err);
+    } finally {
+      setLoadingMitra(false);
+    }
+  }
+
+  function showMitraFeedback(type, text) {
+    setMitraToast({ type, text });
+    setTimeout(() => setMitraToast(null), 4000);
+  }
+
+  // Handle Aksi Verifikasi Mitra (Approve / Reject / Reset)
+  async function handleUpdateMitraStatus(companyId, action, reasonText = "", notesText = "") {
+    try {
+      setActionLoadingId(companyId);
+      const res = await fetch("/api/admin/mitra", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_id: companyId,
+          action,
+          reason: reasonText,
+          notes: notesText,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal memperbarui status verifikasi mitra.");
+      }
+
+      showMitraFeedback("success", json.message);
+      if (rejectModalMitra) setRejectModalMitra(null);
+
+      // Update selected detail jika sedang terbuka
+      if (selectedMitraDetail && selectedMitraDetail.id === companyId) {
+        setSelectedMitraDetail((prev) =>
+          prev
+            ? {
+                ...prev,
+                verification_status:
+                  action === "approve" ? "verified" : action === "reject" ? "rejected" : "pending",
+                rejection_reason: action === "reject" ? reasonText : null,
+              }
+            : null
+        );
+      }
+
+      await loadMitraData();
+    } catch (err) {
+      showMitraFeedback("error", err.message);
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  // Handle Hapus Mitra (Pembersihan spam)
+  async function handleDeleteMitra(companyId, companyName) {
+    if (
+      !confirm(
+        `Hapus permanen data perusahaan "${companyName}" beserta seluruh lowongan yang terkait?`
+      )
+    ) {
+      return;
+    }
+    try {
+      setActionLoadingId(companyId);
+      const res = await fetch(`/api/admin/mitra?id=${companyId}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal menghapus perusahaan.");
+      }
+      showMitraFeedback("success", json.message);
+      if (selectedMitraDetail?.id === companyId) setSelectedMitraDetail(null);
+      await loadMitraData();
+    } catch (err) {
+      showMitraFeedback("error", err.message);
+    } finally {
+      setActionLoadingId(null);
+    }
   }
 
   useEffect(() => {
@@ -300,12 +465,12 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  // Sinkronisasi Tab dari Query URL (misal: /admin?tab=qr-gate)
+  // Sinkronisasi Tab dari Query URL (misal: /admin?tab=qr-gate atau /admin?tab=mitra)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["overview", "presensi", "registrasi", "qr-gate"].includes(tabParam)) {
+      if (tabParam && ["overview", "presensi", "registrasi", "qr-gate", "mitra"].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
@@ -384,6 +549,25 @@ export default function AdminDashboard() {
       return matchSearch && matchKategori;
     });
   }, [data.participants, searchRegistrasi, filterRegistrasiKategori]);
+
+  // Filtered Mitra Data (Penyaringan Mitra Perusahaan)
+  const filteredMitra = useMemo(() => {
+    return (mitraList || []).filter((item) => {
+      const q = searchMitra.toLowerCase();
+      const matchSearch =
+        !q ||
+        item.name?.toLowerCase().includes(q) ||
+        item.pic_name?.toLowerCase().includes(q) ||
+        item.email?.toLowerCase().includes(q) ||
+        item.phone?.toLowerCase().includes(q) ||
+        item.industry?.toLowerCase().includes(q);
+
+      const matchStatus =
+        filterMitraStatus === "ALL" || item.verification_status === filterMitraStatus;
+
+      return matchSearch && matchStatus;
+    });
+  }, [mitraList, searchMitra, filterMitraStatus]);
 
   // ========================================================
   // EKSPOR CSV: 1 FORM = 1 FIELD (KOLOM RAPI TERPISAH DI EXCEL/SPREADSHEET)
@@ -795,6 +979,22 @@ export default function AdminDashboard() {
               <IconQr className="h-4 w-4 text-purple-600" />
               <span>QR Code Gate</span>
             </button>
+            <button
+              onClick={() => setActiveTab("mitra")}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer relative ${
+                activeTab === "mitra"
+                  ? "bg-white text-purple-700 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <IconBuilding className="h-4 w-4 text-purple-600" />
+              <span>Mitra Perusahaan</span>
+              {mitraStats.pending > 0 && (
+                <span className="ml-1 rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 animate-pulse">
+                  {mitraStats.pending}
+                </span>
+              )}
+            </button>
           </nav>
 
           {/* Desktop Right Actions (>= md) */}
@@ -946,6 +1146,30 @@ export default function AdminDashboard() {
                   {activeTab === "qr-gate" && (
                     <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
                   )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("mitra");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "mitra"
+                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <IconBuilding className="h-4 w-4 text-purple-600 shrink-0" />
+                    <span>Mitra Perusahaan (Verifikasi)</span>
+                  </div>
+                  {mitraStats.pending > 0 ? (
+                    <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 animate-pulse">
+                      {mitraStats.pending} Menunggu
+                    </span>
+                  ) : activeTab === "mitra" ? (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  ) : null}
                 </button>
               </div>
 
@@ -1918,6 +2142,473 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* ========================================================
+            TAB 5: MITRA PERUSAHAAN (Penyaringan & Verifikasi Admin)
+            ======================================================== */}
+        {activeTab === "mitra" && (
+          <div className="space-y-6">
+            {/* Header Tab Mitra */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-[family-name:var(--font-montserrat)] text-2xl sm:text-3xl font-extrabold text-slate-900">
+                    Penyaringan &amp; Verifikasi Mitra
+                  </h1>
+                  {mitraStats.pending > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-300">
+                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      {mitraStats.pending} Menunggu Peninjauan
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-slate-600 max-w-3xl">
+                  Saring dan verifikasi profil perusahaan pendaftar Career Campus Expo 2026. Hanya perusahaan yang telah diverifikasi yang dapat menerbitkan lowongan kerja dan menerima lamaran peserta.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={loadMitraData}
+                  disabled={loadingMitra}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition cursor-pointer"
+                >
+                  <IconRefresh className={`h-4 w-4 text-purple-600 ${loadingMitra ? "animate-spin" : ""}`} />
+                  <span>{loadingMitra ? "Memuat..." : "Segarkan Data"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Toast Feedback */}
+            {mitraToast && (
+              <div
+                className={`rounded-2xl p-4 text-xs font-semibold flex items-center justify-between border shadow-sm ${
+                  mitraToast.type === "success"
+                    ? "bg-emerald-50 text-emerald-900 border-emerald-300"
+                    : "bg-rose-50 text-rose-900 border-rose-300"
+                }`}
+              >
+                <span>{mitraToast.text}</span>
+                <button
+                  onClick={() => setMitraToast(null)}
+                  className="text-xs font-bold px-2 py-1 hover:opacity-75"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Metrics Cards Grid (4 Kolom) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {/* Card 1: Total Mitra */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                  <span>Total Mitra</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <IconBuilding className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {mitraStats.total}
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500">
+                  Semua akun perusahaan terdaftar
+                </div>
+              </div>
+
+              {/* Card 2: Menunggu Verifikasi */}
+              <div className="rounded-2xl border border-amber-300 bg-amber-50/50 p-5 shadow-xs">
+                <div className="flex items-center justify-between text-amber-700 text-xs font-bold uppercase tracking-wider">
+                  <span>Menunggu Verifikasi</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <IconClock className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-900">
+                  {mitraStats.pending}
+                </div>
+                <div className="mt-1 text-[11px] font-semibold text-amber-700 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Perlu screening &amp; verifikasi admin
+                </div>
+              </div>
+
+              {/* Card 3: Terverifikasi */}
+              <div className="rounded-2xl border border-emerald-300 bg-emerald-50/50 p-5 shadow-xs">
+                <div className="flex items-center justify-between text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                  <span>Mitra Terverifikasi</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <IconCheck className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-900">
+                  {mitraStats.verified}
+                </div>
+                <div className="mt-1 text-[11px] font-semibold text-emerald-700">
+                  Disetujui &amp; aktif pasang lowongan
+                </div>
+              </div>
+
+              {/* Card 4: Ditolak */}
+              <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-5 shadow-xs">
+                <div className="flex items-center justify-between text-rose-700 text-xs font-bold uppercase tracking-wider">
+                  <span>Pengajuan Ditolak</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                    <IconX className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-rose-900">
+                  {mitraStats.rejected}
+                </div>
+                <div className="mt-1 text-[11px] text-rose-600">
+                  Tidak memenuhi syarat kemitraan
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Pencarian */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+              <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                {/* Search Bar */}
+                <div className="relative flex-1">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <IconSearch className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchMitra}
+                    onChange={(e) => setSearchMitra(e.target.value)}
+                    placeholder="Cari nama perusahaan, PIC, email, atau industri..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                  />
+                  {searchMitra && (
+                    <button
+                      onClick={() => setSearchMitra("")}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-700 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Status Pills */}
+                <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-1 overflow-x-auto text-xs font-semibold shrink-0">
+                  <button
+                    onClick={() => setFilterMitraStatus("ALL")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraStatus === "ALL"
+                        ? "bg-white text-slate-900 shadow-xs font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Semua ({mitraList.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterMitraStatus("pending")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraStatus === "pending"
+                        ? "bg-amber-500 text-white shadow-xs font-bold"
+                        : "text-amber-800 hover:bg-amber-100/60"
+                    }`}
+                  >
+                    Menunggu ({mitraStats.pending})
+                  </button>
+                  <button
+                    onClick={() => setFilterMitraStatus("verified")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraStatus === "verified"
+                        ? "bg-emerald-600 text-white shadow-xs font-bold"
+                        : "text-emerald-800 hover:bg-emerald-100/60"
+                    }`}
+                  >
+                    Terverifikasi ({mitraStats.verified})
+                  </button>
+                  <button
+                    onClick={() => setFilterMitraStatus("rejected")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraStatus === "rejected"
+                        ? "bg-rose-600 text-white shadow-xs font-bold"
+                        : "text-rose-800 hover:bg-rose-100/60"
+                    }`}
+                  >
+                    Ditolak ({mitraStats.rejected})
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                <span>
+                  Menampilkan <strong>{filteredMitra.length}</strong> dari <strong>{mitraList.length}</strong> perusahaan
+                </span>
+                {filterMitraStatus !== "ALL" && (
+                  <button
+                    onClick={() => setFilterMitraStatus("ALL")}
+                    className="text-purple-600 font-semibold hover:underline"
+                  >
+                    Reset Filter Status
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tabel Mitra Perusahaan */}
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      <th className="px-4 py-3.5">Perusahaan &amp; Website</th>
+                      <th className="px-4 py-3.5">PIC &amp; Kontak</th>
+                      <th className="px-4 py-3.5">Industri &amp; Skala</th>
+                      <th className="px-4 py-3.5 text-center">Lowongan</th>
+                      <th className="px-4 py-3.5 text-center">Status Verifikasi</th>
+                      <th className="px-4 py-3.5 text-center">Aksi Verifikasi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loadingMitra ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <IconRefresh className="h-6 w-6 animate-spin text-purple-600" />
+                            <span>Memuat data mitra perusahaan...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredMitra.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                              <IconBuilding className="h-6 w-6" />
+                            </div>
+                            <span className="font-bold text-slate-800 text-sm">Tidak ada data mitra</span>
+                            <span className="text-xs text-slate-500">
+                              {searchMitra || filterMitraStatus !== "ALL"
+                                ? "Tidak ditemukan perusahaan yang cocok dengan pencarian atau filter yang dipilih."
+                                : "Belum ada perusahaan yang mendaftar sebagai mitra."}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredMitra.map((item) => {
+                        const isActionLoading = actionLoadingId === item.id;
+                        const waLink = item.phone && item.phone !== "-"
+                          ? `https://wa.me/${item.phone.replace(/[^0-9]/g, "").replace(/^0/, "62")}`
+                          : null;
+
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                            {/* Perusahaan & Website */}
+                            <td className="px-4 py-3.5">
+                              <div className="flex items-start gap-3">
+                                {item.logo_url ? (
+                                  <img
+                                    src={item.logo_url}
+                                    alt={item.name}
+                                    className="h-9 w-9 rounded-xl object-contain border border-slate-200 bg-white p-1 shrink-0"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 font-bold text-purple-700 text-sm uppercase border border-purple-200">
+                                    {item.name.charAt(0)}
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                                    {item.name}
+                                  </div>
+                                  {item.website && item.website !== "-" ? (
+                                    <a
+                                      href={item.website.startsWith("http") ? item.website : `https://${item.website}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex items-center gap-1 text-[11px] text-purple-600 hover:text-purple-800 hover:underline truncate mt-0.5"
+                                    >
+                                      <span>{item.website.replace(/^https?:\/\//, "")}</span>
+                                      <IconExternal className="h-3 w-3" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-[11px] text-slate-400">Tidak ada website</span>
+                                  )}
+                                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                                    ID: {item.id.slice(0, 8)}...
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* PIC & Kontak */}
+                            <td className="px-4 py-3.5">
+                              <div className="space-y-0.5">
+                                <div className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
+                                  <span>{item.pic_name || "-"}</span>
+                                  <span className="text-[10px] text-slate-400 font-normal">(PIC)</span>
+                                </div>
+                                <div className="text-slate-600 text-[11px] truncate">
+                                  {item.email || "-"}
+                                </div>
+                                {item.phone && item.phone !== "-" && (
+                                  <div className="flex items-center gap-1.5 pt-0.5">
+                                    <a
+                                      href={waLink}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                                      title="Kirim pesan WhatsApp ke PIC untuk verifikasi"
+                                    >
+                                      <span>WA: {item.phone}</span>
+                                      <IconExternal className="h-2.5 w-2.5" />
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Industri & Skala */}
+                            <td className="px-4 py-3.5">
+                              <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 border border-slate-200">
+                                {item.industry || "Umum"}
+                              </span>
+                              <div className="text-[11px] text-slate-500 mt-1">
+                                {item.company_size || "1-50 Karyawan"}
+                              </div>
+                            </td>
+
+                            {/* Lowongan */}
+                            <td className="px-4 py-3.5 text-center">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 border border-slate-200">
+                                <IconBriefcase className="h-3 w-3 text-slate-500" />
+                                <span>{item.total_jobs}</span>
+                              </span>
+                            </td>
+
+                            {/* Status Verifikasi Badge */}
+                            <td className="px-4 py-3.5 text-center">
+                              {item.verification_status === "verified" ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800 border border-emerald-300">
+                                    <IconCheck className="h-3 w-3 text-emerald-600" />
+                                    <span>Terverifikasi</span>
+                                  </span>
+                                  {item.verified_at && (
+                                    <span className="text-[9px] text-slate-400">
+                                      {new Date(item.verified_at).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "short",
+                                      })}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : item.verification_status === "rejected" ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-bold text-rose-800 border border-rose-300 cursor-help"
+                                    title={item.rejection_reason || "Ditolak oleh admin"}
+                                  >
+                                    <IconX className="h-3 w-3 text-rose-600" />
+                                    <span>Ditolak</span>
+                                  </span>
+                                  <span className="text-[9px] text-rose-600 truncate max-w-[120px]">
+                                    {item.rejection_reason}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-900 border border-amber-300 animate-pulse">
+                                    <IconClock className="h-3 w-3 text-amber-700" />
+                                    <span>Menunggu Review</span>
+                                  </span>
+                                  <span className="text-[9px] text-amber-700 font-semibold">
+                                    Belum Lolos Skrining
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Tombol Aksi Verifikasi */}
+                            <td className="px-4 py-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {/* Tombol Detail */}
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedMitraDetail(item)}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs cursor-pointer transition"
+                                  title="Lihat detail lengkap profil perusahaan"
+                                >
+                                  <IconEye className="h-3.5 w-3.5 text-purple-600" />
+                                  <span>Detail</span>
+                                </button>
+
+                                {/* Tombol Approve / Setujui */}
+                                {item.verification_status !== "verified" && (
+                                  <button
+                                    type="button"
+                                    disabled={isActionLoading}
+                                    onClick={() => handleUpdateMitraStatus(item.id, "approve")}
+                                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs cursor-pointer transition disabled:opacity-50"
+                                    title="Setujui pendaftaran mitra agar dapat menerbitkan lowongan kerja"
+                                  >
+                                    <IconCheck className="h-3.5 w-3.5" />
+                                    <span>Setujui</span>
+                                  </button>
+                                )}
+
+                                {/* Tombol Tolak */}
+                                {item.verification_status !== "rejected" && (
+                                  <button
+                                    type="button"
+                                    disabled={isActionLoading}
+                                    onClick={() => {
+                                      setRejectReason("");
+                                      setRejectModalMitra(item);
+                                    }}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 text-xs font-bold text-rose-700 shadow-xs cursor-pointer transition disabled:opacity-50"
+                                    title="Tolak pendaftaran mitra"
+                                  >
+                                    <IconX className="h-3.5 w-3.5" />
+                                    <span>Tolak</span>
+                                  </button>
+                                )}
+
+                                {/* Tombol Reset (jika sudah verified atau rejected) */}
+                                {item.verification_status !== "pending" && (
+                                  <button
+                                    type="button"
+                                    disabled={isActionLoading}
+                                    onClick={() => handleUpdateMitraStatus(item.id, "reset")}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer transition disabled:opacity-50"
+                                    title="Kembalikan status ke antrean peninjauan (Pending)"
+                                  >
+                                    <span>↺</span>
+                                  </button>
+                                )}
+
+                                {/* Tombol Hapus Spam */}
+                                <button
+                                  type="button"
+                                  disabled={isActionLoading}
+                                  onClick={() => handleDeleteMitra(item.id, item.name)}
+                                  className="inline-flex items-center justify-center h-7 w-7 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition cursor-pointer"
+                                  title="Hapus permanen akun mitra ini"
+                                >
+                                  <IconTrash className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ========================================================
@@ -2100,6 +2791,299 @@ export default function AdminDashboard() {
                 className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL DETAIL MITRA PERUSAHAAN
+          ======================================================== */}
+      {selectedMitraDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setSelectedMitraDetail(null)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 text-sm font-bold"
+            >
+              ✕
+            </button>
+
+            {/* Header Profil */}
+            <div className="flex items-start gap-4 mb-6 pb-6 border-b border-slate-100">
+              {selectedMitraDetail.logo_url ? (
+                <img
+                  src={selectedMitraDetail.logo_url}
+                  alt={selectedMitraDetail.name}
+                  className="h-16 w-16 rounded-2xl object-contain border border-slate-200 bg-white p-2 shrink-0 shadow-xs"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-purple-100 font-extrabold text-purple-700 text-2xl uppercase border border-purple-200">
+                  {selectedMitraDetail.name.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-[family-name:var(--font-montserrat)] text-xl font-extrabold text-slate-900">
+                    {selectedMitraDetail.name}
+                  </h3>
+                  {selectedMitraDetail.verification_status === "verified" ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-300">
+                      <IconCheck className="h-3 w-3" /> Mitra Terverifikasi Resmi
+                    </span>
+                  ) : selectedMitraDetail.verification_status === "rejected" ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-800 border border-rose-300">
+                      <IconX className="h-3 w-3" /> Pengajuan Ditolak
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900 border border-amber-300 animate-pulse">
+                      <IconClock className="h-3 w-3" /> Menunggu Penyaringan &amp; Verifikasi
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Industri: <strong className="text-slate-700">{selectedMitraDetail.industry}</strong> &bull; Skala: <strong className="text-slate-700">{selectedMitraDetail.company_size}</strong>
+                </p>
+                <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                  ID Database: {selectedMitraDetail.id}
+                </div>
+              </div>
+            </div>
+
+            {/* Detail Grid */}
+            <div className="space-y-4 text-xs sm:text-sm">
+              {/* Kontak Person (PIC) */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="text-[10px] uppercase font-bold text-slate-400 mb-2">
+                  Person in Charge (PIC) / Narahubung
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <div className="text-[10px] text-slate-400">Nama PIC</div>
+                    <div className="font-bold text-slate-900 mt-0.5">{selectedMitraDetail.pic_name || "-"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400">Email Akun</div>
+                    <div className="font-medium text-slate-800 mt-0.5 break-all">{selectedMitraDetail.email || "-"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400">Nomor WhatsApp</div>
+                    <div className="font-medium text-slate-800 mt-0.5 flex items-center gap-1.5">
+                      <span>{selectedMitraDetail.phone || "-"}</span>
+                      {selectedMitraDetail.phone && selectedMitraDetail.phone !== "-" && (
+                        <a
+                          href={`https://wa.me/${selectedMitraDetail.phone.replace(/[^0-9]/g, "").replace(/^0/, "62")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-700"
+                        >
+                          Hubungi WA →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legalitas & Alamat */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Website Perusahaan</div>
+                  <div className="mt-1">
+                    {selectedMitraDetail.website && selectedMitraDetail.website !== "-" ? (
+                      <a
+                        href={selectedMitraDetail.website.startsWith("http") ? selectedMitraDetail.website : `https://${selectedMitraDetail.website}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-600 font-bold hover:underline inline-flex items-center gap-1 break-all"
+                      >
+                        <span>{selectedMitraDetail.website}</span>
+                        <IconExternal className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span className="text-slate-400 italic">Tidak dicantumkan</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Alamat Kantor</div>
+                  <div className="font-medium text-slate-800 mt-1">
+                    {selectedMitraDetail.address || "-"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio Perusahaan */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5">
+                  Profil / Deskripsi Singkat Perusahaan
+                </div>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-line text-xs sm:text-sm">
+                  {selectedMitraDetail.bio || "Tidak ada deskripsi profil tambahan."}
+                </p>
+              </div>
+
+              {/* Status & Catatan Penolakan jika ada */}
+              {selectedMitraDetail.verification_status === "rejected" && selectedMitraDetail.rejection_reason && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
+                  <div className="text-[10px] uppercase font-bold text-rose-700 mb-1">
+                    Alasan Penolakan:
+                  </div>
+                  <p className="text-xs font-medium">{selectedMitraDetail.rejection_reason}</p>
+                </div>
+              )}
+
+              {selectedMitraDetail.admin_notes && (
+                <div className="rounded-xl border border-slate-200 bg-slate-100/70 p-3">
+                  <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
+                    Catatan Internal Admin:
+                  </div>
+                  <p className="text-xs text-slate-700">{selectedMitraDetail.admin_notes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleDeleteMitra(selectedMitraDetail.id, selectedMitraDetail.name)}
+                className="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline inline-flex items-center gap-1 cursor-pointer"
+              >
+                <IconTrash className="h-3.5 w-3.5" />
+                <span>Hapus Akun Mitra</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMitraDetail(null)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                >
+                  Tutup
+                </button>
+
+                {selectedMitraDetail.verification_status !== "verified" && (
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateMitraStatus(selectedMitraDetail.id, "approve")}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-2 text-xs font-bold text-white shadow-md transition"
+                  >
+                    <IconCheck className="h-4 w-4" />
+                    <span>Setujui Kemitraan</span>
+                  </button>
+                )}
+
+                {selectedMitraDetail.verification_status !== "rejected" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRejectReason("");
+                      setRejectModalMitra(selectedMitraDetail);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-4 py-2 text-xs font-bold text-rose-700 transition"
+                  >
+                    <IconX className="h-4 w-4" />
+                    <span>Tolak Pengajuan</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL TOLAK PENDAFTARAN MITRA (Dengan Input Alasan)
+          ======================================================== */}
+      {rejectModalMitra && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200">
+            <button
+              onClick={() => setRejectModalMitra(null)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 text-sm font-bold"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                <IconX className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-[family-name:var(--font-montserrat)] text-lg sm:text-xl font-extrabold text-slate-900">
+                  Tolak Pendaftaran Mitra
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {rejectModalMitra.name} ({rejectModalMitra.pic_name || "PIC"})
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Perusahaan yang ditolak tidak akan diizinkan mempublikasikan lowongan kerja. Alasan penolakan di bawah akan ditampilkan pada halaman dashboard mitra mereka.
+            </p>
+
+            {/* Preset Alasan Cepat */}
+            <div className="mb-4">
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">
+                Pilih Alasan Cepat:
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Legalitas / profil perusahaan belum lengkap",
+                  "Bukan badan usaha atau organisasi resmi",
+                  "Kontak PIC tidak valid / tidak dapat dihubungi",
+                  "Lowongan tidak relevan dengan profil CCE 2026",
+                  "Terindikasi akun duplikat atau spam",
+                ].map((reasonItem, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setRejectReason(reasonItem)}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-medium border transition cursor-pointer text-left ${
+                      rejectReason === reasonItem
+                        ? "bg-rose-100 border-rose-300 text-rose-800 font-bold"
+                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {reasonItem}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Textarea */}
+            <div className="mb-5">
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                Alasan / Catatan Penolakan (Wajib Diisi):
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Tuliskan alasan mengapa pendaftaran mitra ini belum dapat disetujui..."
+                rows={3}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRejectModalMitra(null)}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={!rejectReason.trim() || actionLoadingId === rejectModalMitra.id}
+                onClick={() => handleUpdateMitraStatus(rejectModalMitra.id, "reject", rejectReason)}
+                className="rounded-xl bg-rose-600 hover:bg-rose-700 px-5 py-2.5 text-xs font-bold text-white shadow-md transition disabled:opacity-50"
+              >
+                {actionLoadingId === rejectModalMitra.id ? "Memproses..." : "Konfirmasi Penolakan"}
               </button>
             </div>
           </div>
