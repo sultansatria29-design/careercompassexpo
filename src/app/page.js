@@ -188,7 +188,7 @@ export default function Home() {
                 <svg className="h-4 w-4 text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <span className="font-semibold text-white">28+ Perusahaan Ternama</span>
+                <span className="font-semibold text-white">20 Perusahaan Ternama</span>
               </div>
               <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
                 <svg className="h-4 w-4 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">

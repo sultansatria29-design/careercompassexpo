@@ -54,7 +54,7 @@ const attendanceDays = [
     dateText: "18 November 2026",
     badge: "Day 1 (18 Nov)",
     badgeColor: "bg-blue-600 text-white",
-    desc: "Opening Ceremony, 28+ Booth Job Fair, Walk-In Interview & Career Seminar Day 1",
+    desc: "Opening Ceremony, 20 Booth Job Fair, Walk-In Interview & Career Seminar Day 1",
   },
   {
     id: "DAY2",
@@ -62,7 +62,7 @@ const attendanceDays = [
     dateText: "19 November 2026",
     badge: "Day 2 (19 Nov)",
     badgeColor: "bg-purple-600 text-white",
-    desc: "28+ Booth Job Fair, Walk-In Interview, Tech Talk & Closing Career Expo",
+    desc: "20 Booth Job Fair, Walk-In Interview, Tech Talk & Closing Career Expo",
   },
   {
     id: "BOTH",
@@ -75,7 +75,7 @@ const attendanceDays = [
 ];
 
 const visitOptions = [
-  { id: "Job Fair", label: "Job Fair", desc: "Kunjungi booth 28+ perusahaan terkemuka" },
+  { id: "Job Fair", label: "Job Fair", desc: "Kunjungi booth 20 perusahaan terkemuka" },
   { id: "Career Preparation", label: "Career Preparation", desc: "Insight persiapan studi lanjut & karier global" },
   { id: "Walk In Interview", label: "Walk In Interview", desc: "Wawancara langsung bersama rekruter di lokasi" },
 ];

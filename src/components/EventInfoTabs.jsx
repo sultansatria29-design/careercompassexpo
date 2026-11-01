@@ -15,9 +15,9 @@ const tabsData = [
     ),
     title: "Kegiatan Career Compas Expo (CCE) 2026",
     subtitle: "Auditorium Harun Nasution • 18–19 November 2026",
-    desc: "Career Compas Expo (CCE) 2026 merupakan pameran bursa kerja dan karier tahunan terbesar yang diselenggarakan oleh Pusat Karier UIN Syarif Hidayatullah Jakarta. Kegiatan ini menghadirkan 28+ perusahaan mitra BUMN, multinasional, dan swasta terkemuka, membuka akses rekrutmen langsung bagi ribuan mahasiswa, alumni, serta masyarakat umum. Rangkaian acara meliputi Job Fair akbar, Walk-in Interview on-site, Career Preparation, dan sesi konsultasi karier terpadu.",
+    desc: "Career Compas Expo (CCE) 2026 merupakan pameran bursa kerja dan karier tahunan terbesar yang diselenggarakan oleh Pusat Karier UIN Syarif Hidayatullah Jakarta. Kegiatan ini menghadirkan 20 perusahaan mitra BUMN, multinasional, dan swasta terkemuka, membuka akses rekrutmen langsung bagi ribuan mahasiswa, alumni, serta masyarakat umum. Rangkaian acara meliputi Job Fair akbar, Walk-in Interview on-site, Career Preparation, dan sesi konsultasi karier terpadu.",
     highlights: [
-      "28+ Perusahaan Mitra Ternama",
+      "20 Perusahaan Mitra Ternama",
       "Walk-in Interview Langsung di Lokasi",
       "Akses Ribuan Lowongan Kerja & Magang",
       "Terbuka untuk Mahasiswa, Alumni & Umum",
