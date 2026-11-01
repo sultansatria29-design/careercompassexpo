@@ -38,6 +38,7 @@ export default function MitraDashboardPage() {
   // State Profil Perusahaan
   const [company, setCompany] = useState(null);
   const [activeMainTab, setActiveMainTab] = useState("applicants"); // 'applicants' | 'jobs' | 'profile'
+  const [isUploadingCompanyLogo, setIsUploadingCompanyLogo] = useState(false);
 
   // State Lowongan (Jobs)
   const [jobs, setJobs] = useState([]);
@@ -222,6 +223,70 @@ export default function MitraDashboardPage() {
       poster_preview: "",
       is_uploading_poster: false,
     }));
+  }
+
+  // Upload Logo Perusahaan (Profil Mitra)
+  async function handleCompanyLogoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      showToast("Format file tidak didukung. Harap pilih gambar PNG, JPG, WEBP, atau SVG.");
+      e.target.value = "";
+      return;
+    }
+
+    const maxBytes = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxBytes) {
+      showToast("Ukuran logo melebihi batas maksimal 5MB!");
+      e.target.value = "";
+      return;
+    }
+
+    setIsUploadingCompanyLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("company_name", company?.name || "mitra");
+
+      const res = await fetch("/api/mitra/upload-logo", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mengunggah logo.");
+
+      const newLogoUrl = data.url;
+
+      // Update di database jika bukan demo session
+      if (company?.id && !company.id.startsWith("demo-")) {
+        const updateRes = await fetch("/api/mitra/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_profile",
+            company_id: company.id,
+            logo_url: newLogoUrl,
+          }),
+        });
+        const updateData = await updateRes.json();
+        if (!updateRes.ok) throw new Error(updateData.error || "Gagal memperbarui profil di server.");
+      }
+
+      const updatedCompany = { ...company, logo_url: newLogoUrl };
+      setCompany(updatedCompany);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cce_mitra_session", JSON.stringify(updatedCompany));
+      }
+      showToast("Logo perusahaan berhasil diperbarui!");
+    } catch (err) {
+      showToast(`Gagal update logo: ${err.message}`);
+    } finally {
+      setIsUploadingCompanyLogo(false);
+      e.target.value = "";
+    }
   }
 
   // 3. Tambah / Edit Lowongan
@@ -1440,23 +1505,57 @@ export default function MitraDashboardPage() {
             </p>
 
             <div className="space-y-4 text-sm">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-purple-950 border border-purple-500/30 text-purple-300">
-                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 21h18" />
-                    <path d="M9 8h1" />
-                    <path d="M9 12h1" />
-                    <path d="M9 16h1" />
-                    <path d="M14 8h1" />
-                    <path d="M14 12h1" />
-                    <path d="M14 16h1" />
-                    <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-                  </svg>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 border border-white/20 p-1.5 overflow-hidden shrink-0">
+                    {company?.logo_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={company.logo_url}
+                        alt={company?.name || "Logo Perusahaan"}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <svg className="w-8 h-8 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 21h18" />
+                        <path d="M9 8h1" />
+                        <path d="M9 12h1" />
+                        <path d="M9 16h1" />
+                        <path d="M14 8h1" />
+                        <path d="M14 12h1" />
+                        <path d="M14 16h1" />
+                        <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                      </svg>
+                    )}
+                    {isUploadingCompanyLogo && (
+                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-fuchsia-400 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-bold text-white text-base">{company?.name}</div>
+                    <div className="text-xs text-purple-300">{company?.industry}</div>
+                    <div className="text-[11px] text-purple-400 mt-0.5">ID: {company?.id}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-white text-base">{company?.name}</div>
-                  <div className="text-xs text-purple-300">{company?.industry}</div>
-                  <div className="text-[11px] text-purple-400 mt-0.5">ID: {company?.id}</div>
+
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-xs font-semibold text-fuchsia-300 transition-all">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                      onChange={handleCompanyLogoUpload}
+                      disabled={isUploadingCompanyLogo}
+                      className="hidden"
+                    />
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span>{isUploadingCompanyLogo ? "Mengunggah..." : company?.logo_url ? "Ganti Logo" : "Upload Logo"}</span>
+                  </label>
                 </div>
               </div>
 

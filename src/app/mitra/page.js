@@ -33,7 +33,72 @@ export default function MitraAuthPage() {
     password: "",
   });
 
+  // State Logo Upload
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoFileName, setLogoFileName] = useState("");
+  const [logoPreview, setLogoPreview] = useState("");
+
+  async function handleLogoFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      setErrorMsg("Format file tidak didukung. Harap pilih gambar PNG, JPG, WEBP, atau SVG.");
+      e.target.value = "";
+      return;
+    }
+
+    const maxBytes = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxBytes) {
+      setErrorMsg("Ukuran file logo melebihi batas maksimal 5MB!");
+      e.target.value = "";
+      return;
+    }
+
+    setErrorMsg("");
+    setLogoFileName(file.name);
+    const localPreview = URL.createObjectURL(file);
+    setLogoPreview(localPreview);
+    setLogoUploading(true);
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("company_name", regForm.name || "mitra");
+
+      const res = await fetch("/api/mitra/upload-logo", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mengunggah logo.");
+
+      setRegForm((prev) => ({
+        ...prev,
+        logo_url: data.url,
+      }));
+      setLogoPreview(data.url);
+    } catch (err) {
+      setErrorMsg(`Gagal unggah logo: ${err.message}`);
+      setLogoPreview(regForm.logo_url || "");
+    } finally {
+      setLogoUploading(false);
+    }
+  }
+
+  function handleRemoveLogo() {
+    setRegForm((prev) => ({
+      ...prev,
+      logo_url: "",
+    }));
+    setLogoPreview("");
+    setLogoFileName("");
+  }
+
   function handleQuickFillDemo() {
+    const demoLogo = "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=200&fit=crop";
     setRegForm({
       name: "PT Nusantara Digital Solusindo",
       industry: "Teknologi & Informasi (IT)",
@@ -46,8 +111,10 @@ export default function MitraAuthPage() {
       website: "https://nusantaradigital.id",
       company_size: "51-200 Karyawan",
       bio: "Perusahaan penyedia solusi kecerdasan buatan, cloud computing, dan transformasi digital terkemuka di Asia Tenggara.",
-      logo_url: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=200&fit=crop",
+      logo_url: demoLogo,
     });
+    setLogoPreview(demoLogo);
+    setLogoFileName("demo-logo-nusantara.png");
   }
 
   async function handleRegister(e) {
@@ -468,8 +535,8 @@ export default function MitraAuthPage() {
                 </div>
               </div>
 
-              {/* Website, Logo URL, & Skala */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Website & Skala Karyawan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-purple-200 mb-2">
                     Website Perusahaan
@@ -498,19 +565,106 @@ export default function MitraAuthPage() {
                     <option value="1000+ Karyawan">1.000+ Karyawan (Enterprise / Multinasional)</option>
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-purple-200 mb-2">
-                    URL Logo Perusahaan (Opsional)
+              {/* Upload Logo Perusahaan */}
+              <div>
+                <label className="block text-xs font-bold text-purple-200 mb-1.5">
+                  Upload Logo Perusahaan (Opsional)
+                </label>
+                <p className="text-[11px] text-purple-300/70 mb-2.5">
+                  Disarankan format PNG transparan, JPG, WEBP, atau SVG persegi (rasio 1:1), maksimal 5MB. Logo akan ditampilkan pada kartu lowongan &amp; profil booth expo.
+                </p>
+
+                {regForm.logo_url || logoPreview ? (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-sm">
+                    <div className="flex items-center gap-3.5 w-full sm:w-auto">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/10 border border-white/20 p-1 flex items-center justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={logoPreview || regForm.logo_url}
+                          alt="Logo Perusahaan"
+                          className="h-full w-full object-contain"
+                        />
+                        {logoUploading && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-fuchsia-400 border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-[260px]">
+                            {logoFileName || "Logo Terunggah"}
+                          </span>
+                          <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                            ✓ Siap Dipublikasikan
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-purple-300/80 mt-0.5 truncate">
+                          {logoUploading ? "Sedang mengunggah ke server cloud..." : "Logo siap ditampilkan di landing page & booth expo"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-all">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                          onChange={handleLogoFileChange}
+                          disabled={logoUploading}
+                          className="hidden"
+                        />
+                        <svg className="w-3.5 h-3.5 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        <span>Ganti File</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        disabled={logoUploading}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-xs font-semibold text-red-300 transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/20 bg-white/5 p-6 text-center cursor-pointer hover:border-fuchsia-400 hover:bg-white/10 transition-all">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                      onChange={handleLogoFileChange}
+                      disabled={logoUploading}
+                      className="hidden"
+                    />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-300 group-hover:scale-110 transition-transform mb-3">
+                      {logoUploading ? (
+                        <div className="w-6 h-6 border-2 border-fuchsia-400 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-xs font-bold text-white group-hover:text-fuchsia-300">
+                      {logoUploading ? "Sedang Mengunggah Logo..." : "Klik atau Seret Logo ke Sini"}
+                    </span>
+                    <span className="text-[11px] text-purple-300/60 mt-1">
+                      PNG, JPG, WEBP, atau SVG (Maksimal 5MB)
+                    </span>
                   </label>
-                  <input
-                    type="url"
-                    value={regForm.logo_url}
-                    onChange={(e) => setRegForm({ ...regForm, logo_url: e.target.value })}
-                    placeholder="https://.../logo.png"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
-                  />
-                </div>
+                )}
               </div>
 
               {/* Alamat & Bio */}
