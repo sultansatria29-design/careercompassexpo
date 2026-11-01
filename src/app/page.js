@@ -156,13 +156,13 @@ export default function Home() {
               <span>Form Walk-In Interview</span>
             </Link>
             <Link
-              href="/pelamar/dashboard"
+              href="/indeks-kepuasan"
               className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-xs sm:text-sm font-semibold text-white/90 transition-all duration-200 hover:scale-105 hover:bg-white/20 flex items-center gap-2"
             >
-              <svg className="w-4 h-4 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg className="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
               </svg>
-              <span>Dashboard Pelamar</span>
+              <span>Indeks Kepuasan</span>
             </Link>
           </div>
         </div>

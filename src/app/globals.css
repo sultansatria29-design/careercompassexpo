@@ -112,3 +112,13 @@ h1, h2, h3, h4 {
   animation: accordionOpen 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Sembunyikan scrollbar bawaan untuk horizontal carousel di mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+

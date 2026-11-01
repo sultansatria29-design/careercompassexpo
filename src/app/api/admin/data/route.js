@@ -35,15 +35,19 @@ export async function GET() {
 
     if (aErr) throw aErr;
 
-    // 3. Ambil data survei (untuk preferensi hari dan fakultas/jurusan)
+    // 3. Ambil seluruh data survei (baik survei registrasi awal maupun indeks kepuasan)
     const { data: surveys, error: sErr } = await supabase
       .from("surveys")
-      .select("participant_id, faculty, major, feedback");
+      .select("id, participant_id, institution, faculty, major, rating, feedback, created_at")
+      .order("created_at", { ascending: false });
 
     if (sErr) throw sErr;
 
-    // Buat map survei berdasarkan participant_id
+    // Buat map survei registrasi awal berdasarkan participant_id
+    // DAN kumpulkan data Indeks Kepuasan Peserta
     const surveyMap = {};
+    const indeksKepuasanList = [];
+
     (surveys || []).forEach((s) => {
       let parsedFeedback = {};
       if (s.feedback) {
@@ -53,18 +57,37 @@ export async function GET() {
           parsedFeedback = {};
         }
       }
-      surveyMap[s.participant_id] = {
-        faculty: s.faculty,
-        major: s.major,
-        semester: parsedFeedback.semester || null,
-        attendance_day: parsedFeedback.attendance_day || "DAY1",
-        attendance_day_label: parsedFeedback.attendance_day_label || "Day 1 — 18 Nov 2026",
-        visit_plans: parsedFeedback.visit_plans || [],
-        info_source: parsedFeedback.info_source || null,
-        expectations: parsedFeedback.expectations || null,
-        tactlink_proof: parsedFeedback.tactlink_proof || null,
-        tactlink_filename: parsedFeedback.tactlink_filename || null,
-      };
+
+      // Jika ini adalah respon Indeks Kepuasan
+      if (parsedFeedback.source === "CCE_2026_SATISFACTION_INDEX" || parsedFeedback.ratings) {
+        indeksKepuasanList.push({
+          id: s.id,
+          created_at: s.created_at || parsedFeedback.submitted_at || null,
+          email: parsedFeedback.email || "-",
+          full_name: parsedFeedback.full_name || "Peserta CCE",
+          status: parsedFeedback.status || "Mahasiwa",
+          institution: s.institution || parsedFeedback.institution || "UIN Syarif Hidayatullah Jakarta",
+          faculty: s.faculty || parsedFeedback.faculty_choice || "-",
+          major: s.major || parsedFeedback.faculty_major_text || "-",
+          rating: s.rating || parsedFeedback.average_score || 5,
+          ratings: parsedFeedback.ratings || {},
+          average_score: parsedFeedback.average_score || s.rating || 5,
+        });
+      } else if (s.participant_id) {
+        // Survei registrasi awal peserta CCE
+        surveyMap[s.participant_id] = {
+          faculty: s.faculty,
+          major: s.major,
+          semester: parsedFeedback.semester || null,
+          attendance_day: parsedFeedback.attendance_day || "DAY1",
+          attendance_day_label: parsedFeedback.attendance_day_label || "Day 1 — 18 Nov 2026",
+          visit_plans: parsedFeedback.visit_plans || [],
+          info_source: parsedFeedback.info_source || null,
+          expectations: parsedFeedback.expectations || null,
+          tactlink_proof: parsedFeedback.tactlink_proof || null,
+          tactlink_filename: parsedFeedback.tactlink_filename || null,
+        };
+      }
     });
 
     // Buat map peserta berdasarkan id
@@ -108,6 +131,42 @@ export async function GET() {
       Umum: (participants || []).filter((p) => p.participant_status === "Umum").length,
     };
 
+    // Statistik Indeks Kepuasan
+    const totalSurveys = indeksKepuasanList.length;
+    const overallAvgScore =
+      totalSurveys > 0
+        ? Math.round(
+            (indeksKepuasanList.reduce((acc, curr) => acc + (Number(curr.average_score) || 5), 0) /
+              totalSurveys) *
+              10
+          ) / 10
+        : 0;
+
+    const qKeys = [
+      { key: "q1_fasilitas_fisik", label: "Fasilitas Fisik Acara" },
+      { key: "q2_informasi_lengkap", label: "Kelengkapan Informasi" },
+      { key: "q3_kebersihan_kerapihan", label: "Kebersihan & Kerapihan Lokasi" },
+      { key: "q4_peta_lokasi", label: "Kemudahan Peta Lokasi" },
+      { key: "q5_jadwal_tepat", label: "Ketepatan Waktu & Jadwal" },
+      { key: "q6_panitia_sigap", label: "Kesigapan Pelayanan Panitia" },
+      { key: "q7_kecepatan_info", label: "Kecepatan Perolehan Informasi" },
+      { key: "q8_pengetahuan_partner", label: "Pemahaman Partner/Mitra" },
+      { key: "q9_keyakinan_info", label: "Tingkat Keyakinan Informasi" },
+      { key: "q10_kepedulian_panitia", label: "Kepedulian Terhadap Kebutuhan" },
+      { key: "q11_didengarkan_diperhatikan", label: "Perhatian & Mendengarkan Peserta" },
+    ];
+
+    const questionAverages = qKeys.map(({ key, label }) => {
+      const validAnswers = indeksKepuasanList
+        .map((item) => Number(item.ratings?.[key]))
+        .filter((val) => !isNaN(val) && val > 0);
+      const avg =
+        validAnswers.length > 0
+          ? Math.round((validAnswers.reduce((a, b) => a + b, 0) / validAnswers.length) * 10) / 10
+          : 0;
+      return { key, label, average: avg, total_responses: validAnswers.length };
+    });
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -124,6 +183,12 @@ export async function GET() {
         survey: surveyMap[p.id] || null,
         has_checked_in: (attendances || []).some((a) => a.participant_id === p.id),
       })),
+      indeks_kepuasan: {
+        total_respondents: totalSurveys,
+        overall_average: overallAvgScore,
+        question_averages: questionAverages,
+        list: indeksKepuasanList,
+      },
     });
   } catch (error) {
     console.error("Admin data fetch error:", error);

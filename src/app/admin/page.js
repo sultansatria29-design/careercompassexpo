@@ -186,6 +186,14 @@ function IconBriefcase({ className = "h-4 w-4" }) {
   );
 }
 
+function IconStar({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  );
+}
+
 // ========================================================
 // KOMPONEN UTAMA DASHBOARD ADMIN
 // ========================================================
@@ -196,7 +204,7 @@ export default function AdminDashboard() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
-  // 2. Tab Aktif ("overview" | "presensi" | "registrasi" | "qr-gate")
+  // 2. Tab Aktif ("overview" | "presensi" | "registrasi" | "indeks-kepuasan" | "qr-gate" | "mitra")
   const [activeTab, setActiveTab] = useState("overview");
 
   // 3. Data Admin
@@ -211,6 +219,12 @@ export default function AdminDashboard() {
     },
     presensi: [],
     participants: [],
+    indeks_kepuasan: {
+      total_respondents: 0,
+      overall_average: 0,
+      question_averages: [],
+      list: [],
+    },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -224,17 +238,26 @@ export default function AdminDashboard() {
   const [searchRegistrasi, setSearchRegistrasi] = useState("");
   const [filterRegistrasiKategori, setFilterRegistrasiKategori] = useState("ALL");
 
+  // Search & Filter State untuk Indeks Kepuasan
+  const [searchKepuasan, setSearchKepuasan] = useState("");
+  const [filterKepuasanStatus, setFilterKepuasanStatus] = useState("ALL");
+  const [selectedKepuasanDetail, setSelectedKepuasanDetail] = useState(null);
+
   // State untuk Detail Modal Peserta
   const [selectedParticipant, setSelectedParticipant] = useState(null);
 
   // State untuk Tab QR Code Gate (Standee + Console)
   const [registrationQrUrl, setRegistrationQrUrl] = useState("");
+  const [kepuasanQrUrl, setKepuasanQrUrl] = useState("");
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [copiedKepuasanToken, setCopiedKepuasanToken] = useState(false);
+  const [copiedKepuasanUrl, setCopiedKepuasanUrl] = useState(false);
   const [scanInput, setScanInput] = useState("");
   const [scanDate, setScanDate] = useState("2026-11-18");
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
+
 
   // State untuk Pengaturan Akun Admin (Ubah Email & Password)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -455,26 +478,32 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated]);
 
-  // Generate QR Code untuk Standee Registrasi
+  // Generate QR Code untuk Standee Registrasi & Standee Indeks Kepuasan
   useEffect(() => {
     if (typeof window !== "undefined") {
       const regUrl = `${window.location.origin}/registrasi?source=gate_standee`;
       QRCode.toDataURL(regUrl, { width: 360, margin: 2 })
         .then((url) => setRegistrationQrUrl(url))
         .catch((err) => console.error("Error generating QR code:", err));
+
+      const kepuasanUrl = `${window.location.origin}/indeks-kepuasan`;
+      QRCode.toDataURL(kepuasanUrl, { width: 360, margin: 2 })
+        .then((url) => setKepuasanQrUrl(url))
+        .catch((err) => console.error("Error generating Kepuasan QR code:", err));
     }
   }, []);
 
-  // Sinkronisasi Tab dari Query URL (misal: /admin?tab=qr-gate atau /admin?tab=mitra)
+  // Sinkronisasi Tab dari Query URL (misal: /admin?tab=qr-gate atau /admin?tab=indeks-kepuasan)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["overview", "presensi", "registrasi", "qr-gate", "mitra"].includes(tabParam)) {
+      if (tabParam && ["overview", "presensi", "registrasi", "indeks-kepuasan", "qr-gate", "mitra"].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
   }, []);
+
 
   // Handle Login
   function handleLoginSubmit(e) {
@@ -797,13 +826,21 @@ export default function AdminDashboard() {
   }
 
   function copyToClipboard(text, type) {
-    navigator.clipboard.writeText(text);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
     if (type === "token") {
       setCopiedToken(true);
       setTimeout(() => setCopiedToken(false), 2000);
-    } else {
+    } else if (type === "url") {
       setCopiedUrl(true);
       setTimeout(() => setCopiedUrl(false), 2000);
+    } else if (type === "kepuasan_token") {
+      setCopiedKepuasanToken(true);
+      setTimeout(() => setCopiedKepuasanToken(false), 2000);
+    } else if (type === "kepuasan_url") {
+      setCopiedKepuasanUrl(true);
+      setTimeout(() => setCopiedKepuasanUrl(false), 2000);
     }
   }
 
@@ -814,6 +851,81 @@ export default function AdminDashboard() {
     link.download = "cce2026-qr-registrasi-standee.png";
     link.click();
   }
+
+  function downloadQrKepuasan() {
+    if (!kepuasanQrUrl) return;
+    const link = document.createElement("a");
+    link.href = kepuasanQrUrl;
+    link.download = "cce2026-qr-indeks-kepuasan-standee.png";
+    link.click();
+  }
+
+  function exportKepuasanToCsv() {
+    const list = data?.indeks_kepuasan?.list || [];
+    if (list.length === 0) {
+      alert("Belum ada data respons indeks kepuasan untuk diekspor.");
+      return;
+    }
+
+    const headers = [
+      "No",
+      "Waktu Submit",
+      "Nama Lengkap",
+      "Email",
+      "Status",
+      "Instansi",
+      "Fakultas",
+      "Jurusan / Prodi",
+      "Rata-rata Skor",
+      "Q1 Fasilitas Fisik",
+      "Q2 Kelengkapan Info",
+      "Q3 Kebersihan Kerapihan",
+      "Q4 Peta Lokasi",
+      "Q5 Ketepatan Jadwal",
+      "Q6 Panitia Sigap",
+      "Q7 Kecepatan Info",
+      "Q8 Pemahaman Partner",
+      "Q9 Keyakinan Info",
+      "Q10 Kepedulian Panitia",
+      "Q11 Perhatian Peserta",
+    ];
+
+    const rows = list.map((item, idx) => [
+      idx + 1,
+      item.created_at ? new Date(item.created_at).toLocaleString("id-ID") : "-",
+      `"${(item.full_name || "").replace(/"/g, '""')}"`,
+      `"${(item.email || "").replace(/"/g, '""')}"`,
+      `"${(item.status || "").replace(/"/g, '""')}"`,
+      `"${(item.institution || "").replace(/"/g, '""')}"`,
+      `"${(item.faculty || "").replace(/"/g, '""')}"`,
+      `"${(item.major || "").replace(/"/g, '""')}"`,
+      item.average_score || 0,
+      item.ratings?.q1_fasilitas_fisik || "-",
+      item.ratings?.q2_informasi_lengkap || "-",
+      item.ratings?.q3_kebersihan_kerapihan || "-",
+      item.ratings?.q4_peta_lokasi || "-",
+      item.ratings?.q5_jadwal_tepat || "-",
+      item.ratings?.q6_panitia_sigap || "-",
+      item.ratings?.q7_kecepatan_info || "-",
+      item.ratings?.q8_pengetahuan_partner || "-",
+      item.ratings?.q9_keyakinan_info || "-",
+      item.ratings?.q10_kepedulian_panitia || "-",
+      item.ratings?.q11_didengarkan_diperhatikan || "-",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `indeks_kepuasan_cce2026_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
 
   // ========================================================
   // TAMPILAN LOGIN (Jika Belum Terautentikasi)
@@ -967,6 +1079,17 @@ export default function AdminDashboard() {
             >
               <IconRegistrasi className="h-4 w-4 text-purple-600" />
               <span>Data Registrasi</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("indeks-kepuasan")}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+                activeTab === "indeks-kepuasan"
+                  ? "bg-white text-amber-700 shadow-xs font-bold border-b-2 border-amber-600"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <IconStar className="h-4 w-4 text-amber-500" />
+              <span>Indeks Kepuasan</span>
             </button>
             <button
               onClick={() => setActiveTab("qr-gate")}
@@ -1125,6 +1248,26 @@ export default function AdminDashboard() {
                   </div>
                   {activeTab === "registrasi" && (
                     <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("indeks-kepuasan");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "indeks-kepuasan"
+                      ? "bg-amber-50 text-amber-950 border border-amber-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <IconStar className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span>Indeks Kepuasan Peserta</span>
+                  </div>
+                  {activeTab === "indeks-kepuasan" && (
+                    <span className="rounded-full bg-amber-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
                   )}
                 </button>
 
@@ -1837,6 +1980,416 @@ export default function AdminDashboard() {
         )}
 
         {/* ========================================================
+            TAB: INDEKS KEPUASAN PESERTA (DATA SURVEI & EVALUASI)
+            ======================================================== */}
+        {activeTab === "indeks-kepuasan" && (() => {
+          const list = data?.indeks_kepuasan?.list || [];
+          const totalRespondents = data?.indeks_kepuasan?.total_respondents || 0;
+          const overallAvg = data?.indeks_kepuasan?.overall_average || 0;
+          const questionAverages = data?.indeks_kepuasan?.question_averages || [];
+
+          const mhsCount = list.filter((i) => (i.status || "").toLowerCase().includes("mahas") || i.status === "Mahasiwa").length;
+          const alumniUmumCount = list.length - mhsCount;
+
+          const filteredList = list.filter((item) => {
+            if (filterKepuasanStatus !== "ALL" && item.status !== filterKepuasanStatus) {
+              return false;
+            }
+            if (searchKepuasan.trim()) {
+              const q = searchKepuasan.toLowerCase();
+              const matchName = (item.full_name || "").toLowerCase().includes(q);
+              const matchEmail = (item.email || "").toLowerCase().includes(q);
+              const matchInst = (item.institution || "").toLowerCase().includes(q);
+              const matchFac = (item.faculty || "").toLowerCase().includes(q);
+              const matchMajor = (item.major || "").toLowerCase().includes(q);
+              return matchName || matchEmail || matchInst || matchFac || matchMajor;
+            }
+            return true;
+          });
+
+          return (
+            <div className="space-y-8 animate-fadeIn">
+              {/* Header Tab */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="h-3 w-3 rounded-full bg-amber-500" />
+                    <h2 className="font-[family-name:var(--font-montserrat)] text-xl sm:text-2xl font-extrabold text-slate-900">
+                      Data &amp; Analisis Indeks Kepuasan Peserta
+                    </h2>
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200">
+                      Evaluasi Resmi CCE 2026
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Statistik real-time evaluasi kepuasan peserta terhadap fasilitas, pelayanan panitia, dan pelaksanaan Career Compass Expo 2026.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={exportKepuasanToCsv}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 text-xs sm:text-sm shadow-xs transition cursor-pointer"
+                  >
+                    <IconDownload className="h-4 w-4" />
+                    <span>Ekspor CSV</span>
+                  </button>
+                  <button
+                    onClick={loadAdminData}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-3.5 py-2 text-xs sm:text-sm shadow-xs transition cursor-pointer"
+                  >
+                    <IconRefresh className="h-4 w-4" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Total Responden
+                    </span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                      <IconUsers className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-3xl font-black text-slate-900">{totalRespondents}</span>
+                    <span className="ml-1.5 text-xs text-slate-500">orang</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">Tanggapan evaluasi masuk</p>
+                </div>
+
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-800">
+                      Rata-Rata Kepuasan
+                    </span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                      <IconStar className="h-5 w-5 fill-amber-500 text-amber-500" />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-amber-900">{overallAvg.toFixed(1)}</span>
+                    <span className="text-xs font-bold text-amber-700">/ 5.0</span>
+                    <span className="ml-auto inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[11px] font-bold text-amber-900">
+                      {Math.round((overallAvg / 5) * 100)}% Puas
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-amber-700/80">Skor agregat 11 indikator</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Responden Mahasiswa
+                    </span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <IconAcademic className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-3xl font-black text-slate-900">{mhsCount}</span>
+                    <span className="ml-1.5 text-xs text-slate-500">orang</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {totalRespondents > 0 ? Math.round((mhsCount / totalRespondents) * 100) : 0}% dari responden
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Responden Alumni &amp; Umum
+                    </span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                      <IconCheckCircle className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-3xl font-black text-slate-900">{alumniUmumCount}</span>
+                    <span className="ml-1.5 text-xs text-slate-500">orang</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {totalRespondents > 0 ? Math.round((alumniUmumCount / totalRespondents) * 100) : 0}% dari responden
+                  </p>
+                </div>
+              </div>
+
+              {/* Analisis Rata-Rata per Aspek Evaluasi (11 Indikator) */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-[family-name:var(--font-montserrat)] text-lg sm:text-xl font-bold text-slate-900">
+                      Kinerja per Aspek Penilaian (11 Indikator)
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Rincian rata-rata penilaian pada skala 1 (Sangat Tidak Memadai) sampai 5 (Sangat Memadai).
+                    </p>
+                  </div>
+                  <span className="hidden sm:inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                    Skala 1 - 5
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {questionAverages.map((q, idx) => {
+                    const avgScore = Number(q.average) || 0;
+                    const pct = Math.min(100, Math.max(0, (avgScore / 5) * 100));
+                    return (
+                      <div
+                        key={q.key}
+                        className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition hover:border-amber-200 hover:bg-white hover:shadow-xs"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="text-xs font-bold text-slate-800 leading-snug">
+                            <span className="text-amber-600 font-mono mr-1.5">#{idx + 1}</span>
+                            {q.label}
+                          </span>
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-100 px-2 py-0.5 text-xs font-black text-amber-900">
+                            <span>★</span>
+                            <span>{avgScore.toFixed(1)}</span>
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400">
+                          <span>{q.total_responses} tanggapan</span>
+                          <span className="font-semibold text-slate-600">{Math.round(pct)}% kepuasan</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tabel Respon Peserta */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="font-[family-name:var(--font-montserrat)] text-lg font-bold text-slate-900">
+                      Daftar Tanggapan Responden ({filteredList.length})
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Seluruh hasil pengisian formulir evaluasi indeks kepuasan peserta.
+                    </p>
+                  </div>
+
+                  {/* Filter & Search Bar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative min-w-[220px]">
+                      <IconSearch className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        value={searchKepuasan}
+                        onChange={(e) => setSearchKepuasan(e.target.value)}
+                        placeholder="Cari nama, email, instansi..."
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3.5 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <select
+                      value={filterKepuasanStatus}
+                      onChange={(e) => setFilterKepuasanStatus(e.target.value)}
+                      className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:border-amber-500 focus:outline-none"
+                    >
+                      <option value="ALL">Semua Kategori</option>
+                      <option value="Mahasiwa">Mahasiswa</option>
+                      <option value="Alumni">Alumni</option>
+                      <option value="Umum">Umum</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Table Container */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-3">No</th>
+                        <th className="px-4 py-3">Waktu</th>
+                        <th className="px-4 py-3">Nama &amp; Email</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Instansi</th>
+                        <th className="px-4 py-3">Fakultas / Prodi</th>
+                        <th className="px-4 py-3 text-center">Rata-rata Skor</th>
+                        <th className="px-4 py-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredList.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="py-12 text-center text-slate-400">
+                            Belum ada tanggapan indeks kepuasan yang sesuai.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredList.map((item, idx) => (
+                          <tr key={item.id || idx} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="px-4 py-3.5 font-mono text-slate-400">{idx + 1}</td>
+                            <td className="px-4 py-3.5 whitespace-nowrap text-slate-500">
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <p className="font-bold text-slate-900">{item.full_name}</p>
+                              <p className="text-[11px] text-slate-400">{item.email}</p>
+                            </td>
+                            <td className="px-4 py-3.5 whitespace-nowrap">
+                              <span
+                                className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                                  (item.status || "").toLowerCase().includes("mahas")
+                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                    : item.status === "Alumni"
+                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                }`}
+                              >
+                                {item.status || "Mahasiwa"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-slate-700">{item.institution || "-"}</td>
+                            <td className="px-4 py-3.5">
+                              <p className="font-semibold text-slate-800">{item.faculty || "-"}</p>
+                              {item.major && <p className="text-[11px] text-slate-400">{item.major}</p>}
+                            </td>
+                            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-800 border border-amber-200">
+                                <span className="text-amber-500">★</span>
+                                <span>{(Number(item.average_score) || 5).toFixed(1)}</span>
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedKepuasanDetail(item)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-2.5 py-1 text-xs font-bold shadow-2xs transition cursor-pointer"
+                              >
+                                <IconEye className="h-3.5 w-3.5 text-purple-600" />
+                                <span>Detail</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Modal Detail Tanggapan Peserta */}
+              {selectedKepuasanDetail && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-fadeIn">
+                  <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl my-8">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedKepuasanDetail(null)}
+                      className="absolute right-5 top-5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+                    >
+                      <IconX className="h-5 w-5" />
+                    </button>
+
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                        <IconStar className="h-6 w-6 fill-amber-500 text-amber-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">
+                          {selectedKepuasanDetail.full_name}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          {selectedKepuasanDetail.email} • {selectedKepuasanDetail.status}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metadata Header */}
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 mb-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase">Instansi</span>
+                        <span className="font-semibold text-slate-800">{selectedKepuasanDetail.institution || "-"}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase">Fakultas / Prodi</span>
+                        <span className="font-semibold text-slate-800">{selectedKepuasanDetail.faculty} {selectedKepuasanDetail.major ? `(${selectedKepuasanDetail.major})` : ""}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase">Rata-Rata Skor</span>
+                        <span className="inline-flex items-center gap-1 font-black text-amber-800">
+                          <span className="text-amber-500">★</span>
+                          <span>{(Number(selectedKepuasanDetail.average_score) || 5).toFixed(1)} / 5.0</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Rincian 11 Jawaban */}
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                      Rincian Penilaian (Skala 1 - 5):
+                    </h4>
+                    <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                      {[
+                        { key: "q1_fasilitas_fisik", text: "Apakah fasilitas fisik pada acara Career Preparation memadai?" },
+                        { key: "q2_informasi_lengkap", text: "Apakah informasi yang diberikan lengkap dan mudah dipahami?" },
+                        { key: "q3_kebersihan_kerapihan", text: "Bagaimana pendapat Anda mengenai kebersihan dan kerapihan lokasi?" },
+                        { key: "q4_peta_lokasi", text: "Apakah peserta mudah memahami peta lokasi pada acara?" },
+                        { key: "q5_jadwal_tepat", text: "Apakah acara dimulai dan berlangsung sesuai jadwal?" },
+                        { key: "q6_panitia_sigap", text: "Apakah panitia dengan sigap membantu dan menjawab pertanyaan?" },
+                        { key: "q7_kecepatan_info", text: "Seberapa cepat Anda mendapatkan informasi yang dibutuhkan?" },
+                        { key: "q8_pengetahuan_partner", text: "Apakah panitia memiliki pengetahuan yang baik tentang partner?" },
+                        { key: "q9_keyakinan_info", text: "Seberapa yakin Anda dengan informasi yang disampaikan panitia?" },
+                        { key: "q10_kepedulian_panitia", text: "Seberapa peduli panitia terhadap kebutuhan Anda selama acara?" },
+                        { key: "q11_didengarkan_diperhatikan", text: "Apakah Anda merasa didengarkan dan diperhatikan oleh panitia?" },
+                      ].map((item, idx) => {
+                        const score = Number(selectedKepuasanDetail.ratings?.[item.key]) || 5;
+                        return (
+                          <div
+                            key={item.key}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs"
+                          >
+                            <span className="text-slate-700 leading-snug">
+                              <span className="font-bold text-amber-600 mr-1.5">{idx + 1}.</span>
+                              {item.text}
+                            </span>
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-900">
+                              <span>★</span>
+                              <span>{score}</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedKepuasanDetail(null)}
+                        className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 text-xs transition cursor-pointer"
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ========================================================
             TAB 4: QR CODE GATE (STAND-EE REGISTRASI & CONSOLE GATE)
             ======================================================== */}
         {activeTab === "qr-gate" && (
@@ -1990,13 +2543,165 @@ export default function AdminDashboard() {
             </div>
 
             {/* ========================================================
-                BAGIAN B: QR CODE GATE CONSOLE (Tetap Dipertahankan)
+                BAGIAN B: QR CODE INDEKS KEPUASAN PESERTA (Standee Evaluasi Acara)
+                ======================================================== */}
+            <div className="pt-4 border-t border-slate-200">
+              <div className="flex items-center gap-3">
+                <span className="h-3 w-3 rounded-full bg-amber-500" />
+                <h2 className="font-[family-name:var(--font-montserrat)] text-xl sm:text-2xl font-extrabold text-slate-900">
+                  B. QR Code Indeks Kepuasan Peserta (Standee Evaluasi Acara)
+                </h2>
+                <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200">
+                  Survei &amp; Evaluasi CCE
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                Tampilkan atau cetak QR Code ini di standee gerbang keluar atau meja informasi agar pengunjung dapat langsung mengisi evaluasi indeks kepuasan penyelenggaraan CCE 2026.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-8 shadow-xs overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Kolom Kiri: Poster Standee QR Code Printable (Format persis Gambar 3) */}
+                <div className="lg:col-span-5 flex flex-col items-center">
+                  <div className="w-full max-w-xs rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-md text-center">
+                    <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
+                      CAREER COMPAS EXPO 2026 • UIN JAKARTA
+                    </p>
+                    <h3 className="mt-2 text-sm sm:text-base font-extrabold text-slate-900 leading-snug">
+                      PINDAI DENGAN KAMERA UNTUK INDEKS KEPUASAN
+                    </h3>
+
+                    {/* Gambar QR Code */}
+                    <div className="mt-4 flex items-center justify-center p-3 rounded-xl bg-amber-50/50 border border-amber-200">
+                      {kepuasanQrUrl ? (
+                        <img
+                          src={kepuasanQrUrl}
+                          alt="QR Code Indeks Kepuasan CCE 2026"
+                          className="h-56 w-56 object-contain"
+                        />
+                      ) : (
+                        <div className="h-56 w-56 flex items-center justify-center text-xs text-slate-400">
+                          Membuat QR Code...
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Label Token */}
+                    <div className="mt-4 rounded-lg bg-amber-100 py-1.5 px-3 font-mono text-xs font-bold text-amber-900 border border-amber-200">
+                      CCE2026-SURVEI-KEPUASAN
+                    </div>
+
+                    <p className="mt-3 text-[11px] text-slate-400">
+                      Buka kamera smartphone • Menuju Formulir Indeks Kepuasan
+                    </p>
+                  </div>
+                </div>
+
+                {/* Kolom Kanan: Detail Token, URL, Panduan, & Tombol Download */}
+                <div className="lg:col-span-7 space-y-5">
+                  {/* Token Gerbang */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                      Identitas Token Evaluasi:
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value="CCE2026-GATE-EVALUASI-KEPUASAN"
+                        className="w-full sm:flex-1 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm font-mono font-bold text-slate-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard("CCE2026-GATE-EVALUASI-KEPUASAN", "kepuasan_token")}
+                        className="w-full sm:w-auto justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                      >
+                        <IconCopy className="h-3.5 w-3.5" />
+                        <span>{copiedKepuasanToken ? "Tersalin!" : "Salin Token"}</span>
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Token identitas resmi standee evaluasi indeks kepuasan CCE 2026.
+                    </p>
+                  </div>
+
+                  {/* URL Tujuan QR Indeks Kepuasan */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                      URL Tujuan QR Indeks Kepuasan:
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={
+                          typeof window !== "undefined"
+                            ? `${window.location.origin}/indeks-kepuasan`
+                            : "https://cce2026.uinjkt.ac.id/indeks-kepuasan"
+                        }
+                        className="w-full sm:flex-1 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm font-mono text-slate-700 truncate"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyToClipboard(
+                            `${window.location.origin}/indeks-kepuasan`,
+                            "kepuasan_url"
+                          )
+                        }
+                        className="w-full sm:w-auto justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                      >
+                        <IconCopy className="h-3.5 w-3.5" />
+                        <span>{copiedKepuasanUrl ? "Tersalin!" : "Salin URL"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Panduan Alur */}
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+                    <h4 className="font-bold text-sm text-slate-900 mb-2 flex items-center gap-2">
+                      <span className="text-amber-600">✦</span>
+                      <span>Panduan Alur Indeks Kepuasan Peserta:</span>
+                    </h4>
+                    <ol className="list-decimal list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed">
+                      <li>Cetak poster barcode QR ini atau tampilkan di layar standee gerbang keluar/meja informasi CCE 2026.</li>
+                      <li>Pengunjung memindai QR Code ini menggunakan kamera smartphone saat selesai mengikuti acara.</li>
+                      <li>Halaman formulir terbuka seketika dan data penilaian otomatis masuk ke tab <strong>Indeks Kepuasan</strong> di Admin Console.</li>
+                    </ol>
+                  </div>
+
+                  {/* Tombol Aksi */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={downloadQrKepuasan}
+                      className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                    >
+                      <IconDownload className="h-4 w-4" />
+                      <span>Unduh QR Kepuasan (PNG)</span>
+                    </button>
+                    <Link
+                      href="/indeks-kepuasan"
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 text-xs sm:text-sm shadow-xs transition-colors"
+                    >
+                      <span>Buka Halaman Indeks Kepuasan</span>
+                      <IconExternal className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ========================================================
+                BAGIAN C: KONSOL VALIDASI TIKET GATE MASUK (Scan Kehadiran)
                 ======================================================== */}
             <div className="pt-4 border-t border-slate-200">
               <div className="flex items-center gap-3 mb-1">
                 <span className="h-3 w-3 rounded-full bg-purple-600" />
                 <h2 className="font-[family-name:var(--font-montserrat)] text-xl sm:text-2xl font-extrabold text-slate-900">
-                  B. Konsol Validasi Tiket Gate Masuk (Scan Kehadiran)
+                  C. Konsol Validasi Tiket Gate Masuk (Scan Kehadiran)
                 </h2>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />

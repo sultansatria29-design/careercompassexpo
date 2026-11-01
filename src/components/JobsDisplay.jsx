@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+
 
 function parseJobDescription(desc) {
   if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false };
@@ -35,6 +36,10 @@ function parseJobDescription(desc) {
 export default function JobsDisplay({ initialJobs = [] }) {
   const [jobs, setJobs] = useState(initialJobs);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   // Client-side auto fetch & sync dari /api/jobs agar lowongan baru selalu muncul secara real-time
   useEffect(() => {
@@ -60,6 +65,30 @@ export default function JobsDisplay({ initialJobs = [] }) {
       isMounted = false;
     };
   }, []);
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setCanScrollLeft(scrollLeft > 15);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 15);
+
+    // Hitung active index untuk kartu terdekat
+    const cardWidth = clientWidth * 0.85;
+    if (cardWidth > 0) {
+      const idx = Math.round(scrollLeft / cardWidth);
+      setActiveIndex(Math.max(0, idx));
+    }
+  };
+
+  const scrollByDirection = (direction) => {
+    if (!scrollRef.current) return;
+    const distance = scrollRef.current.clientWidth * 0.82;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -distance : distance,
+      behavior: "smooth",
+    });
+  };
+
 
   // Filter lowongan publik: yang sudah lewat batas tanggal otomatis terhapus
   const displayJobs = (jobs || []).filter((job) => {
@@ -153,158 +182,229 @@ export default function JobsDisplay({ initialJobs = [] }) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {displayJobs.map((job) => {
-        const companyName = job.company_name || job.companies?.name || "Perusahaan Rekanan";
-        const companyLogo = job.company_logo || job.companies?.logo_url || "";
-        const companyIndustry = job.company_industry || "";
-        const companyInitial = companyName.charAt(0).toUpperCase();
-        const hasLogo = Boolean(companyLogo);
+    <div className="relative w-full">
+      {/* Mobile Swipe Hint & Controls */}
+      {displayJobs.length > 1 && (
+        <div className="flex md:hidden items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-1.5 text-xs text-purple-200/90 font-medium">
+            <svg className="w-3.5 h-3.5 text-[#EF17D8] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+            <span>Geser ke samping</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollByDirection("left")}
+              disabled={!canScrollLeft}
+              aria-label="Geser ke kiri"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/20 active:scale-95 transition"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="text-[11px] font-bold text-fuchsia-300 min-w-8 text-center">
+              {Math.min(activeIndex + 1, displayJobs.length)} / {displayJobs.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => scrollByDirection("right")}
+              disabled={!canScrollRight}
+              aria-label="Geser ke kanan"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/20 active:scale-95 transition"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
-        const descObj = parseJobDescription(job.raw_description || job.description);
-        const cleanDescription =
-          job.description && !job.description.startsWith("{")
-            ? job.description
-            : descObj.text;
-        const posterUrl = job.poster_url || descObj.poster_url;
-        const endDate = job.end_date || descObj.end_date;
+      {/* Main Container: Horizontal slide scroll on mobile (< md), Clean Grid on desktop (>= md) */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto gap-4 pb-4 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0 md:pt-0"
+      >
+        {displayJobs.map((job) => {
+          const companyName = job.company_name || job.companies?.name || "Perusahaan Rekanan";
+          const companyLogo = job.company_logo || job.companies?.logo_url || "";
+          const companyIndustry = job.company_industry || "";
+          const companyInitial = companyName.charAt(0).toUpperCase();
+          const hasLogo = Boolean(companyLogo);
 
-        return (
-          <div
-            key={job.id}
-            className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#1F0C3B]/70 p-6 sm:p-7 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-[#EF17D8]/60 hover:bg-[#2A1152]/90 hover:shadow-2xl hover:shadow-purple-900/50"
-          >
-            <div>
-              {/* Optional Poster Thumbnail Preview */}
-              {posterUrl && (
-                <Link
-                  href={`/lowongan/${job.id}`}
-                  className="block mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black/40 group/poster cursor-pointer"
-                  title="Lihat detail & poster lowongan"
-                >
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#160A2C]">
-                    <img
-                      src={posterUrl}
-                      alt={`Poster lowongan ${job.title}`}
-                      className="h-full w-full object-cover object-top transition duration-300 group-hover/poster:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1F0C3B] via-transparent to-transparent opacity-50" />
-                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-purple-200 border border-white/15 flex items-center gap-1 shadow-sm">
-                      <svg className="w-2.5 h-2.5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                      </svg>
-                      Lihat Brosur
-                    </span>
-                  </div>
-                </Link>
-              )}
+          const descObj = parseJobDescription(job.raw_description || job.description);
+          const cleanDescription =
+            job.description && !job.description.startsWith("{")
+              ? job.description
+              : descObj.text;
+          const posterUrl = job.poster_url || descObj.poster_url;
+          const endDate = job.end_date || descObj.end_date;
 
-              {/* Header Badges: Employment Type & Location */}
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="rounded-full bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 px-3 py-1 text-xs font-black tracking-wide text-[#EF17D8] border border-[#EF17D8]/30">
-                  {job.employment_type || "Full-time"}
-                </span>
-                <span className="text-xs text-purple-200/70 flex items-center gap-1 font-medium">
-                  <svg className="h-3.5 w-3.5 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{job.location || "Jakarta (Hybrid)"}</span>
-                </span>
-              </div>
-
-              {/* Job Title (Clickable to /lowongan/[id]) */}
-              <Link href={`/lowongan/${job.id}`} className="block group-hover:underline">
-                <h3 className="text-xl font-extrabold text-white group-hover:text-[#EF17D8] transition-colors leading-snug">
-                  {job.title}
-                </h3>
-              </Link>
-
-              {/* Company Info with Logo / Avatar */}
-              <div className="mt-3 flex items-center gap-2.5">
-                {hasLogo ? (
-                  <div className="h-8 w-8 rounded-lg bg-white p-1 shrink-0 overflow-hidden shadow-xs">
-                    <img
-                      src={companyLogo}
-                      alt={companyName}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-fuchsia-600 text-xs font-black text-white shrink-0 shadow-sm">
-                    {companyInitial}
-                  </div>
+          return (
+            <div
+              key={job.id}
+              className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#1F0C3B]/70 p-6 sm:p-7 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-[#EF17D8]/60 hover:bg-[#2A1152]/90 hover:shadow-2xl hover:shadow-purple-900/50 w-[84vw] max-w-[340px] shrink-0 snap-center md:w-auto md:max-w-none md:shrink"
+            >
+              <div>
+                {/* Optional Poster Thumbnail Preview */}
+                {posterUrl && (
+                  <Link
+                    href={`/lowongan/${job.id}`}
+                    className="block mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black/40 group/poster cursor-pointer"
+                    title="Lihat detail & poster lowongan"
+                  >
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#160A2C]">
+                      <img
+                        src={posterUrl}
+                        alt={`Poster lowongan ${job.title}`}
+                        className="h-full w-full object-cover object-top transition duration-300 group-hover/poster:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#1F0C3B] via-transparent to-transparent opacity-50" />
+                      <span className="absolute bottom-2 right-2 rounded-md bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-purple-200 border border-white/15 flex items-center gap-1 shadow-sm">
+                        <svg className="w-2.5 h-2.5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        Lihat Brosur
+                      </span>
+                    </div>
+                  </Link>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-white/90 truncate">
-                    {companyName}
-                  </p>
-                  {companyIndustry && (
-                    <p className="text-[11px] text-purple-300/60 truncate">
-                      {companyIndustry}
+
+                {/* Header Badges: Employment Type & Location */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="rounded-full bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 px-3 py-1 text-xs font-black tracking-wide text-[#EF17D8] border border-[#EF17D8]/30">
+                    {job.employment_type || "Full-time"}
+                  </span>
+                  <span className="text-xs text-purple-200/70 flex items-center gap-1 font-medium">
+                    <svg className="h-3.5 w-3.5 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{job.location || "Jakarta (Hybrid)"}</span>
+                  </span>
+                </div>
+
+                {/* Job Title (Clickable to /lowongan/[id]) */}
+                <Link href={`/lowongan/${job.id}`} className="block group-hover:underline">
+                  <h3 className="text-xl font-extrabold text-white group-hover:text-[#EF17D8] transition-colors leading-snug">
+                    {job.title}
+                  </h3>
+                </Link>
+
+                {/* Company Info with Logo / Avatar */}
+                <div className="mt-3 flex items-center gap-2.5">
+                  {hasLogo ? (
+                    <div className="h-8 w-8 rounded-lg bg-white p-1 shrink-0 overflow-hidden shadow-xs">
+                      <img
+                        src={companyLogo}
+                        alt={companyName}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-fuchsia-600 text-xs font-black text-white shrink-0 shadow-sm">
+                      {companyInitial}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-white/90 truncate">
+                      {companyName}
                     </p>
+                    {companyIndustry && (
+                      <p className="text-[11px] text-purple-300/60 truncate">
+                        {companyIndustry}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quota & Deadline Badges */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {job.quota && (
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-purple-200 border border-white/10">
+                      <svg className="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span>Kuota: <strong>{job.quota} orang</strong></span>
+                    </div>
+                  )}
+                  {endDate && (
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-fuchsia-500/10 px-2.5 py-1 text-[11px] font-semibold text-fuchsia-300 border border-fuchsia-500/20">
+                      <svg className="h-3 w-3 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>Batas: <strong>{formatShortDate(endDate)}</strong></span>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Quota & Deadline Badges */}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {job.quota && (
-                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-purple-200 border border-white/10">
-                    <svg className="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span>Kuota: <strong>{job.quota} orang</strong></span>
-                  </div>
+                {/* Description */}
+                {cleanDescription && (
+                  <p className="mt-3 text-xs text-purple-100/70 line-clamp-2 leading-relaxed">
+                    {cleanDescription}
+                  </p>
                 )}
-                {endDate && (
-                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-fuchsia-500/10 px-2.5 py-1 text-[11px] font-semibold text-fuchsia-300 border border-fuchsia-500/20">
-                    <svg className="h-3 w-3 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>Batas: <strong>{formatShortDate(endDate)}</strong></span>
+
+                {/* Requirements */}
+                {job.requirements && (
+                  <div className="mt-2.5 rounded-xl border border-white/5 bg-white/5 p-2.5 text-[11px] text-purple-200/80">
+                    <span className="font-bold text-purple-100 block mb-0.5">Kualifikasi:</span>
+                    <p className="line-clamp-2 leading-relaxed">{job.requirements}</p>
                   </div>
                 )}
               </div>
 
-              {/* Description */}
-              {cleanDescription && (
-                <p className="mt-3 text-xs text-purple-100/70 line-clamp-2 leading-relaxed">
-                  {cleanDescription}
-                </p>
-              )}
-
-              {/* Requirements */}
-              {job.requirements && (
-                <div className="mt-2.5 rounded-xl border border-white/5 bg-white/5 p-2.5 text-[11px] text-purple-200/80">
-                  <span className="font-bold text-purple-100 block mb-0.5">Kualifikasi:</span>
-                  <p className="line-clamp-2 leading-relaxed">{job.requirements}</p>
-                </div>
-              )}
+              {/* Bottom Actions: Link to /lowongan/[id] */}
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold text-purple-300/50 flex items-center gap-1">
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Mitra Terverifikasi CCE</span>
+                </span>
+                <Link
+                  href={`/lowongan/${job.id}`}
+                  className="rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-4 py-2 text-xs font-black text-white shadow-md shadow-purple-600/30 transition hover:scale-105 hover:opacity-95 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Lamar Posisi</span>
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
             </div>
+          );
+        })}
+      </div>
 
-            {/* Bottom Actions: Link to /lowongan/[id] */}
-            <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
-              <span className="text-[11px] font-semibold text-purple-300/50 flex items-center gap-1">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                <span>Mitra Terverifikasi CCE</span>
-              </span>
-              <Link
-                href={`/lowongan/${job.id}`}
-                className="rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-4 py-2 text-xs font-black text-white shadow-md shadow-purple-600/30 transition hover:scale-105 hover:opacity-95 flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Lamar Posisi</span>
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-        );
-      })}
+      {/* Mobile Dot Indicators */}
+      {displayJobs.length > 1 && (
+        <div className="flex md:hidden items-center justify-center gap-1.5 mt-2">
+          {displayJobs.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                if (scrollRef.current) {
+                  const cardWidth = scrollRef.current.clientWidth * 0.85;
+                  scrollRef.current.scrollTo({ left: i * cardWidth, behavior: "smooth" });
+                }
+              }}
+              aria-label={`Lihat lowongan nomor ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeIndex === i
+                  ? "w-6 bg-gradient-to-r from-[#7226FF] to-[#EF17D8]"
+                  : "w-1.5 bg-white/20 hover:bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+

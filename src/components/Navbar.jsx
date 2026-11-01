@@ -236,6 +236,17 @@ export default function Navbar() {
               </Link>
 
               <Link
+                href="/indeks-kepuasan"
+                onClick={handleNavClick}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-950/30 py-3 text-center text-xs font-bold text-amber-300 transition hover:bg-amber-900/40"
+              >
+                <svg className="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+                <span>Indeks Kepuasan Acara</span>
+              </Link>
+
+              <Link
                 href="/registrasi"
                 onClick={handleNavClick}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
