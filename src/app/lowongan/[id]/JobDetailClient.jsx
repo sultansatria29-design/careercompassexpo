@@ -505,7 +505,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
                     href={applyUrl}
                     className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:shadow-fuchsia-600/50 cursor-pointer"
                   >
-                    <span>Apply Now</span>
+                    <span>Lamar Sekarang</span>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
