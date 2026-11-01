@@ -399,11 +399,23 @@ async function JobsSection() {
 
         let descText = j.description || "";
         let posterUrl = "";
+        let startDate = "";
+        let endDate = "";
+        let isExpired = false;
         try {
           if (typeof j.description === "string" && j.description.trim().startsWith("{")) {
             const parsed = JSON.parse(j.description);
             descText = parsed.text || "";
             posterUrl = parsed.poster_url || "";
+            startDate = parsed.start_date || "";
+            endDate = parsed.end_date || "";
+            if (endDate) {
+              const end = new Date(endDate);
+              end.setHours(23, 59, 59, 999);
+              if (new Date() > end) {
+                isExpired = true;
+              }
+            }
           }
         } catch {
           descText = j.description || "";
@@ -414,11 +426,23 @@ async function JobsSection() {
           raw_description: j.description,
           description: descText,
           poster_url: posterUrl,
+          start_date: startDate,
+          end_date: endDate,
+          is_expired: isExpired,
           company_name: j.companies?.name || "Perusahaan Rekanan",
           company_logo: j.companies?.logo_url || "",
           company_industry: meta.industry || "",
           company_address: meta.address || "",
         };
+      }).filter((job) => {
+        if (!job.is_active) return false;
+        if (job.is_expired) return false;
+        if (job.start_date) {
+          const start = new Date(job.start_date);
+          start.setHours(0, 0, 0, 0);
+          if (new Date() < start) return false;
+        }
+        return true;
       });
     }
   } catch (err) {

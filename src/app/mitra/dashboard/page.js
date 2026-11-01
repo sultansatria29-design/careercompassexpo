@@ -13,6 +13,26 @@ const RECRUITMENT_STAGES = [
   { id: "accepted", label: "Diterima / Offering", step: 5, color: "bg-emerald-500", text: "text-emerald-400" },
 ];
 
+function formatJobDateRange(startDate, endDate) {
+  if (!startDate && !endDate) return null;
+  const opt = { day: "numeric", month: "short", year: "numeric" };
+  try {
+    if (startDate && endDate) {
+      const s = new Date(startDate).toLocaleDateString("id-ID", opt);
+      const e = new Date(endDate).toLocaleDateString("id-ID", opt);
+      return `${s} — ${e}`;
+    }
+    if (endDate) {
+      const e = new Date(endDate).toLocaleDateString("id-ID", opt);
+      return `Batas: ${e}`;
+    }
+    const s = new Date(startDate).toLocaleDateString("id-ID", opt);
+    return `Mulai: ${s}`;
+  } catch {
+    return null;
+  }
+}
+
 export default function MitraDashboardPage() {
   const router = useRouter();
 
@@ -25,6 +45,7 @@ export default function MitraDashboardPage() {
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null); // null = mode tambah
+  const [jobStatusTab, setJobStatusTab] = useState("all"); // 'all' | 'active' | 'archived'
   const [jobForm, setJobForm] = useState({
     title: "",
     employment_type: "Full-time",
@@ -33,6 +54,8 @@ export default function MitraDashboardPage() {
     description: "",
     requirements: "",
     is_active: true,
+    start_date: "",
+    end_date: "",
     poster_url: "",
     poster_file: null,
     poster_preview: "",
@@ -221,6 +244,11 @@ export default function MitraDashboardPage() {
       return;
     }
 
+    if (jobForm.start_date && jobForm.end_date && jobForm.end_date < jobForm.start_date) {
+      showToast("Batas tanggal akhir pendaftaran tidak boleh sebelum tanggal mulai.");
+      return;
+    }
+
     if (jobForm.is_uploading_poster) {
       showToast("Harap tunggu proses pengunggahan poster selesai terlebih dahulu.");
       return;
@@ -235,6 +263,8 @@ export default function MitraDashboardPage() {
         description: jobForm.description,
         requirements: jobForm.requirements,
         is_active: jobForm.is_active,
+        start_date: jobForm.start_date || null,
+        end_date: jobForm.end_date || null,
         poster_url: jobForm.poster_url || "",
       };
 
@@ -279,6 +309,7 @@ export default function MitraDashboardPage() {
   }
 
   function resetJobForm() {
+    const today = new Date().toISOString().split("T")[0];
     setJobForm({
       title: "",
       employment_type: "Full-time",
@@ -287,6 +318,8 @@ export default function MitraDashboardPage() {
       description: "",
       requirements: "",
       is_active: true,
+      start_date: today,
+      end_date: "",
       poster_url: "",
       poster_file: null,
       poster_preview: "",
@@ -304,6 +337,8 @@ export default function MitraDashboardPage() {
       description: job.description || "",
       requirements: job.requirements || "",
       is_active: job.is_active !== undefined ? job.is_active : true,
+      start_date: job.start_date || "",
+      end_date: job.end_date || "",
       poster_url: job.poster_url || "",
       poster_file: null,
       poster_preview: job.poster_url || "",
@@ -444,9 +479,17 @@ export default function MitraDashboardPage() {
     return matchJob && matchStage && matchSearch;
   });
 
+  // Filter Lowongan: 'all' | 'active' | 'archived'
+  const filteredJobs = jobs.filter((j) => {
+    if (jobStatusTab === "active") return j.is_active && !j.is_expired;
+    if (jobStatusTab === "archived") return !j.is_active || j.is_expired;
+    return true;
+  });
+
   // Hitung Metrik Ringkasan
   const totalJobsCount = jobs.length;
-  const activeJobsCount = jobs.filter((j) => j.is_active).length;
+  const activeJobsCount = jobs.filter((j) => j.is_active && !j.is_expired).length;
+  const archivedJobsCount = jobs.filter((j) => !j.is_active || j.is_expired).length;
   const totalApplicantsCount = applicants.length;
   const inReviewCount = applicants.filter(
     (a) => ["screening", "assessment", "interview"].includes(a.status)
@@ -1073,7 +1116,7 @@ export default function MitraDashboardPage() {
         {/* ============================================================== */}
         {activeMainTab === "jobs" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-white">Daftar Lowongan Pekerjaan Perusahaan</h2>
                 <p className="text-xs text-purple-300/70 mt-0.5">
@@ -1087,9 +1130,59 @@ export default function MitraDashboardPage() {
                   resetJobForm();
                   setJobModalOpen(true);
                 }}
-                className="rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-4 py-2.5 text-xs font-bold text-white shadow-lg hover:scale-105 transition cursor-pointer"
+                className="shrink-0 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-4 py-2.5 text-xs font-bold text-white shadow-lg hover:scale-105 transition cursor-pointer"
               >
                 + Tambah Lowongan
+              </button>
+            </div>
+
+            {/* Filter Tabs Status Lowongan: Semua, Aktif, Arsip */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+              <button
+                type="button"
+                onClick={() => setJobStatusTab("all")}
+                className={`rounded-xl px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  jobStatusTab === "all"
+                    ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
+                    : "bg-white/5 text-purple-300/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <span>Semua Lowongan</span>
+                <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px]">
+                  {jobs.length}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobStatusTab("active")}
+                className={`rounded-xl px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  jobStatusTab === "active"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                    : "bg-white/5 text-purple-300/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                <span>Aktif di Landing Page</span>
+                <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px]">
+                  {jobs.filter((j) => j.is_active && !j.is_expired).length}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobStatusTab("archived")}
+                className={`rounded-xl px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  jobStatusTab === "archived"
+                    ? "bg-amber-600 text-white shadow-md shadow-amber-600/30"
+                    : "bg-white/5 text-purple-300/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                <span>Arsip / Berakhir</span>
+                <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px]">
+                  {jobs.filter((j) => !j.is_active || j.is_expired).length}
+                </span>
               </button>
             </div>
 
@@ -1100,7 +1193,7 @@ export default function MitraDashboardPage() {
             ) : jobs.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/30 text-purple-300">
-                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                   </svg>
@@ -1121,146 +1214,206 @@ export default function MitraDashboardPage() {
                   + Buat Lowongan Pertama
                 </button>
               </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-purple-300">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-white">Tidak Ada Lowongan Pada Kategori Ini</h3>
+                <p className="mt-1 text-xs text-purple-300/70 max-w-md mx-auto">
+                  {jobStatusTab === "active"
+                    ? "Tidak ada lowongan yang berstatus aktif di landing page saat ini."
+                    : "Belum ada lowongan yang masuk ke arsip atau telah melewati batas tanggal."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setJobStatusTab("all")}
+                  className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-xs font-bold text-white hover:bg-white/20 transition cursor-pointer"
+                >
+                  Tampilkan Semua Lowongan
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {jobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#160A2C]/90 p-5 shadow-xl transition hover:border-purple-500/40"
-                  >
-                    <div>
-                      {/* Poster Preview Banner jika ada */}
-                      {job.poster_url && (
-                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl mb-3 bg-black/50 border border-white/10 group/img">
-                          <img
-                            src={job.poster_url}
-                            alt={`Poster ${job.title}`}
-                            className="h-full w-full object-cover object-top transition duration-300 group-hover/img:scale-105"
-                          />
-                          <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-purple-200 border border-white/15">
-                            Poster Terpasang
+                {filteredJobs.map((job) => {
+                  const dateRange = formatJobDateRange(job.start_date, job.end_date);
+                  return (
+                    <div
+                      key={job.id}
+                      className={`flex flex-col justify-between rounded-2xl border p-5 shadow-xl transition ${
+                        job.is_expired
+                          ? "border-amber-500/30 bg-[#1A0E23]/95 hover:border-amber-500/50"
+                          : "border-white/10 bg-[#160A2C]/90 hover:border-purple-500/40"
+                      }`}
+                    >
+                      <div>
+                        {/* Poster Preview Banner jika ada */}
+                        {job.poster_url && (
+                          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl mb-3 bg-black/50 border border-white/10 group/img">
+                            <img
+                              src={job.poster_url}
+                              alt={`Poster ${job.title}`}
+                              className="h-full w-full object-cover object-top transition duration-300 group-hover/img:scale-105"
+                            />
+                            <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-purple-200 border border-white/15">
+                              Poster Terpasang
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Top Badges */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          {job.is_expired ? (
+                            <span className="rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-bold flex items-center gap-1.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                              <span>Arsip / Berakhir</span>
+                            </span>
+                          ) : job.is_active ? (
+                            <span className="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold flex items-center gap-1.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              <span>Aktif di Landing Page</span>
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-gray-500/20 text-gray-400 border border-gray-500/30 px-2.5 py-0.5 text-[10px] font-bold flex items-center gap-1.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
+                              <span>Ditutup (Nonaktif)</span>
+                            </span>
+                          )}
+
+                          <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-semibold text-purple-300">
+                            {job.employment_type}
                           </span>
                         </div>
-                      )}
 
-                      {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border flex items-center gap-1.5 ${
-                            job.is_active
-                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                              : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-                          }`}
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full ${job.is_active ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`}></span>
-                          <span>{job.is_active ? "Aktif" : "Ditutup"}</span>
-                        </span>
-                        <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-semibold text-purple-300">
-                          {job.employment_type}
-                        </span>
-                      </div>
-
-                      <h3 className="text-base font-black text-white">{job.title}</h3>
-                      <div className="text-xs text-purple-300/70 mt-1 flex items-center gap-2">
-                        <span className="flex items-center gap-1">
-                          <svg className="h-3 w-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>{job.location || "Jakarta"}</span>
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <svg className="h-3 w-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>Kuota: {job.quota || 1} orang</span>
-                        </span>
-                      </div>
-
-                      <p className="mt-3 text-xs text-purple-200/80 line-clamp-2 leading-relaxed">
-                        {job.description || "Tidak ada deskripsi singkat."}
-                      </p>
-
-                      {job.requirements && (
-                        <div className="mt-2 text-[11px] text-purple-300/60 line-clamp-1">
-                          <strong>Kualifikasi:</strong> {job.requirements}
+                        <h3 className="text-base font-black text-white">{job.title}</h3>
+                        <div className="text-xs text-purple-300/70 mt-1 flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            <svg className="h-3 w-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>{job.location || "Jakarta"}</span>
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <svg className="h-3 w-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Kuota: {job.quota || 1} orang</span>
+                          </span>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Bottom Stats & Actions */}
-                    <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedJobFilter(job.id);
-                          setActiveMainTab("applicants");
-                        }}
-                        className="text-xs font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1.5"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                        <span>{job.applicant_count || 0} Pelamar</span>
-                        <span>→</span>
-                      </button>
-
-                      <div className="flex items-center gap-1.5">
-                        <a
-                          href={`/lowongan/${job.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition cursor-pointer"
-                          title="Lihat halaman detail lowongan publik"
-                        >
-                          <svg className="h-3.5 w-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <span>Detail</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => handleToggleJobActive(job)}
-                          title={job.is_active ? "Tutup lowongan" : "Aktifkan lowongan"}
-                          className="rounded-lg bg-white/10 p-1.5 text-xs text-purple-200 hover:bg-white/20 transition cursor-pointer"
-                        >
-                          {job.is_active ? (
-                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        {/* Periode Tanggal Lowongan */}
+                        {dateRange && (
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-purple-200/90 bg-purple-950/50 rounded-lg px-2.5 py-1.5 border border-purple-500/20">
+                            <svg className="h-3.5 w-3.5 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                          ) : (
-                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                            <span>Periode: <strong>{dateRange}</strong></span>
+                          </div>
+                        )}
+
+                        {/* Alert Notice Jika Expired / Diarsipkan */}
+                        {job.is_expired && (
+                          <div className="mt-2.5 rounded-xl border border-amber-500/30 bg-amber-950/40 p-2.5 text-[11px] text-amber-200/90 flex items-start gap-2">
+                            <svg className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                          )}
-                        </button>
+                            <div className="leading-tight">
+                              <span className="font-bold text-amber-300 block">Tersimpan di Arsip</span>
+                              <span className="text-[10px] text-amber-200/80">
+                                Melewati batas tanggal &amp; otomatis terhapus dari landing page. Klik <strong>Edit</strong> untuk memperpanjang batas tanggal dan mengaktifkannya lagi.
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="mt-3 text-xs text-purple-200/80 line-clamp-2 leading-relaxed">
+                          {job.description || "Tidak ada deskripsi singkat."}
+                        </p>
+
+                        {job.requirements && (
+                          <div className="mt-2 text-[11px] text-purple-300/60 line-clamp-1">
+                            <strong>Kualifikasi:</strong> {job.requirements}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom Stats & Actions */}
+                      <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
                         <button
                           type="button"
-                          onClick={() => openEditJobModal(job)}
-                          className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition cursor-pointer"
-                        >
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteJob(job.id, job.title)}
-                          className="rounded-lg bg-red-950/40 border border-red-500/20 p-1.5 text-xs text-red-300 hover:bg-red-900/60 transition cursor-pointer"
-                          title="Hapus lowongan"
+                          onClick={() => {
+                            setSelectedJobFilter(job.id);
+                            setActiveMainTab("applicants");
+                          }}
+                          className="text-xs font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1.5 cursor-pointer"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                           </svg>
+                          <span>{job.applicant_count || 0} Pelamar</span>
+                          <span>→</span>
                         </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={`/lowongan/${job.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition cursor-pointer"
+                            title="Lihat halaman detail lowongan publik"
+                          >
+                            <svg className="h-3.5 w-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span>Detail</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleJobActive(job)}
+                            title={job.is_active ? "Tutup lowongan" : "Aktifkan lowongan"}
+                            className="rounded-lg bg-white/10 p-1.5 text-xs text-purple-200 hover:bg-white/20 transition cursor-pointer"
+                          >
+                            {job.is_active ? (
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                            ) : (
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditJobModal(job)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition cursor-pointer"
+                          >
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteJob(job.id, job.title)}
+                            className="rounded-lg bg-red-950/40 border border-red-500/20 p-1.5 text-xs text-red-300 hover:bg-red-900/60 transition cursor-pointer"
+                            title="Hapus lowongan"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1421,6 +1574,50 @@ export default function MitraDashboardPage() {
                   placeholder="Contoh: Jakarta (Hybrid), BSD Tangerang (On-site), Remote"
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
                 />
+              </div>
+
+              {/* Rentang Periode Pendaftaran Lowongan (Auto-Arsip saat lewat batas) */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-purple-200">
+                    Rentang Periode Pendaftaran Lowongan
+                  </label>
+                  <span className="text-[10px] text-fuchsia-300 font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 px-2 py-0.5 rounded-full">
+                    Auto-Arsip Otomatis
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-purple-300/80 mb-1">
+                      Tanggal Mulai Dibuka
+                    </label>
+                    <input
+                      type="date"
+                      value={jobForm.start_date}
+                      onChange={(e) => setJobForm({ ...jobForm, start_date: e.target.value })}
+                      className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-3.5 py-2.5 text-white focus:border-fuchsia-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-purple-300/80 mb-1">
+                      Batas Akhir / Deadline Lamaran
+                    </label>
+                    <input
+                      type="date"
+                      value={jobForm.end_date}
+                      onChange={(e) => setJobForm({ ...jobForm, end_date: e.target.value })}
+                      className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-3.5 py-2.5 text-white focus:border-fuchsia-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="text-[11px] text-purple-300/70 leading-relaxed flex items-start gap-2 pt-1 border-t border-white/5">
+                  <svg className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>
+                    Ketika telah melewati batas tanggal akhir, lowongan akan <strong>otomatis terhapus dari landing page</strong> publik, namun <strong>tetap tersimpan sebagai arsip</strong> di dashboard mitra ini.
+                  </span>
+                </div>
               </div>
 
               <div>

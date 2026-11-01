@@ -15,17 +15,32 @@ function getSupabase() {
 }
 
 function parseJobDescription(desc) {
-  if (!desc) return { text: "", poster_url: "" };
+  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false };
   try {
     if (typeof desc === "string" && desc.trim().startsWith("{")) {
       const parsed = JSON.parse(desc);
+      const start_date = parsed.start_date || "";
+      const end_date = parsed.end_date || "";
+
+      let is_expired = false;
+      if (end_date) {
+        const end = new Date(end_date);
+        end.setHours(23, 59, 59, 999);
+        if (new Date() > end) {
+          is_expired = true;
+        }
+      }
+
       return {
         text: parsed.text || "",
         poster_url: parsed.poster_url || "",
+        start_date,
+        end_date,
+        is_expired,
       };
     }
   } catch {}
-  return { text: desc, poster_url: "" };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
 }
 
 // GET: Ambil daftar lowongan milik perusahaan tertentu
@@ -77,6 +92,9 @@ export async function GET(request) {
         raw_description: j.description,
         description: descObj.text,
         poster_url: descObj.poster_url,
+        start_date: descObj.start_date,
+        end_date: descObj.end_date,
+        is_expired: descObj.is_expired,
         applicant_count: applicationCounts[j.id]?.total || 0,
         accepted_count: applicationCounts[j.id]?.accepted || 0,
         review_count: applicationCounts[j.id]?.in_review || 0,
@@ -110,6 +128,8 @@ export async function POST(request) {
       quota,
       is_active,
       poster_url,
+      start_date,
+      end_date,
     } = body;
 
     if (!company_id || !title) {
@@ -149,9 +169,12 @@ export async function POST(request) {
     }
 
     const cleanDesc = (description || "").trim();
-    const formattedDescription = poster_url
-      ? JSON.stringify({ text: cleanDesc, poster_url })
-      : cleanDesc;
+    const formattedDescription = JSON.stringify({
+      text: cleanDesc,
+      poster_url: poster_url || "",
+      start_date: start_date || "",
+      end_date: end_date || "",
+    });
 
     const { data: newJob, error: jErr } = await supabase
       .from("jobs")
@@ -180,6 +203,9 @@ export async function POST(request) {
         raw_description: newJob.description,
         description: descObj.text,
         poster_url: descObj.poster_url,
+        start_date: descObj.start_date,
+        end_date: descObj.end_date,
+        is_expired: descObj.is_expired,
         applicant_count: 0,
       },
     });
@@ -207,6 +233,8 @@ export async function PUT(request) {
       quota,
       is_active,
       poster_url,
+      start_date,
+      end_date,
     } = body;
 
     if (!id || !company_id) {
@@ -244,11 +272,21 @@ export async function PUT(request) {
     const existingDesc = parseJobDescription(existing.description);
     const textToUse = description !== undefined ? description.trim() : existingDesc.text;
     const posterToUse = poster_url !== undefined ? poster_url : existingDesc.poster_url;
+    const startToUse = start_date !== undefined ? start_date : existingDesc.start_date;
+    const endToUse = end_date !== undefined ? end_date : existingDesc.end_date;
 
-    if (description !== undefined || poster_url !== undefined) {
-      updatePayload.description = posterToUse
-        ? JSON.stringify({ text: textToUse, poster_url: posterToUse })
-        : textToUse;
+    if (
+      description !== undefined ||
+      poster_url !== undefined ||
+      start_date !== undefined ||
+      end_date !== undefined
+    ) {
+      updatePayload.description = JSON.stringify({
+        text: textToUse,
+        poster_url: posterToUse || "",
+        start_date: startToUse || "",
+        end_date: endToUse || "",
+      });
     }
 
     const { data: updatedJob, error: uErr } = await supabase
@@ -270,6 +308,9 @@ export async function PUT(request) {
         raw_description: updatedJob.description,
         description: descObj.text,
         poster_url: descObj.poster_url,
+        start_date: descObj.start_date,
+        end_date: descObj.end_date,
+        is_expired: descObj.is_expired,
       },
     });
   } catch (err) {

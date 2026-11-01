@@ -4,17 +4,32 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 function parseJobDescription(desc) {
-  if (!desc) return { text: "", poster_url: "" };
+  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false };
   try {
     if (typeof desc === "string" && desc.trim().startsWith("{")) {
       const parsed = JSON.parse(desc);
+      const start_date = parsed.start_date || "";
+      const end_date = parsed.end_date || "";
+
+      let is_expired = false;
+      if (end_date) {
+        const end = new Date(end_date);
+        end.setHours(23, 59, 59, 999);
+        if (new Date() > end) {
+          is_expired = true;
+        }
+      }
+
       return {
         text: parsed.text || "",
         poster_url: parsed.poster_url || "",
+        start_date,
+        end_date,
+        is_expired,
       };
     }
   } catch {}
-  return { text: desc, poster_url: "" };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
 }
 
 export default function JobsDisplay({ initialJobs = [] }) {
@@ -46,7 +61,22 @@ export default function JobsDisplay({ initialJobs = [] }) {
     };
   }, []);
 
-  if (!jobs || jobs.length === 0) {
+  // Filter lowongan publik: yang sudah lewat batas tanggal otomatis terhapus
+  const displayJobs = (jobs || []).filter((job) => {
+    if (!job.is_active) return false;
+    const descObj = parseJobDescription(job.raw_description || job.description);
+    const isExpired = job.is_expired !== undefined ? job.is_expired : descObj.is_expired;
+    if (isExpired) return false;
+    const startDate = job.start_date || descObj.start_date;
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (new Date() < start) return false;
+    }
+    return true;
+  });
+
+  if (!displayJobs || displayJobs.length === 0) {
     return (
       <div className="rounded-3xl border border-white/10 bg-[#4B1E85]/30 p-12 text-center backdrop-blur-sm">
         {/* Icon Koper Tematik CCE (Gradien Neon & Glow) */}
@@ -112,9 +142,19 @@ export default function JobsDisplay({ initialJobs = [] }) {
     );
   }
 
+  function formatShortDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+    } catch {
+      return dateStr;
+    }
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {jobs.map((job) => {
+      {displayJobs.map((job) => {
         const companyName = job.company_name || job.companies?.name || "Perusahaan Rekanan";
         const companyLogo = job.company_logo || job.companies?.logo_url || "";
         const companyIndustry = job.company_industry || "";
@@ -127,6 +167,7 @@ export default function JobsDisplay({ initialJobs = [] }) {
             ? job.description
             : descObj.text;
         const posterUrl = job.poster_url || descObj.poster_url;
+        const endDate = job.end_date || descObj.end_date;
 
         return (
           <div
@@ -150,7 +191,7 @@ export default function JobsDisplay({ initialJobs = [] }) {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1F0C3B] via-transparent to-transparent opacity-50" />
                     <span className="absolute bottom-2 right-2 rounded-md bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-purple-200 border border-white/15 flex items-center gap-1 shadow-sm">
-                      <svg className="w-2.5 h-2.5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <svg className="w-2.5 h-2.5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                         <circle cx="8.5" cy="8.5" r="1.5"/>
                         <polyline points="21 15 16 10 5 21"/>
@@ -209,15 +250,25 @@ export default function JobsDisplay({ initialJobs = [] }) {
                 </div>
               </div>
 
-              {/* Quota Badge if available */}
-              {job.quota && (
-                <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-purple-200 border border-white/10">
-                  <svg className="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span>Kuota: <strong>{job.quota} orang</strong></span>
-                </div>
-              )}
+              {/* Quota & Deadline Badges */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {job.quota && (
+                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-purple-200 border border-white/10">
+                    <svg className="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Kuota: <strong>{job.quota} orang</strong></span>
+                  </div>
+                )}
+                {endDate && (
+                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-fuchsia-500/10 px-2.5 py-1 text-[11px] font-semibold text-fuchsia-300 border border-fuchsia-500/20">
+                    <svg className="h-3 w-3 text-fuchsia-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Batas: <strong>{formatShortDate(endDate)}</strong></span>
+                  </div>
+                )}
+              </div>
 
               {/* Description */}
               {cleanDescription && (

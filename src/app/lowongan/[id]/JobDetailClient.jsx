@@ -81,6 +81,19 @@ export default function JobDetailClient({ initialJob, jobId }) {
     `Halo! Ada lowongan menarik "${job.title}" di ${companyName} pada Career Compas Expo 2026 UIN Jakarta. Cek detail dan kirim lamaran di: ${typeof window !== "undefined" ? window.location.href : ""}`
   );
 
+  function formatDateRange(startDate, endDate) {
+    if (!startDate && !endDate) return null;
+    const options = { day: "numeric", month: "short", year: "numeric" };
+    const s = startDate ? new Date(startDate).toLocaleDateString("id-ID", options) : "";
+    const e = endDate ? new Date(endDate).toLocaleDateString("id-ID", options) : "";
+    if (s && e) return `${s} — ${e}`;
+    if (e) return `Batas: ${e}`;
+    return `Mulai: ${s}`;
+  }
+
+  const dateRangeStr = formatDateRange(job.start_date, job.end_date);
+  const isExpired = Boolean(job.is_expired);
+
   return (
     <main className="min-h-screen bg-[#1E0C36] text-white flex flex-col selection:bg-fuchsia-500 selection:text-white">
       {/* Navbar Global */}
@@ -301,16 +314,34 @@ export default function JobDetailClient({ initialJob, jobId }) {
                 <span className="rounded-full bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 px-3.5 py-1 text-xs font-black tracking-wide text-fuchsia-400 border border-fuchsia-500/30">
                   {job.employment_type || "Full-time"}
                 </span>
-                <span className="rounded-full bg-emerald-500/20 px-3.5 py-1 text-xs font-bold text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Siap Menerima Lamaran</span>
-                </span>
+
+                {isExpired ? (
+                  <span className="rounded-full bg-red-500/20 px-3.5 py-1 text-xs font-bold text-red-300 border border-red-500/40 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-red-400" />
+                    <span>Pendaftaran Ditutup / Kedaluwarsa</span>
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-emerald-500/20 px-3.5 py-1 text-xs font-bold text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Siap Menerima Lamaran</span>
+                  </span>
+                )}
+
                 {job.quota && (
                   <span className="rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold text-purple-200 border border-white/10 flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>Kuota: {job.quota} Posisi</span>
+                  </span>
+                )}
+
+                {dateRangeStr && (
+                  <span className="rounded-full bg-purple-500/20 px-3.5 py-1 text-xs font-semibold text-purple-200 border border-purple-500/30 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Periode: {dateRangeStr}</span>
                   </span>
                 )}
               </div>
@@ -337,6 +368,21 @@ export default function JobDetailClient({ initialJob, jobId }) {
                 </span>
               </div>
             </div>
+
+            {/* Expired Warning Banner jika sudah melewati batas tanggal */}
+            {isExpired && (
+              <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-4 text-red-200 flex items-start gap-3 shadow-xl">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-500/20 text-red-400 shrink-0 mt-0.5">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="text-xs leading-relaxed">
+                  <span className="font-bold text-red-300 block text-sm mb-0.5">Periode Pendaftaran Lowongan Telah Berakhir</span>
+                  Lowongan posisi ini telah melewati batas waktu pendaftaran ({dateRangeStr || "jadwal yang ditentukan"}). Pendaftaran telah ditutup otomatis dan lowongan ini tidak lagi menerima berkas pelamar baru.
+                </div>
+              </div>
+            )}
 
             {/* CARD 1: REQUIREMENTS (PERSYARATAN & KUALIFIKASI) - PERSIS SEPERTI GAMBAR 2 */}
             <div className="rounded-3xl border border-white/10 bg-[#160A2C]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
@@ -413,24 +459,58 @@ export default function JobDetailClient({ initialJob, jobId }) {
             </div>
 
             {/* CARD 3: TOMBOL APPLY NOW (SEPERTI CONTOH GAMBAR 2) */}
-            <div className="rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-[#2D1252] to-[#170A2D] p-6 sm:p-8 shadow-2xl shadow-purple-900/40">
+            <div
+              className={`rounded-3xl border p-6 sm:p-8 shadow-2xl transition-all ${
+                isExpired
+                  ? "border-amber-500/30 bg-gradient-to-br from-[#2D1B12] to-[#170C0A] shadow-amber-950/40"
+                  : "border-fuchsia-500/30 bg-gradient-to-br from-[#2D1252] to-[#170A2D] shadow-purple-900/40"
+              }`}
+            >
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="space-y-1 text-center sm:text-left">
-                  <h3 className="text-lg font-black text-white">Tertarik Mengisi Posisi Ini?</h3>
+                  <h3 className="text-lg font-black text-white flex items-center justify-center sm:justify-start gap-2">
+                    {isExpired ? (
+                      <>
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </span>
+                        <span>Periode Pendaftaran Telah Berakhir</span>
+                      </>
+                    ) : (
+                      "Tertarik Mengisi Posisi Ini?"
+                    )}
+                  </h3>
                   <p className="text-xs text-purple-200/70 max-w-md leading-relaxed">
-                    Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra di Career Compas Expo 2026.
+                    {isExpired
+                      ? "Batas waktu pendaftaran untuk lowongan ini telah lewat. Lowongan ini diarsipkan dan tidak lagi menerima kiriman berkas baru."
+                      : "Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra di Career Compas Expo 2026."}
                   </p>
                 </div>
 
-                <Link
-                  href={applyUrl}
-                  className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:shadow-fuchsia-600/50 cursor-pointer"
-                >
-                  <span>Apply Now</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </Link>
+                {isExpired ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-800/80 border border-zinc-700/60 px-8 py-4 text-sm font-bold uppercase tracking-wider text-zinc-400 cursor-not-allowed shadow-inner"
+                  >
+                    <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Pendaftaran Ditutup</span>
+                  </button>
+                ) : (
+                  <Link
+                    href={applyUrl}
+                    className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:shadow-fuchsia-600/50 cursor-pointer"
+                  >
+                    <span>Apply Now</span>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </Link>
+                )}
               </div>
             </div>
 
