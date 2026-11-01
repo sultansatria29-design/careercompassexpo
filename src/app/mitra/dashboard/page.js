@@ -4,13 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Definisi Tahapan Rekrutmen
+// Definisi Tahapan Rekrutmen (Sesuai constraint database Supabase: submitted, reviewed, shortlisted, accepted)
 const RECRUITMENT_STAGES = [
-  { id: "submitted", label: "Berkas Masuk", step: 1, color: "bg-blue-500", text: "text-blue-400" },
-  { id: "screening", label: "Seleksi Berkas", step: 2, color: "bg-amber-500", text: "text-amber-400" },
-  { id: "assessment", label: "Tes / Asesmen", step: 3, color: "bg-purple-500", text: "text-purple-400" },
-  { id: "interview", label: "Wawancara", step: 4, color: "bg-cyan-500", text: "text-cyan-400" },
-  { id: "accepted", label: "Diterima / Offering", step: 5, color: "bg-emerald-500", text: "text-emerald-400" },
+  { id: "submitted", label: "Berkas Masuk", shortLabel: "Berkas", step: 1, color: "bg-blue-500", text: "text-blue-400" },
+  { id: "reviewed", label: "Seleksi Berkas", shortLabel: "Seleksi", step: 2, color: "bg-amber-500", text: "text-amber-400" },
+  { id: "shortlisted", label: "Wawancara", shortLabel: "Wawancara", step: 3, color: "bg-cyan-500", text: "text-cyan-400" },
+  { id: "accepted", label: "Diterima / Offering", shortLabel: "Diterima", step: 4, color: "bg-emerald-500", text: "text-emerald-400" },
 ];
 
 function formatJobDateRange(startDate, endDate) {
@@ -468,7 +467,10 @@ export default function MitraDashboardPage() {
   // Filter Pelamar berdasarkan Lowongan, Tahap, dan Pencarian
   const filteredApplicants = applicants.filter((app) => {
     const matchJob = selectedJobFilter === "all" || app.job_id === selectedJobFilter;
-    const matchStage = selectedStageFilter === "all" || app.status === selectedStageFilter;
+    let matchStage = selectedStageFilter === "all" || app.status === selectedStageFilter;
+    if (selectedStageFilter === "reviewed" && (app.status === "reviewed" || app.status === "screening")) matchStage = true;
+    if (selectedStageFilter === "shortlisted" && (app.status === "shortlisted" || app.status === "interview" || app.status === "assessment")) matchStage = true;
+
     const matchSearch =
       !searchQuery ||
       app.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -492,7 +494,7 @@ export default function MitraDashboardPage() {
   const archivedJobsCount = jobs.filter((j) => !j.is_active || j.is_expired).length;
   const totalApplicantsCount = applicants.length;
   const inReviewCount = applicants.filter(
-    (a) => ["screening", "assessment", "interview"].includes(a.status)
+    (a) => ["reviewed", "shortlisted", "screening", "assessment", "interview"].includes(a.status)
   ).length;
   const acceptedCount = applicants.filter((a) => a.status === "accepted").length;
 
@@ -876,10 +878,9 @@ export default function MitraDashboardPage() {
                   >
                     <option value="all">Semua Tahap Rekrutmen</option>
                     <option value="submitted">1. Berkas Masuk</option>
-                    <option value="screening">2. Seleksi Berkas (Screening)</option>
-                    <option value="assessment">3. Tes / Asesmen</option>
-                    <option value="interview">4. Wawancara / Interview</option>
-                    <option value="accepted">5. Diterima / Offering</option>
+                    <option value="reviewed">2. Seleksi Berkas</option>
+                    <option value="shortlisted">3. Wawancara Booth CCE</option>
+                    <option value="accepted">4. Diterima / Offering</option>
                     <option value="rejected">Tidak Lolos</option>
                   </select>
                 </div>
@@ -902,8 +903,7 @@ export default function MitraDashboardPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0 text-[11px]">
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span> Berkas
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></span> Screening
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-purple-500"></span> Tes
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></span> Seleksi
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-cyan-500"></span> Wawancara
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Diterima
               </div>
@@ -953,8 +953,18 @@ export default function MitraDashboardPage() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {filteredApplicants.map((app) => {
+                        const STAGE_ID_ALIAS = {
+                          submitted: "submitted",
+                          screening: "reviewed",
+                          reviewed: "reviewed",
+                          assessment: "shortlisted",
+                          interview: "shortlisted",
+                          shortlisted: "shortlisted",
+                          accepted: "accepted",
+                        };
+                        const normalizedStatus = STAGE_ID_ALIAS[app.status] || app.status;
                         const currentStageIdx = RECRUITMENT_STAGES.findIndex(
-                          (s) => s.id === app.status
+                          (s) => s.id === normalizedStatus
                         );
                         const isRejected = app.status === "rejected";
 
@@ -1784,6 +1794,34 @@ export default function MitraDashboardPage() {
                 </div>
               </div>
 
+              {/* Data Akademik & Profil Tambahan */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[10px] text-purple-300/70">Usia</div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {detailModalApplicant.age ? `${detailModalApplicant.age} Thn` : "-"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[10px] text-purple-300/70">IPK / GPA Terakhir</div>
+                  <div className="font-semibold text-amber-300 mt-0.5">
+                    {detailModalApplicant.gpa || "-"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[10px] text-purple-300/70">Tahun Lulus / Semester</div>
+                  <div className="font-semibold text-white mt-0.5">
+                    {detailModalApplicant.graduation_year || "-"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[10px] text-purple-300/70">Fakultas</div>
+                  <div className="font-semibold text-purple-200 mt-0.5 truncate" title={detailModalApplicant.faculty}>
+                    {detailModalApplicant.faculty || "-"}
+                  </div>
+                </div>
+              </div>
+
               {/* Berkas CV & Portfolio */}
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 space-y-2">
                 <div className="font-bold text-purple-200">Berkas Pelamar:</div>
@@ -1809,6 +1847,21 @@ export default function MitraDashboardPage() {
                     <span className="text-purple-400">CV terlampir di akun peserta</span>
                   )}
 
+                  {detailModalApplicant.cce_proof_url && (
+                    <a
+                      href={detailModalApplicant.cce_proof_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/30 border border-emerald-500/40 px-3 py-1.5 font-bold text-emerald-200 hover:bg-emerald-600/50 hover:text-white transition"
+                    >
+                      <svg className="w-3.5 h-3.5 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Bukti Regis CCE</span>
+                      <span>↗</span>
+                    </a>
+                  )}
+
                   {detailModalApplicant.portfolio_url && (
                     <a
                       href={detailModalApplicant.portfolio_url}
@@ -1830,9 +1883,19 @@ export default function MitraDashboardPage() {
               {/* Status Stepper in Modal */}
               <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 space-y-2">
                 <div className="font-bold text-purple-200">Ubah Tahap Seleksi:</div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {RECRUITMENT_STAGES.map((stg) => {
-                    const isSelected = detailModalApplicant.status === stg.id;
+                    const STAGE_ID_ALIAS = {
+                      submitted: "submitted",
+                      screening: "reviewed",
+                      reviewed: "reviewed",
+                      assessment: "shortlisted",
+                      interview: "shortlisted",
+                      shortlisted: "shortlisted",
+                      accepted: "accepted",
+                    };
+                    const normalizedAppStatus = STAGE_ID_ALIAS[detailModalApplicant.status] || detailModalApplicant.status;
+                    const isSelected = normalizedAppStatus === stg.id;
                     return (
                       <button
                         key={stg.id}

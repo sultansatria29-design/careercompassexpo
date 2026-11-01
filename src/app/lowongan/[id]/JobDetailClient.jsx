@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
@@ -8,6 +8,19 @@ export default function JobDetailClient({ initialJob, jobId }) {
   const [job, setJob] = useState(initialJob);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isLoggedInPelamar, setIsLoggedInPelamar] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cce_pelamar_session");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.id) setIsLoggedInPelamar(true);
+        } catch {}
+      }
+    }
+  }, []);
 
   // Jika lowongan tidak ditemukan
   if (!job) {
@@ -76,7 +89,10 @@ export default function JobDetailClient({ initialJob, jobId }) {
     }
   }
 
-  const applyUrl = `/registrasi?job=${encodeURIComponent(job.id)}&title=${encodeURIComponent(job.title)}`;
+  const walkInTarget = `/pelamar/walk-in?job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}`;
+  const applyUrl = isLoggedInPelamar
+    ? walkInTarget
+    : `/pelamar?redirect=${encodeURIComponent(walkInTarget)}&job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}`;
   const shareWaText = encodeURIComponent(
     `Halo! Ada lowongan menarik "${job.title}" di ${companyName} pada Career Compas Expo 2026 UIN Jakarta. Cek detail dan kirim lamaran di: ${typeof window !== "undefined" ? window.location.href : ""}`
   );

@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pelamarSession, setPelamarSession] = useState(null);
 
   useEffect(() => {
     function handleScroll() {
@@ -16,6 +17,14 @@ export default function Navbar() {
       }
     }
     window.addEventListener("scroll", handleScroll);
+
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cce_pelamar_session");
+        if (stored) setPelamarSession(JSON.parse(stored));
+      } catch {}
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -70,6 +79,28 @@ export default function Navbar() {
 
         {/* Desktop Action Button (>= md) */}
         <div className="hidden md:flex items-center gap-2.5">
+          {pelamarSession ? (
+            <Link
+              href="/pelamar/dashboard"
+              className="rounded-full border border-fuchsia-500/40 bg-fuchsia-500/15 px-4 py-2 text-xs font-bold text-fuchsia-300 hover:bg-fuchsia-500/25 transition flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Dashboard Pelamar</span>
+            </Link>
+          ) : (
+            <Link
+              href="/pelamar"
+              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-purple-200 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Masuk Pelamar</span>
+            </Link>
+          )}
+
           <Link
             href="/registrasi"
             className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-105 hover:shadow-lg"
@@ -168,7 +199,42 @@ export default function Navbar() {
               </Link>
             </nav>
 
-            <div className="pt-2 border-t border-purple-800/40">
+            <div className="pt-2 border-t border-purple-800/40 space-y-2">
+              {pelamarSession ? (
+                <Link
+                  href="/pelamar/dashboard"
+                  onClick={handleNavClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/20 py-3 text-center text-xs font-bold text-fuchsia-300 transition hover:bg-fuchsia-500/30"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Dashboard Pelamar Saya</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/pelamar"
+                  onClick={handleNavClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 py-3 text-center text-xs font-bold text-purple-200 transition hover:bg-white/15"
+                >
+                  <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Masuk / Daftar Akun Pelamar</span>
+                </Link>
+              )}
+
+              <Link
+                href="/pelamar/walk-in"
+                onClick={handleNavClick}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-950/30 py-3 text-center text-xs font-bold text-cyan-300 transition hover:bg-cyan-900/40"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Form Walk-In Interview</span>
+              </Link>
+
               <Link
                 href="/registrasi"
                 onClick={handleNavClick}

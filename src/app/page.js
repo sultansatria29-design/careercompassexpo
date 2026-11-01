@@ -134,6 +134,37 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Tombol Aksi Hero CCE 2026 */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <Link
+              href="/registrasi"
+              className="rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-extrabold text-[#7226FF] shadow-xl shadow-black/20 transition-all duration-200 hover:scale-105 hover:bg-white/95 flex items-center gap-2"
+            >
+              <span>Registrasi Peserta (E-Ticket)</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+            <Link
+              href="/pelamar/walk-in"
+              className="rounded-full border border-white/30 bg-black/25 backdrop-blur-md px-6 py-3 text-xs sm:text-sm font-bold text-white transition-all duration-200 hover:scale-105 hover:bg-black/40 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4 text-fuchsia-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Form Walk-In Interview</span>
+            </Link>
+            <Link
+              href="/pelamar/dashboard"
+              className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-xs sm:text-sm font-semibold text-white/90 transition-all duration-200 hover:scale-105 hover:bg-white/20 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Dashboard Pelamar</span>
+            </Link>
+          </div>
         </div>
       </section>
 

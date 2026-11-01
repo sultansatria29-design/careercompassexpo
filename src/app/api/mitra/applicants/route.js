@@ -75,6 +75,31 @@ export async function GET(request) {
           participantMap[p.id] = p;
         });
       }
+
+      // Ambil data surveys untuk fakultas, usia, tahun kelulusan, IPK, dan bukti registrasi
+      var { data: surs } = await supabase
+        .from("surveys")
+        .select("participant_id, faculty, major, feedback")
+        .in("participant_id", participantIds);
+
+      var surveyMap = {};
+      if (surs) {
+        surs.forEach((s) => {
+          let parsedMeta = {};
+          try {
+            parsedMeta = typeof s.feedback === "string" ? JSON.parse(s.feedback) : s.feedback || {};
+          } catch {}
+          surveyMap[s.participant_id] = {
+            faculty: s.faculty || parsedMeta.faculty || "",
+            major: s.major || parsedMeta.major || "",
+            age: parsedMeta.age || "",
+            graduation_year: parsedMeta.graduation_year || "",
+            gpa: parsedMeta.gpa || "",
+            cce_proof_url: parsedMeta.cce_proof_url || "",
+            cce_regis_confirmed: parsedMeta.cce_regis_confirmed || "",
+          };
+        });
+      }
     }
 
     // 4. Ambil data interview jika ada
@@ -109,6 +134,7 @@ export async function GET(request) {
       };
 
       const interview = interviewMap[app.id] || null;
+      const sData = (surveyMap && surveyMap[app.participant_id]) || {};
 
       return {
         id: app.id,
@@ -123,6 +149,13 @@ export async function GET(request) {
         institution: participant.institution || "UIN Syarif Hidayatullah Jakarta",
         domicile: participant.domicile,
         registration_number: participant.registration_number,
+        faculty: sData.faculty || "-",
+        major: sData.major || "-",
+        age: sData.age || "-",
+        graduation_year: sData.graduation_year || "-",
+        gpa: sData.gpa || "-",
+        cce_proof_url: sData.cce_proof_url || "",
+        cce_regis_confirmed: sData.cce_regis_confirmed || "",
         cv_path: app.cv_path,
         portfolio_url: app.portfolio_url,
         status: app.status || "submitted",
@@ -158,20 +191,36 @@ export async function PUT(request) {
       );
     }
 
+    // Mapping status agar selalu kompatibel dengan check constraint database:
+    // applications: ('submitted', 'reviewed', 'shortlisted', 'accepted', 'rejected')
+    const STATUS_MAP = {
+      submitted: "submitted",
+      screening: "reviewed",
+      reviewed: "reviewed",
+      assessment: "shortlisted",
+      interview: "shortlisted",
+      shortlisted: "shortlisted",
+      accepted: "accepted",
+      rejected: "rejected",
+    };
+
+    const targetStatus = STATUS_MAP[status] || status;
+
     const supabase = getSupabase();
 
     // 1. Update status pada tabel applications
     const { data: updatedApp, error: uErr } = await supabase
       .from("applications")
-      .update({ status: status })
+      .update({ status: targetStatus })
       .eq("id", application_id)
       .select()
       .single();
 
     if (uErr) throw uErr;
 
-    // 2. Jika tahap wawancara atau ada catatan interview, simpan ke tabel interviews
-    if (status === "interview" || interview_date || interview_notes) {
+    // 2. Jika tahap wawancara/shortlist atau ada catatan interview, simpan ke tabel interviews
+    // interviews constraint allows: ('waiting', 'called', 'completed', 'cancelled')
+    if (targetStatus === "shortlisted" || interview_date || interview_notes) {
       // Cek apakah sudah ada record di interviews
       const { data: existingInt } = await supabase
         .from("interviews")
@@ -183,7 +232,7 @@ export async function PUT(request) {
         await supabase
           .from("interviews")
           .update({
-            status: status === "interview" ? "scheduled" : status,
+            status: "waiting",
             interview_date: interview_date || undefined,
             notes: interview_notes || undefined,
           })
@@ -193,7 +242,7 @@ export async function PUT(request) {
           application_id: application_id,
           participant_id: updatedApp.participant_id,
           company_id: company_id,
-          status: "scheduled",
+          status: "waiting",
           interview_date: interview_date || new Date().toISOString().split("T")[0],
           notes: interview_notes || "Dijadwalkan untuk wawancara di Booth CCE 2026",
         });
@@ -202,7 +251,7 @@ export async function PUT(request) {
 
     return NextResponse.json({
       success: true,
-      message: `Tahap seleksi berhasil diubah menjadi "${status.toUpperCase()}".`,
+      message: `Tahap seleksi berhasil diubah menjadi "${targetStatus.toUpperCase()}".`,
       application: updatedApp,
     });
   } catch (err) {
@@ -250,7 +299,7 @@ export async function POST(request) {
         participant_status: "MAHASISWA_UIN",
         cv_path: "https://drive.google.com/file/d/cv-aisyah-uin/view",
         portfolio_url: "https://linkedin.com/in/aisyah-salsa",
-        initial_status: "screening",
+        initial_status: "reviewed",
       },
       {
         full_name: "Rizky Aditya Pratama",
@@ -261,7 +310,7 @@ export async function POST(request) {
         participant_status: "MAHASISWA_UIN",
         cv_path: "https://drive.google.com/file/d/cv-rizky-uin/view",
         portfolio_url: "https://behance.net/rizky-pratama",
-        initial_status: "assessment",
+        initial_status: "shortlisted",
       },
       {
         full_name: "Nabila Zahra Putri",
@@ -272,7 +321,7 @@ export async function POST(request) {
         participant_status: "MAHASISWA_UIN",
         cv_path: "https://drive.google.com/file/d/cv-nabila-uin/view",
         portfolio_url: "https://instagram.com/nabila.creative",
-        initial_status: "interview",
+        initial_status: "shortlisted",
       },
       {
         full_name: "Dimas Arya Wicaksana",
