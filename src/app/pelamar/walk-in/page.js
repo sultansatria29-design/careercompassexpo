@@ -721,7 +721,7 @@ function WalkInFormContent() {
             {/* SEKSI 3: Tautan Portofolio (Opsional) */}
             <div className="space-y-1.5 pt-2 border-t border-white/10 text-xs">
               <label className="block font-bold text-purple-200">
-                Tautan Portofolio / LinkedIn / GitHub <span className="text-purple-400/60 font-normal">(Opsional)</span>
+                Tautan Portofolio / LinkedIn <span className="text-purple-400/60 font-normal">(Opsional)</span>
               </label>
               <input
                 type="url"
