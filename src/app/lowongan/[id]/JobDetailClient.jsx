@@ -94,7 +94,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
     ? walkInTarget
     : `/pelamar?redirect=${encodeURIComponent(walkInTarget)}&job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}`;
   const shareWaText = encodeURIComponent(
-    `Halo! Ada lowongan menarik "${job.title}" di ${companyName} pada Career Compas Expo 2026 UIN Jakarta. Cek detail dan kirim lamaran di: ${typeof window !== "undefined" ? window.location.href : ""}`
+    `Halo! Ada lowongan menarik "${job.title}" di ${companyName} pada Career Compass Expo 2026 UIN Jakarta. Cek detail dan kirim lamaran di: ${typeof window !== "undefined" ? window.location.href : ""}`
   );
 
   function formatDateRange(startDate, endDate) {
@@ -185,7 +185,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
                   {/* Top Badge */}
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-fuchsia-300 border border-white/15">
                     <span className="h-2 w-2 rounded-full bg-fuchsia-400 animate-pulse" />
-                    <span>Career Compas Expo 2026</span>
+                    <span>Career Compass Expo 2026</span>
                   </div>
 
                   {/* Center Content */}
@@ -501,7 +501,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
                   <p className="text-xs text-purple-200/70 max-w-md leading-relaxed">
                     {isExpired
                       ? "Batas waktu pendaftaran untuk lowongan ini telah lewat. Lowongan ini diarsipkan dan tidak lagi menerima kiriman berkas baru."
-                      : "Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra di Career Compas Expo 2026."}
+                      : "Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra di Career Compass Expo 2026."}
                   </p>
                 </div>
 

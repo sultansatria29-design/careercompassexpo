@@ -116,14 +116,14 @@ export async function generateMetadata({ params }) {
 
     if (!job) {
       return {
-        title: "Lowongan Tidak Ditemukan | Career Compas Expo 2026",
+        title: "Lowongan Tidak Ditemukan | Career Compass Expo 2026",
       };
     }
 
     const title = `${job.title} — ${job.company_name} | CCE 2026 UIN Jakarta`;
     const description =
       job.description ||
-      `Informasi kualifikasi dan lowongan kerja ${job.title} di ${job.company_name} pada Career Compas Expo 2026 UIN Jakarta.`;
+      `Informasi kualifikasi dan lowongan kerja ${job.title} di ${job.company_name} pada Career Compass Expo 2026 UIN Jakarta.`;
 
     return {
       title,
@@ -136,7 +136,7 @@ export async function generateMetadata({ params }) {
     };
   } catch {
     return {
-      title: "Lowongan Kerja | Career Compas Expo 2026",
+      title: "Lowongan Kerja | Career Compass Expo 2026",
     };
   }
 }

@@ -229,7 +229,7 @@ export default function Home() {
               Informasi Kegiatan CCE 2026
             </h2>
             <p className="mt-3 text-sm sm:text-base text-white/70">
-              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta & Agenda Pelaksanaan Career Compas Expo 2026
+              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta & Agenda Pelaksanaan Career Compass Expo 2026
             </p>
           </div>
 
@@ -308,7 +308,7 @@ export default function Home() {
                   Buka Peluang Karir bersama <span className="bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] bg-clip-text text-transparent">Mahasiswa &amp; Alumni UIN Jakarta</span>
                 </h2>
                 <p className="mt-3 text-sm sm:text-base text-purple-200/80 leading-relaxed">
-                  Daftarkan perusahaan Anda sebagai mitra resmi Career Compas Expo 2026. Dapatkan akses ke dashboard rekrutmen praktis untuk membuat lowongan pekerjaan, meninjau berkas CV pelamar, dan mencentang tahapan seleksi secara interaktif.
+                  Daftarkan perusahaan Anda sebagai mitra resmi Career Compass Expo 2026. Dapatkan akses ke dashboard rekrutmen praktis untuk membuat lowongan pekerjaan, meninjau berkas CV pelamar, dan mencentang tahapan seleksi secara interaktif.
                 </p>
                 <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-purple-300">
                   <span className="flex items-center gap-1.5">

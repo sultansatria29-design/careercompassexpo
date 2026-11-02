@@ -16,9 +16,9 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "Career Compas Expo 2026 | UIN Jakarta",
+  title: "Career Compass Expo 2026 | UIN Jakarta",
   description:
-    "Career Compas Expo 2026, 18–19 November 2026 di UIN Syarif Hidayatullah Jakarta.",
+    "Career Compass Expo 2026, 18–19 November 2026 di UIN Syarif Hidayatullah Jakarta.",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },

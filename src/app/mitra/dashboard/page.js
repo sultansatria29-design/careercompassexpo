@@ -1141,7 +1141,7 @@ export default function MitraDashboardPage() {
                                 {app.phone && (
                                   <a
                                     href={`https://wa.me/${app.phone.replace(/^0/, "62")}?text=${encodeURIComponent(
-                                      `Halo ${app.full_name}, kami dari tim HR ${company.name} ingin mengonfirmasi terkait lamaran Anda untuk posisi ${app.job_title} di Career Compas Expo 2026 UIN Jakarta.`
+                                      `Halo ${app.full_name}, kami dari tim HR ${company.name} ingin mengonfirmasi terkait lamaran Anda untuk posisi ${app.job_title} di Career Compass Expo 2026 UIN Jakarta.`
                                     )}`}
                                     target="_blank"
                                     rel="noreferrer"
@@ -1195,7 +1195,7 @@ export default function MitraDashboardPage() {
               <div>
                 <h2 className="text-lg font-bold text-white">Daftar Lowongan Pekerjaan Perusahaan</h2>
                 <p className="text-xs text-purple-300/70 mt-0.5">
-                  Publikasikan posisi karir untuk dilihat oleh ribuan pencari kerja di Career Compas Expo 2026.
+                  Publikasikan posisi karir untuk dilihat oleh ribuan pencari kerja di Career Compass Expo 2026.
                 </p>
               </div>
               <button

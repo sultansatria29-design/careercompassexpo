@@ -726,7 +726,7 @@ export default function MitraAuthPage() {
                   )}
                 </button>
                 <p className="mt-3 text-center text-xs text-purple-300/60">
-                  Dengan mendaftar, perusahaan Anda menyetujui ketentuan kemitraan rekrutmen Career Compas Expo 2026 UIN Jakarta.
+                  Dengan mendaftar, perusahaan Anda menyetujui ketentuan kemitraan rekrutmen Career Compass Expo 2026 UIN Jakarta.
                 </p>
               </div>
             </form>

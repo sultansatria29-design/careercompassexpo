@@ -1406,7 +1406,7 @@ export default function AdminDashboard() {
                 Dashboard Overview
               </h1>
               <p className="mt-1 text-sm text-slate-600">
-                Statistik real-time pendaftar dan presensi pengunjung Career Compas Expo 2026.
+                Statistik real-time pendaftar dan presensi pengunjung Career Compass Expo 2026.
               </p>
             </div>
 
@@ -1819,7 +1819,7 @@ export default function AdminDashboard() {
                   Data Registrasi Peserta
                 </h1>
                 <p className="mt-1 text-sm text-slate-600">
-                  Daftar seluruh pendaftar Career Compas Expo 2026 yang terdaftar melalui form registrasi online.
+                  Daftar seluruh pendaftar Career Compass Expo 2026 yang terdaftar melalui form registrasi online.
                 </p>
               </div>
 
@@ -2418,7 +2418,7 @@ export default function AdminDashboard() {
                 <div className="lg:col-span-5 flex flex-col items-center">
                   <div className="w-full max-w-xs rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-md text-center">
                     <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
-                      CAREER COMPAS EXPO 2026 • UIN JAKARTA
+                      CAREER COMPASS EXPO 2026 • UIN JAKARTA
                     </p>
                     <h3 className="mt-2 text-sm sm:text-base font-extrabold text-slate-900 leading-snug">
                       PINDAI DENGAN KAMERA UNTUK REGISTRASI
@@ -2566,7 +2566,7 @@ export default function AdminDashboard() {
                 <div className="lg:col-span-5 flex flex-col items-center">
                   <div className="w-full max-w-xs rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-md text-center">
                     <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
-                      CAREER COMPAS EXPO 2026 • UIN JAKARTA
+                      CAREER COMPASS EXPO 2026 • UIN JAKARTA
                     </p>
                     <h3 className="mt-2 text-sm sm:text-base font-extrabold text-slate-900 leading-snug">
                       PINDAI DENGAN KAMERA UNTUK INDEKS KEPUASAN
@@ -2868,7 +2868,7 @@ export default function AdminDashboard() {
                   )}
                 </div>
                 <p className="mt-1 text-sm text-slate-600 max-w-3xl">
-                  Saring dan verifikasi profil perusahaan pendaftar Career Compas Expo 2026. Hanya perusahaan yang telah diverifikasi yang dapat menerbitkan lowongan kerja dan menerima lamaran peserta.
+                  Saring dan verifikasi profil perusahaan pendaftar Career Compass Expo 2026. Hanya perusahaan yang telah diverifikasi yang dapat menerbitkan lowongan kerja dan menerima lamaran peserta.
                 </p>
               </div>
 

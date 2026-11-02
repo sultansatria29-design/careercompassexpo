@@ -626,7 +626,7 @@ function PelamarAuthContent() {
               {/* KONFIRMASI REGISTRASI CCE 2026 (Gambar 3) */}
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 space-y-2">
                 <label className="block font-bold text-purple-200">
-                  Apakah sudah mengisi form registrasi Career Compas Expo (CCE) 2026? <span className="text-fuchsia-400">*</span>
+                  Apakah sudah mengisi form registrasi Career Compass Expo (CCE) 2026? <span className="text-fuchsia-400">*</span>
                 </label>
                 <div className="text-[11px] text-purple-300/70">
                   Wajib mengisi form registrasi CCE 2026 (
@@ -670,7 +670,7 @@ function PelamarAuthContent() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-purple-200">
-                    Upload Bukti Registrasi Career Compas Expo (CCE) 2026
+                    Upload Bukti Registrasi Career Compass Expo (CCE) 2026
                   </label>
                   <span className="text-[10px] text-fuchsia-300 bg-fuchsia-500/15 border border-fuchsia-500/30 px-2 py-0.5 rounded-full font-semibold">
                     Maks 10 MB
