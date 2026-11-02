@@ -7,9 +7,8 @@ export default function FeatureCards({ items }) {
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1.35); // Nilai awal besar (1.35) untuk desktop scroll
 
-  // Mobile slider state
+  // Mobile slider state (manual navigation via click or swipe)
   const [mobileIndex, setMobileIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -43,21 +42,10 @@ export default function FeatureCards({ items }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 2. Auto-looping slider for Mobile view (Looping setiap 3.2 detik)
-  useEffect(() => {
-    if (isPaused || !items || items.length === 0) return;
-
-    const timer = setInterval(() => {
-      setMobileIndex((prev) => (prev + 1) % items.length);
-    }, 3200);
-
-    return () => clearInterval(timer);
-  }, [isPaused, items]);
-
-  // Touch handlers for mobile swipe
+  // Touch handlers for mobile swipe (hanya bergeser saat di-swipe pengguna)
   function handleTouchStart(e) {
-    setIsPaused(true);
     touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX;
   }
 
   function handleTouchMove(e) {
@@ -66,7 +54,7 @@ export default function FeatureCards({ items }) {
 
   function handleTouchEnd() {
     const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 45) {
+    if (Math.abs(diff) > 40) {
       if (diff > 0) {
         // Swipe left -> Next
         setMobileIndex((prev) => (prev + 1) % items.length);
@@ -75,8 +63,6 @@ export default function FeatureCards({ items }) {
         setMobileIndex((prev) => (prev - 1 + items.length) % items.length);
       }
     }
-    // Resume auto-looping after 4 seconds of inactivity
-    setTimeout(() => setIsPaused(false), 4000);
   }
 
   function nextSlide() {
@@ -91,7 +77,7 @@ export default function FeatureCards({ items }) {
     <div ref={containerRef} className="relative">
       
       {/* ========================================================
-          TAMPILAN MOBILE: Slider Samping dengan Looping Otomatis (< md)
+          TAMPILAN MOBILE: Slider Samping Manual (Klik / Swipe) (< md)
           ======================================================== */}
       <div className="block md:hidden">
         {/* Carousel Container */}
@@ -100,8 +86,6 @@ export default function FeatureCards({ items }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
         >
           <div
             className="flex transition-transform duration-500 ease-out"
