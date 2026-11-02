@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SECRET_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    }
+  );
+}
 
 export async function POST(req) {
   try {
@@ -8,7 +20,7 @@ export async function POST(req) {
     const {
       email,
       fullName,
-      status = "Mahasiwa",
+      status = "Mahasiswa",
       institution = "UIN Syarif Hidayatullah Jakarta",
       facultyMajorText = "",
       facultyChoice = "",
@@ -32,6 +44,10 @@ export async function POST(req) {
       );
     }
 
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const cleanName = String(fullName || "").trim();
+    const supabase = getSupabase();
+
     // 1. Simpan langsung ke database Supabase (tabel surveys) untuk Admin Console
     let participantId = null;
     try {
@@ -39,14 +55,36 @@ export async function POST(req) {
       const { data: pData } = await supabase
         .from("participants")
         .select("id")
-        .eq("email", email.trim().toLowerCase())
+        .eq("email", cleanEmail)
         .limit(1)
         .maybeSingle();
 
       if (pData?.id) {
         participantId = pData.id;
+      } else {
+        // Jika belum ada di tabel participants, buatkan entri peserta secara otomatis
+        const { data: newP, error: newPErr } = await supabase
+          .from("participants")
+          .insert({
+            full_name: cleanName,
+            email: cleanEmail,
+            phone: "-",
+            domicile: "DKI Jakarta",
+            participant_status: status || "Umum",
+            institution: institution || "UIN Syarif Hidayatullah Jakarta",
+          })
+          .select("id")
+          .single();
+
+        if (newP?.id) {
+          participantId = newP.id;
+        } else if (newPErr) {
+          console.warn("Auto-create participant warning:", newPErr);
+        }
       }
-    } catch {}
+    } catch (err) {
+      console.warn("Participant lookup/creation error:", err);
+    }
 
     // Hitung rating rata-rata dari q1 s/d q11
     const scores = [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11]
@@ -60,8 +98,8 @@ export async function POST(req) {
     const surveyFeedback = {
       source: "CCE_2026_SATISFACTION_INDEX",
       submitted_at: new Date().toISOString(),
-      email: email.trim(),
-      full_name: fullName.trim(),
+      email: cleanEmail,
+      full_name: cleanName,
       status,
       institution,
       faculty_choice: facultyChoice,
@@ -95,7 +133,6 @@ export async function POST(req) {
       console.error("Error inserting survey to Supabase:", insertErr);
       throw insertErr;
     }
-
 
     return NextResponse.json({
       success: true,

@@ -100,10 +100,13 @@ export async function generateStaticParams() {
   try {
     const supabase = getSupabaseServer();
     const { data } = await supabase.from("jobs").select("id").eq("is_active", true);
-    return (data || []).map((j) => ({ id: String(j.id) }));
-  } catch {
-    return [];
+    if (data && data.length > 0) {
+      return data.map((j) => ({ id: String(j.id) }));
+    }
+  } catch (err) {
+    console.error("Error in generateStaticParams:", err);
   }
+  return [{ id: "placeholder" }];
 }
 
 export async function generateMetadata({ params }) {
