@@ -703,7 +703,7 @@ export default function RegistrasiPage() {
                         className={fieldStyle}
                       >
                         <option value="">Pilih semester</option>
-                        {["2", "4", "6", "8", "10", "12", "14", "Alumni"].map((sem) => (
+                        {["1", "3", "5", "7", "9", "11", "13", "Alumni"].map((sem) => (
                           <option key={sem} value={sem}>
                             {sem === "Alumni" ? "Alumni" : `Semester ${sem}`}
                           </option>
