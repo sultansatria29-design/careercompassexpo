@@ -372,7 +372,7 @@ function PelamarAuthContent() {
                   required
                   value={loginForm.identifier}
                   onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
-                  placeholder="Contoh: nama@email.com atau CCE2026-00007"
+                  placeholder="Contoh: nama@email.com"
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
                 />
               </div>
@@ -389,9 +389,7 @@ function PelamarAuthContent() {
                   placeholder="Masukkan kata sandi akun Anda"
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
                 />
-                <span className="text-[10px] text-purple-300/60 mt-1 block">
-                  Bagi yang mendaftar via tiket umum sebelumnya, dapat memasukkan nomor WhatsApp terdaftar sebagai kata sandi awal.
-                </span>
+               
               </div>
 
               <button
