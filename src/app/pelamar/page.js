@@ -365,7 +365,7 @@ function PelamarAuthContent() {
             <form onSubmit={handleLogin} className="space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-purple-200 mb-1.5">
-                  Email atau Nomor Registrasi (CCE) <span className="text-fuchsia-400">*</span>
+                  Email <span className="text-fuchsia-400">*</span>
                 </label>
                 <input
                   type="text"
