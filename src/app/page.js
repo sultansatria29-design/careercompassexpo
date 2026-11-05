@@ -37,7 +37,7 @@ const features = [
     alt: "Robot Berkas & Lamaran",
     badge: "03",
     title: "Lamaran Online",
-    desc: "Kirim lamaran pekerjaan dan unggah berkas CV serta portofolio langsung via website.",
+    desc: "Bikin akun pelamar pekerjaan dan unggah berkas CV serta portofolio langsung via website.",
     highlight: "from-cyan-400/25 to-[#7226FF]/25",
     borderGlow: "group-hover:border-cyan-400/60",
     link: "#alur",
