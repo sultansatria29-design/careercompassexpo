@@ -651,24 +651,6 @@ export default function MitraDashboardPage() {
 
       {/* Main Content Area */}
       <main className="relative mx-auto max-w-7xl px-4 sm:px-8 py-6 sm:py-8 overflow-hidden">
-        {/* Aksesoris 3D Skyscraper Build 1 (Decorative Background) */}
-        <div className="hidden xl:block absolute -right-12 top-20 w-32 pointer-events-none select-none opacity-15 animate-float-slow z-0">
-          <img
-            src="/images/icons/build%201.png"
-            alt="Aksesoris Gedung Mitra"
-            className="w-full h-auto drop-shadow-md"
-          />
-        </div>
-
-        {/* Aksesoris 3D Tech Prism (Decorative Background) */}
-        <div className="hidden xl:block absolute -left-10 top-72 w-28 pointer-events-none select-none opacity-10 animate-float-reverse z-0">
-          <img
-            src="/images/icons/tech%202.png"
-            alt="Aksesoris Tech Prism"
-            className="w-full h-auto drop-shadow-md"
-          />
-        </div>
-
         {/* Banner Status Verifikasi Akun Perusahaan */}
         {company?.verification_status === "pending" && (
           <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 sm:p-5 shadow-xs">
