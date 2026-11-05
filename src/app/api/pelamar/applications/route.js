@@ -196,7 +196,7 @@ export async function POST(request) {
 
     if (pErr || !participant) {
       return NextResponse.json(
-        { error: "Akun pelamar tidak valid. Silakan login kembali." },
+        { error: "valid. Silakan login kembali." },
         { status: 404 }
       );
     }

@@ -191,7 +191,7 @@ export async function POST(request) {
 
       if (pErr || !participant) {
         return NextResponse.json(
-          { error: "Akun pelamar tidak ditemukan. Silakan periksa kembali email atau nomor registrasi Anda, atau daftar akun baru." },
+          { error: "Akun pelamar tidak ditemukan. Silakan periksa kembali email Anda, atau daftar akun baru." },
           { status: 404 }
         );
       }
