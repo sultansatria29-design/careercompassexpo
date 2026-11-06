@@ -1350,10 +1350,6 @@ export default function MitraDashboardPage() {
                               <span>Ditutup (Nonaktif)</span>
                             </span>
                           )}
-
-                          <span className="rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700">
-                            {job.employment_type}
-                          </span>
                         </div>
 
                         <h3 className="text-base font-bold text-slate-900">{job.title}</h3>
@@ -1364,13 +1360,6 @@ export default function MitraDashboardPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             <span>{job.location || "Jakarta"}</span>
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <svg className="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>Kuota: {job.quota || 1} orang</span>
                           </span>
                         </div>
 
@@ -1640,33 +1629,7 @@ export default function MitraDashboardPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Tipe Pekerjaan</label>
-                  <select
-                    value={jobForm.employment_type}
-                    onChange={(e) => setJobForm({ ...jobForm, employment_type: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 focus:border-purple-600 focus:bg-white focus:outline-none transition"
-                  >
-                    <option value="Full-time">Full-time (Penuh Waktu)</option>
-                    <option value="Internship">Internship (Magang)</option>
-                    <option value="Part-time">Part-time (Paruh Waktu)</option>
-                    <option value="Contract">Kontrak / Project-based</option>
-                    <option value="Freelance">Freelance</option>
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Kuota Penerimaan</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={jobForm.quota}
-                    onChange={(e) => setJobForm({ ...jobForm, quota: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 focus:border-purple-600 focus:bg-white focus:outline-none transition"
-                  />
-                </div>
-              </div>
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Lokasi &amp; Sistem Kerja</label>

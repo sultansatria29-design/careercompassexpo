@@ -535,36 +535,18 @@ export default function MitraAuthPage() {
                 </div>
               </div>
 
-              {/* Website & Skala Karyawan */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-purple-200 mb-2">
-                    Website Perusahaan
-                  </label>
-                  <input
-                    type="url"
-                    value={regForm.website}
-                    onChange={(e) => setRegForm({ ...regForm, website: e.target.value })}
-                    placeholder="https://perusahaan.com"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-purple-200 mb-2">
-                    Skala Karyawan
-                  </label>
-                  <select
-                    value={regForm.company_size}
-                    onChange={(e) => setRegForm({ ...regForm, company_size: e.target.value })}
-                    className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-4 py-3 text-sm text-white focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
-                  >
-                    <option value="1-50 Karyawan">1 - 50 Karyawan (Startup / UKM)</option>
-                    <option value="51-200 Karyawan">51 - 200 Karyawan (Menengah)</option>
-                    <option value="201-1000 Karyawan">201 - 1.000 Karyawan (Korporasi)</option>
-                    <option value="1000+ Karyawan">1.000+ Karyawan (Enterprise / Multinasional)</option>
-                  </select>
-                </div>
+              {/* Website Perusahaan */}
+              <div>
+                <label className="block text-xs font-bold text-purple-200 mb-2">
+                  Website Perusahaan
+                </label>
+                <input
+                  type="url"
+                  value={regForm.website}
+                  onChange={(e) => setRegForm({ ...regForm, website: e.target.value })}
+                  placeholder="https://perusahaan.com"
+                  className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
+                />
               </div>
 
               {/* Upload Logo Perusahaan */}
