@@ -771,7 +771,31 @@ export default function AdminDashboard() {
     }
   }
 
-  // Check-in Manual
+  // Hapus Data Peserta Lengkap
+  async function handleDeleteParticipant(participant) {
+    if (!participant) return;
+    const confirmText = `Apakah Anda yakin ingin menghapus data peserta "${participant.full_name}"?\n\nPerhatian: Nomor registrasi (${participant.registration_number || "-"}), data presensi, survei, dan riwayat lamaran peserta ini akan dihapus secara permanen dari sistem.`;
+    if (!confirm(confirmText)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `/api/admin/data?action=delete_participant&participant_id=${participant.id}`,
+        { method: "DELETE" }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal menghapus data peserta.");
+      }
+      if (selectedParticipant?.id === participant.id) {
+        setSelectedParticipant(null);
+      }
+      loadAdminData();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
   async function handleManualCheckIn(participantId, eventDate) {
     try {
       const res = await fetch("/api/admin/data", {
@@ -1947,7 +1971,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => setSelectedParticipant(p)}
-                                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                               >
                                 Detail
                               </button>
@@ -1961,12 +1985,19 @@ export default function AdminDashboard() {
                                         : "2026-11-18"
                                     )
                                   }
-                                  className="rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                                  className="rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition"
                                   title="Check-in Manual di Gate"
                                 >
                                   + Presensi
                                 </button>
                               )}
+                              <button
+                                onClick={() => handleDeleteParticipant(p)}
+                                className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition"
+                                title="Hapus Data Peserta"
+                              >
+                                Hapus
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -3490,10 +3521,19 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+              <button
+                onClick={() => handleDeleteParticipant(selectedParticipant)}
+                className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-300 flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <svg className="h-3.5 w-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Hapus Peserta</span>
+              </button>
               <button
                 onClick={() => setSelectedParticipant(null)}
-                className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800"
+                className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition cursor-pointer"
               >
                 Tutup
               </button>

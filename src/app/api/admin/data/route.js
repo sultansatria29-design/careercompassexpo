@@ -199,26 +199,98 @@ export async function GET() {
   }
 }
 
-// DELETE: Hapus data check-in presensi jika terjadi salah scan
+// DELETE: Hapus data peserta atau data check-in presensi
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
+    const action = searchParams.get("action");
+    const participantId = searchParams.get("participant_id");
     const attendanceId = searchParams.get("id");
 
+    const supabase = getSupabase();
+
+    // 1. Hapus Peserta Lengkap (beserta seluruh riwayat presensi, survei, dan lamaran)
+    if (action === "delete_participant" || participantId) {
+      const targetId = participantId || attendanceId;
+      if (!targetId) {
+        return NextResponse.json(
+          { success: false, message: "ID peserta diperlukan." },
+          { status: 400 }
+        );
+      }
+
+      // Ambil data peserta terlebih dahulu untuk referensi email jika ada
+      const { data: partData } = await supabase
+        .from("participants")
+        .select("id, email")
+        .eq("id", targetId)
+        .maybeSingle();
+
+      // Hapus data berelasi terlebih dahulu agar tidak terjadi foreign key constraint error
+      // a. Hapus catatan presensi (attendance)
+      await supabase.from("attendance").delete().eq("participant_id", targetId);
+
+      // b. Hapus survei registrasi awal berdasarkan participant_id
+      await supabase.from("surveys").delete().eq("participant_id", targetId);
+
+      // c. Hapus survei kepuasan dengan email terkait jika ada
+      if (partData?.email) {
+        try {
+          const { data: matchedSurveys } = await supabase.from("surveys").select("id, feedback");
+          const toDelete = (matchedSurveys || [])
+            .filter((s) => {
+              try {
+                const fb = typeof s.feedback === "string" ? JSON.parse(s.feedback) : s.feedback;
+                return fb && fb.email && fb.email.toLowerCase() === partData.email.toLowerCase();
+              } catch {
+                return false;
+              }
+            })
+            .map((s) => s.id);
+
+          if (toDelete.length > 0) {
+            await supabase.from("surveys").delete().in("id", toDelete);
+          }
+        } catch (e) {
+          console.warn("Survey cleanup by email warning:", e.message);
+        }
+      }
+
+      // d. Hapus lamaran pekerjaan (applications) jika ada
+      try {
+        await supabase.from("applications").delete().eq("participant_id", targetId);
+      } catch (e) {
+        console.warn("Applications cleanup warning:", e.message);
+      }
+
+      // e. Hapus data utama di tabel participants
+      const { error: partErr } = await supabase
+        .from("participants")
+        .delete()
+        .eq("id", targetId);
+
+      if (partErr) throw partErr;
+
+      return NextResponse.json({
+        success: true,
+        message: "Data peserta berhasil dihapus secara permanen beserta riwayat terkait.",
+      });
+    }
+
+    // 2. Hapus Presensi Saja
     if (!attendanceId) {
       return NextResponse.json({ success: false, message: "ID presensi diperlukan." }, { status: 400 });
     }
 
-    const supabase = getSupabase();
     const { error } = await supabase.from("attendance").delete().eq("id", attendanceId);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true, message: "Data presensi berhasil dihapus." });
   } catch (error) {
-    console.error("Admin attendance delete error:", error);
+    console.error("Admin delete error:", error);
     return NextResponse.json(
-      { success: false, message: error.message || "Gagal menghapus presensi." },
+      { success: false, message: error.message || "Gagal menghapus data." },
       { status: 500 }
     );
   }
