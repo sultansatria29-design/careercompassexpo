@@ -64,10 +64,10 @@ export default function DocumSlider() {
       onTouchEnd={handleTouchEnd}
     >
       {/* Efek Ambient Glow Belakang Frame */}
-      <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-[#7226FF] via-[#EF17D8] to-[#4B1E85] opacity-40 blur-xl transition duration-500 group-hover:opacity-60 pointer-events-none" />
+      <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-[#7226FF] via-[#EF17D8] to-[#4B1E85] opacity-20 blur-xl transition duration-500 group-hover:opacity-30 pointer-events-none" />
 
       {/* Frame Slider Utama */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-[#160B29] shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl">
         {/* Progress Bar 5 Detik */}
         <div className="absolute top-0 left-0 right-0 z-30 h-1 bg-white/20">
           <div

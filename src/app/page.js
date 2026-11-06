@@ -58,49 +58,50 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#1E0C36] text-white">
+    <main className="min-h-screen bg-white text-slate-900 selection:bg-purple-100 selection:text-purple-900">
       {/* Header Sticky / Navbar Responsif dengan Hamburger Mobile */}
       <Navbar />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#4B1E85] via-[#7226FF] to-[#EF17D8] px-4 py-16 sm:px-6 sm:py-24 text-center">
-        <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-pink-400/30 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-purple-300/30 blur-3xl" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-purple-50/70 via-white to-white px-4 py-16 sm:px-6 sm:py-24 text-center border-b border-slate-100">
+        <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-pink-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-purple-200/40 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
           {/* Baris Robot 5 (Kiri) - Teks Judul - Robot 1 (Kanan) */}
           <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-8 lg:gap-12">
             {/* Robot 5 di sebelah kiri */}
             <div className="relative flex shrink-0 items-center justify-center">
-              <div className="pointer-events-none absolute h-32 w-32 rounded-full bg-pink-400/35 blur-2xl sm:h-48 sm:w-48 md:h-64 md:w-64" />
+              <div className="pointer-events-none absolute h-32 w-32 rounded-full bg-pink-300/30 blur-2xl sm:h-48 sm:w-48 md:h-64 md:w-64" />
               <img
                 src="/images/icons/robot%205.png"
                 alt="Maskot Robot 5 (Kiri)"
-                className="relative z-10 w-24 sm:w-36 md:w-56 lg:w-72 xl:w-80 object-contain drop-shadow-2xl animate-float-slow transition-transform hover:scale-105"
+                className="relative z-10 w-24 sm:w-36 md:w-56 lg:w-72 xl:w-80 object-contain drop-shadow-xl animate-float-slow transition-transform hover:scale-105"
               />
             </div>
 
             {/* Tulisan Career Compass Expo 2026 di tengah */}
             <div className="min-w-0 flex-1 text-center">
-              <p className="mb-2 text-[11px] sm:text-xs md:text-sm font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-white/90">
+              <p className="mb-2 text-[11px] sm:text-xs md:text-sm font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-purple-700">
                 UIN Syarif Hidayatullah Jakarta
               </p>
-              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black uppercase leading-[1.05] tracking-tight">
-                Career<br />Compass Expo<br />2026
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black uppercase leading-[1.05] tracking-tight text-slate-900">
+                Career<br />Compass Expo<br />
+                <span className="bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] bg-clip-text text-transparent">2026</span>
               </h1>
             </div>
 
             {/* Robot 1 di sebelah kanan */}
             <div className="relative flex shrink-0 items-center justify-center">
-              <div className="pointer-events-none absolute h-32 w-32 rounded-full bg-purple-400/35 blur-2xl sm:h-48 sm:w-48 md:h-64 md:w-64" />
+              <div className="pointer-events-none absolute h-32 w-32 rounded-full bg-purple-300/30 blur-2xl sm:h-48 sm:w-48 md:h-64 md:w-64" />
               <img
                 src="/images/icons/robot%201.png"
                 alt="Maskot Robot 1 (Kanan)"
-                className="relative z-10 w-24 sm:w-36 md:w-56 lg:w-72 xl:w-80 object-contain drop-shadow-2xl animate-float-reverse transition-transform hover:scale-105"
+                className="relative z-10 w-24 sm:w-36 md:w-56 lg:w-72 xl:w-80 object-contain drop-shadow-xl animate-float-reverse transition-transform hover:scale-105"
               />
             </div>
           </div>
 
-          <p className="mx-auto mt-8 max-w-2xl text-base sm:text-lg text-white/90">
+          <p className="mx-auto mt-8 max-w-2xl text-base sm:text-lg text-slate-600">
             Jelajahi peluang karier, temukan lowongan pekerjaan,
             dan ikuti walk-in interview bersama perusahaan peserta.
           </p>
@@ -108,29 +109,29 @@ export default function Home() {
           {/* Informasi Waktu & Lokasi Pelaksanaan */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             {/* Badge Waktu Pelaksanaan */}
-            <div className="group flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 backdrop-blur-md shadow-lg shadow-black/10 transition-all duration-300 hover:border-[#EF17D8]/60 hover:bg-white/15">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#EF17D8] to-[#7226FF] shadow-md shadow-pink-500/30 transition-transform duration-300 group-hover:scale-110">
+            <div className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-[#EF17D8]/60 hover:shadow-md">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#EF17D8] to-[#7226FF] shadow-md shadow-pink-500/20 transition-transform duration-300 group-hover:scale-110">
                 <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <div className="text-left">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-white/70">Waktu Pelaksanaan</span>
-                <span className="text-sm sm:text-base font-extrabold text-white tracking-wide">18–19 November 2026</span>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Waktu Pelaksanaan</span>
+                <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-wide">18–19 November 2026</span>
               </div>
             </div>
 
             {/* Badge Lokasi Acara */}
-            <div className="group flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 backdrop-blur-md shadow-lg shadow-black/10 transition-all duration-300 hover:border-[#7226FF]/60 hover:bg-white/15">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#7226FF] to-[#EF17D8] shadow-md shadow-purple-500/30 transition-transform duration-300 group-hover:scale-110">
+            <div className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-[#7226FF]/60 hover:shadow-md">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#7226FF] to-[#EF17D8] shadow-md shadow-purple-500/20 transition-transform duration-300 group-hover:scale-110">
                 <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div className="text-left">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-white/70">Lokasi Acara</span>
-                <span className="text-sm sm:text-base font-extrabold text-white tracking-wide">UIN Syarif Hidayatullah Jakarta</span>
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Lokasi Acara</span>
+                <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-wide">UIN Syarif Hidayatullah Jakarta</span>
               </div>
             </div>
           </div>
@@ -139,7 +140,7 @@ export default function Home() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/registrasi"
-              className="rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-extrabold text-[#7226FF] shadow-xl shadow-black/20 transition-all duration-200 hover:scale-105 hover:bg-white/95 flex items-center gap-2"
+              className="rounded-full bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-500/25 transition-all duration-200 hover:scale-105 hover:opacity-95 flex items-center gap-2"
             >
               <span>Registrasi Peserta (E-Ticket)</span>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -148,18 +149,18 @@ export default function Home() {
             </Link>
             <Link
               href="/pelamar/walk-in"
-              className="rounded-full border border-white/30 bg-black/25 backdrop-blur-md px-6 py-3 text-xs sm:text-sm font-bold text-white transition-all duration-200 hover:scale-105 hover:bg-black/40 flex items-center gap-2"
+              className="rounded-full border border-purple-200 bg-white hover:bg-purple-50/70 shadow-sm px-6 py-3 text-xs sm:text-sm font-bold text-slate-800 transition-all duration-200 hover:scale-105 flex items-center gap-2"
             >
-              <svg className="w-4 h-4 text-fuchsia-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 text-fuchsia-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span>Form Walk-In Interview</span>
             </Link>
             <Link
               href="/indeks-kepuasan"
-              className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-5 py-3 text-xs sm:text-sm font-semibold text-white/90 transition-all duration-200 hover:scale-105 hover:bg-white/20 flex items-center gap-2"
+              className="rounded-full border border-amber-200 bg-amber-50 hover:bg-amber-100/80 shadow-sm px-5 py-3 text-xs sm:text-sm font-semibold text-amber-900 transition-all duration-200 hover:scale-105 flex items-center gap-2"
             >
-              <svg className="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
               </svg>
               <span>Indeks Kepuasan</span>
@@ -175,34 +176,34 @@ export default function Home() {
             <p className="font-bold text-[#EF17D8] tracking-widest uppercase text-xs sm:text-sm">
               TENTANG ACARA
             </p>
-            <h2 className="text-3xl font-extrabold md:text-5xl leading-tight">
+            <h2 className="text-3xl font-extrabold md:text-5xl leading-tight text-slate-900">
               Langkah Awal Menuju Karier Impian
             </h2>
-            <p className="leading-relaxed text-white/80 text-base sm:text-lg">
+            <p className="leading-relaxed text-slate-600 text-base sm:text-lg">
               Career Compass Expo 2026 menghadirkan kesempatan bagi mahasiswa,
               alumni, dan masyarakat umum untuk mengenal perusahaan terkemuka,
               menemukan lowongan pekerjaan, serta mengikuti proses rekrutmen.
             </p>
-            <div className="pt-2 flex flex-wrap gap-3 text-xs sm:text-sm text-purple-200">
-              <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
-                <svg className="h-4 w-4 text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="pt-2 flex flex-wrap gap-3 text-xs sm:text-sm text-slate-700">
+              <div className="flex items-center gap-2 rounded-xl bg-purple-50/80 px-3.5 py-2 border border-purple-200/70 shadow-2xs">
+                <svg className="h-4 w-4 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <span className="font-semibold text-white">20 Perusahaan Ternama</span>
+                <span className="font-bold text-slate-800">20 Perusahaan Ternama</span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
-                <svg className="h-4 w-4 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 rounded-xl bg-purple-50/80 px-3.5 py-2 border border-purple-200/70 shadow-2xs">
+                <svg className="h-4 w-4 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M13 2L3 14h8l-2 8 10-12h-8l2-8z" />
                 </svg>
-                <span className="font-semibold text-white">Walk-in Interview Langsung</span>
+                <span className="font-bold text-slate-800">Walk-in Interview Langsung</span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-purple-900/40 px-3.5 py-2 border border-purple-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2 rounded-xl bg-purple-50/80 px-3.5 py-2 border border-purple-200/70 shadow-2xs">
                 <svg className="h-4 w-4 text-[#EF17D8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" />
                 </svg>
-                <span className="font-semibold text-white">Seminar & Career Talk</span>
+                <span className="font-bold text-slate-800">Seminar & Career Talk</span>
               </div>
             </div>
           </div>
@@ -213,23 +214,22 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* SECTION: INFORMASI ACARA (Informasi Kegiatan CCE 2026 & Profil Pusat Karier) */}
-      <section id="informasi" className="relative bg-[#2A1248] px-6 py-20 sm:py-24 overflow-hidden">
+      <section id="informasi" className="relative bg-slate-50/80 px-6 py-20 sm:py-24 overflow-hidden border-y border-slate-200/80">
         {/* Ambient background blur */}
-        <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-[#7226FF]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -left-32 bottom-10 h-80 w-80 rounded-full bg-[#EF17D8]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-[#7226FF]/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-32 bottom-10 h-80 w-80 rounded-full bg-[#EF17D8]/5 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="mb-10 text-center max-w-3xl mx-auto">
             <p className="mb-2 font-bold text-xs sm:text-sm uppercase tracking-widest text-[#EF17D8]">
               INFORMASI ACARA
             </p>
-            <h2 className="text-3xl font-extrabold md:text-5xl tracking-tight">
+            <h2 className="text-3xl font-extrabold md:text-5xl tracking-tight text-slate-900">
               Informasi Kegiatan CCE 2026
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-white/70">
-              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta & Agenda Pelaksanaan Career Compass Expo 2026
+            <p className="mt-3 text-sm sm:text-base text-slate-600">
+              Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta &amp; Agenda Pelaksanaan Career Compass Expo 2026
             </p>
           </div>
 
@@ -242,14 +242,14 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div>
             <p className="mb-3 font-bold text-[#EF17D8]">PELUANG KARIER</p>
-            <h2 className="text-3xl font-extrabold md:text-5xl">Lowongan Pekerjaan</h2>
-            <p className="mt-4 max-w-2xl text-white/70">
+            <h2 className="text-3xl font-extrabold md:text-5xl text-slate-900">Lowongan Pekerjaan</h2>
+            <p className="mt-4 max-w-2xl text-slate-600">
               Jelajahi berbagai posisi yang dibuka oleh perusahaan peserta Career Compass Expo 2026. Siapkan CV terbaikmu dan ikuti walk-in interview langsung di lokasi!
             </p>
           </div>
           <Link
             href="/registrasi"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 border border-white/20 px-6 py-3 font-bold text-white backdrop-blur-sm transition hover:bg-white/20 hover:scale-105"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-purple-50 border border-purple-200 px-6 py-3 font-bold text-purple-700 shadow-xs transition hover:bg-purple-100 hover:scale-105"
           >
             <span>Daftar untuk Melamar</span>
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -264,21 +264,21 @@ export default function Home() {
       </section>
 
       {/* SECTION: PANDUAN & FITUR ACARA (Apa yang Bisa Kamu Lakukan?) */}
-      <section id="fitur" className="relative bg-[#1E0C36] px-6 py-20 sm:py-24 overflow-hidden border-t border-purple-900/40">
+      <section id="fitur" className="relative bg-slate-50/80 px-6 py-20 sm:py-24 overflow-hidden border-t border-slate-200/80">
         <div id="alur" />
         {/* Ambient background blur */}
-        <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#7226FF]/15 blur-3xl" />
-        <div className="pointer-events-none absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-[#EF17D8]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#7226FF]/5 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-[#EF17D8]/5 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="mb-12 text-center md:text-left">
             <p className="mb-3 font-bold text-xs sm:text-sm uppercase tracking-widest text-[#EF17D8]">
               PANDUAN & FITUR ACARA
             </p>
-            <h2 className="text-3xl font-extrabold md:text-5xl">
+            <h2 className="text-3xl font-extrabold md:text-5xl text-slate-900">
               Apa yang Bisa Kamu Lakukan?
             </h2>
-            <p className="mt-3 max-w-2xl text-sm sm:text-base text-white/70">
+            <p className="mt-3 max-w-2xl text-sm sm:text-base text-slate-600">
               Maksimalkan kesempatan berkarier kamu dengan mengikuti seluruh alur kegiatan yang tersedia di CCE 2026.
             </p>
           </div>
@@ -292,39 +292,39 @@ export default function Home() {
       <TactlinkSection />
 
       {/* SECTION: GABUNG MENJADI MITRA PERUSAHAAN */}
-      <section id="mitra" className="relative overflow-hidden bg-gradient-to-b from-[#1E0C36] via-[#160728] to-[#0E041A] px-6 py-16 sm:py-20 border-t border-purple-500/20">
+      <section id="mitra" className="relative overflow-hidden bg-white px-6 py-16 sm:py-20 border-t border-slate-200/80">
         <div className="relative mx-auto max-w-7xl">
-          <div className="relative rounded-3xl border border-white/15 bg-gradient-to-r from-purple-950/80 via-[#2E0854]/90 to-fuchsia-950/80 p-8 sm:p-12 shadow-2xl backdrop-blur-xl overflow-hidden">
-            <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#EF17D8]/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#7226FF]/25 blur-3xl" />
+          <div className="relative rounded-3xl border border-purple-200/80 bg-gradient-to-br from-white via-purple-50/40 to-fuchsia-50/40 p-8 sm:p-12 shadow-xl overflow-hidden">
+            <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#EF17D8]/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#7226FF]/10 blur-3xl" />
 
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
               <div className="max-w-2xl text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-900/50 px-3.5 py-1 text-xs font-bold text-purple-200 mb-4">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-100/70 px-3.5 py-1 text-xs font-bold text-purple-700 mb-4">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>Kemitraan Perusahaan &amp; Rekrutmen</span>
                 </div>
-                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                   Buka Peluang Karir bersama <span className="bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] bg-clip-text text-transparent">Mahasiswa &amp; Alumni UIN Jakarta</span>
                 </h2>
-                <p className="mt-3 text-sm sm:text-base text-purple-200/80 leading-relaxed">
+                <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
                   Daftarkan perusahaan Anda sebagai mitra resmi Career Compass Expo 2026. Dapatkan akses ke dashboard rekrutmen praktis untuk membuat lowongan pekerjaan, meninjau berkas CV pelamar, dan mencentang tahapan seleksi secara interaktif.
                 </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-purple-300">
+                <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-slate-700">
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     Akses 5.000+ Talenta
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     Booth On-Site Interview
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     Dashboard ATS Mandiri
@@ -335,7 +335,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0 w-full sm:w-auto">
                 <Link
                   href="/mitra"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] px-8 py-4 text-center text-sm font-black text-white shadow-xl shadow-purple-600/40 transition hover:scale-105 hover:opacity-95"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] px-8 py-4 text-center text-sm font-black text-white shadow-xl shadow-purple-600/30 transition hover:scale-105 hover:opacity-95"
                 >
                   <svg className="h-4 w-4 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -347,9 +347,9 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/mitra/dashboard"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-center text-xs font-bold text-purple-200 hover:bg-white/15 hover:text-white transition"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-6 py-3.5 text-center text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-xs transition"
                 >
-                  <svg className="h-3.5 w-3.5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-3.5 w-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                   <span>Buka Dashboard Mitra</span>
@@ -360,23 +360,17 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-sm text-white/60">
+      <footer className="border-t border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
           <span>© 2026 Career Compass Expo — UIN Syarif Hidayatullah Jakarta</span>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-white/70">
-            <Link
-              href="/mitra"
-              className="text-purple-300 hover:text-white transition-colors font-semibold flex items-center gap-1.5"
-            >
-    
-            </Link>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-600">
             <div className="flex items-center">
               <span>Dev by&nbsp;</span>
               <a
                 href="https://www.instagram.com/satriaalbantanii"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-[#EF17D8] hover:text-white hover:underline transition-colors"
+                className="font-bold text-[#EF17D8] hover:text-purple-600 hover:underline transition-colors"
               >
                 Sultan Satria
               </a>
@@ -486,9 +480,9 @@ async function JobsSection() {
 
 function JobsFallback() {
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#4B1E85]/20 p-12 text-center animate-pulse">
-      <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-white/10" />
-      <div className="mx-auto h-4 w-48 rounded bg-white/10" />
+    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-12 text-center animate-pulse">
+      <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-slate-200" />
+      <div className="mx-auto h-4 w-48 rounded bg-slate-200" />
     </div>
   );
 }

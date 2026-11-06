@@ -36,43 +36,43 @@ export default function Navbar() {
     <header
       className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
         scrolled || isOpen
-          ? "border-white/10 bg-[#1E0C36]/95 backdrop-blur-md shadow-lg shadow-black/30"
-          : "border-white/5 bg-[#1E0C36]/80 backdrop-blur-sm"
+          ? "border-slate-200/90 bg-white/95 backdrop-blur-md shadow-xs text-slate-800"
+          : "border-slate-100 bg-white/85 backdrop-blur-sm text-slate-800"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-3.5">
         {/* Logo & Brand Title */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="flex h-10 w-24 sm:h-12 sm:w-28 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm transition hover:scale-105">
+          <div className="flex h-10 w-24 sm:h-12 sm:w-28 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm border border-slate-100 transition hover:scale-105">
             <img
               src="/images/logo-puskar.png"
               alt="Logo Pusat Karier UIN Jakarta"
               className="h-full w-full object-contain"
             />
           </div>
-          <span className="text-base sm:text-lg font-black tracking-tight whitespace-nowrap">
+          <span className="text-base sm:text-lg font-black tracking-tight whitespace-nowrap text-slate-900">
             CCE<span className="text-[#EF17D8]"> 2026</span>
           </span>
         </Link>
 
         {/* Desktop Navigation Links (>= md) */}
         <nav className="hidden items-center gap-5 text-sm font-semibold md:flex lg:gap-7">
-          <Link href="/" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/" className="text-slate-600 transition-colors hover:text-purple-600">
             Beranda
           </Link>
-          <Link href="/#tentang" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#tentang" className="text-slate-600 transition-colors hover:text-purple-600">
             Tentang
           </Link>
-          <Link href="/#informasi" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#informasi" className="text-slate-600 transition-colors hover:text-purple-600">
             Informasi Acara
           </Link>
-          <Link href="/#lowongan" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#lowongan" className="text-slate-600 transition-colors hover:text-purple-600">
             Lowongan
           </Link>
-          <Link href="/#fitur" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#fitur" className="text-slate-600 transition-colors hover:text-purple-600">
             Panduan
           </Link>
-          <Link href="/#mitra" className="text-white/80 transition-colors hover:text-white">
+          <Link href="/#mitra" className="text-slate-600 transition-colors hover:text-purple-600">
             Mitra
           </Link>
         </nav>
@@ -82,9 +82,9 @@ export default function Navbar() {
           {pelamarSession ? (
             <Link
               href="/pelamar/dashboard"
-              className="rounded-full border border-fuchsia-500/40 bg-fuchsia-500/15 px-4 py-2 text-xs font-bold text-fuchsia-300 hover:bg-fuchsia-500/25 transition flex items-center gap-1.5"
+              className="rounded-full border border-fuchsia-300 bg-fuchsia-50 px-4 py-2 text-xs font-bold text-fuchsia-700 hover:bg-fuchsia-100 transition flex items-center gap-1.5"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3.5 h-3.5 text-fuchsia-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Dashboard Pelamar</span>
@@ -92,9 +92,9 @@ export default function Navbar() {
           ) : (
             <Link
               href="/pelamar"
-              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-purple-200 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5"
+              className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition flex items-center gap-1.5"
             >
-              <svg className="w-3.5 h-3.5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3.5 h-3.5 text-fuchsia-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Masuk Pelamar</span>
@@ -103,7 +103,7 @@ export default function Navbar() {
 
           <Link
             href="/registrasi"
-            className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-105 hover:shadow-lg"
+            className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/20 transition-all duration-200 hover:scale-105 hover:shadow-lg"
           >
             Registrasi Peserta
           </Link>
@@ -115,7 +115,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle navigation menu"
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
           >
             {isOpen ? (
               // Icon Close / X
@@ -134,79 +134,79 @@ export default function Navbar() {
 
       {/* Mobile Dropdown Drawer Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-purple-500/20 bg-[#1E0C36]/98 px-5 py-6 backdrop-blur-xl animate-fadeIn">
+        <div className="md:hidden border-t border-slate-200 bg-white/98 px-5 py-6 backdrop-blur-xl animate-fadeIn shadow-2xl">
           <div className="space-y-4">
-            <nav className="flex flex-col space-y-2 text-base font-bold">
+            <nav className="flex flex-col space-y-1 text-sm font-bold">
               <Link
                 href="/"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
                 <span>Beranda</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               <Link
                 href="/#tentang"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
                 <span>Tentang Acara</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               <Link
                 href="/#informasi"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
                 <span>Informasi Acara</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               <Link
                 href="/#lowongan"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
                 <span>Lowongan Pekerjaan</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               <Link
                 href="/#fitur"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
-                <span>Panduan & Fitur</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <span>Panduan &amp; Fitur</span>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               <Link
                 href="/#mitra"
                 onClick={handleNavClick}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-white/90 hover:bg-purple-950/60 hover:text-white transition"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition"
               >
                 <span>Mitra Perusahaan</span>
-                <svg className="h-4 w-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
             </nav>
 
-            <div className="pt-2 border-t border-purple-800/40 space-y-2">
+            <div className="pt-3 border-t border-slate-200 space-y-2">
               {pelamarSession ? (
                 <Link
                   href="/pelamar/dashboard"
                   onClick={handleNavClick}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/20 py-3 text-center text-xs font-bold text-fuchsia-300 transition hover:bg-fuchsia-500/30"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-300 bg-fuchsia-50 py-3 text-center text-xs font-bold text-fuchsia-700 transition hover:bg-fuchsia-100"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-fuchsia-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <span>Dashboard Pelamar Saya</span>
@@ -215,9 +215,9 @@ export default function Navbar() {
                 <Link
                   href="/pelamar"
                   onClick={handleNavClick}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 py-3 text-center text-xs font-bold text-purple-200 transition hover:bg-white/15"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-xs font-bold text-slate-700 transition hover:bg-slate-100"
                 >
-                  <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-fuchsia-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <span>Masuk / Daftar Akun Pelamar</span>
@@ -227,9 +227,9 @@ export default function Navbar() {
               <Link
                 href="/pelamar/walk-in"
                 onClick={handleNavClick}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-950/30 py-3 text-center text-xs font-bold text-cyan-300 transition hover:bg-cyan-900/40"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50/70 py-3 text-center text-xs font-bold text-purple-800 transition hover:bg-purple-100"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span>Form Walk-In Interview</span>
@@ -238,9 +238,9 @@ export default function Navbar() {
               <Link
                 href="/indeks-kepuasan"
                 onClick={handleNavClick}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-950/30 py-3 text-center text-xs font-bold text-amber-300 transition hover:bg-amber-900/40"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50/70 py-3 text-center text-xs font-bold text-amber-900 transition hover:bg-amber-100"
               >
-                <svg className="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                 </svg>
                 <span>Indeks Kepuasan Acara</span>
@@ -249,7 +249,7 @@ export default function Navbar() {
               <Link
                 href="/registrasi"
                 onClick={handleNavClick}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-lg shadow-purple-600/30 transition hover:opacity-95"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-md shadow-purple-600/20 transition hover:opacity-95"
               >
                 <span>Registrasi Peserta (E-Ticket)</span>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

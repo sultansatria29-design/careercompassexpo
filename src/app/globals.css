@@ -15,8 +15,8 @@ html {
 
 body {
   margin: 0;
-  background: var(--cce-dark);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   font-family: var(--font-poppins), sans-serif;
 }
 

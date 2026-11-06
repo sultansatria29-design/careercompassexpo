@@ -94,14 +94,14 @@ export default function FeatureCards({ items }) {
             {items.map((item, idx) => (
               <div key={item.title} className="w-full shrink-0 px-1">
                 <div
-                  className={`group relative flex flex-col justify-between rounded-3xl border border-white/15 bg-gradient-to-b from-[#4B1E85]/70 to-[#2A1248]/80 p-7 backdrop-blur-md shadow-2xl transition-all duration-300 ${item.borderGlow}`}
+                  className="group relative flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-7 shadow-lg shadow-purple-500/5 transition-all duration-300"
                 >
                   <div>
                     <div className="mb-4 flex items-center justify-between">
-                      <span className="rounded-full bg-[#EF17D8]/20 px-3 py-1 text-xs font-black tracking-widest text-[#EF17D8] border border-[#EF17D8]/40">
+                      <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-black tracking-widest text-purple-700 border border-purple-200">
                         LANGKAH {item.badge}
                       </span>
-                      <span className="text-xs text-white/50 font-medium">
+                      <span className="text-xs text-slate-500 font-medium">
                         Fitur {idx + 1} dari {items.length}
                       </span>
                     </div>
@@ -109,26 +109,26 @@ export default function FeatureCards({ items }) {
                     {/* Maskot Robot */}
                     <div className="relative mb-6 flex h-36 w-36 items-center justify-center mx-auto">
                       <div
-                        className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.highlight} blur-xl animate-pulse`}
+                        className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.highlight} blur-xl opacity-60 animate-pulse`}
                       />
                       <img
                         src={item.icon}
                         alt={item.alt}
-                        className="relative z-10 h-full w-full object-contain drop-shadow-2xl select-none"
+                        className="relative z-10 h-full w-full object-contain drop-shadow-lg select-none"
                       />
                     </div>
 
-                    <h3 className="mb-2 text-2xl font-bold text-white text-center">
+                    <h3 className="mb-2 text-2xl font-bold text-slate-900 text-center">
                       {item.title}
                     </h3>
-                    <p className="text-sm leading-relaxed text-white/80 text-center">
+                    <p className="text-sm leading-relaxed text-slate-600 text-center">
                       {item.desc}
                     </p>
                   </div>
 
                   <Link
                     href={item.link || "#alur"}
-                    className="mt-6 pt-4 border-t border-white/15 flex items-center justify-center gap-2 text-sm font-bold text-[#EF17D8] hover:text-white transition-colors"
+                    className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-sm font-bold text-purple-600 hover:text-[#EF17D8] transition-colors"
                   >
                     <span>{item.cta || "Pelajari lebih lanjut"}</span>
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -144,7 +144,7 @@ export default function FeatureCards({ items }) {
           <button
             onClick={prevSlide}
             aria-label="Slide Sebelumnya"
-            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg cursor-pointer"
+            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 hover:text-slate-900 border border-slate-200 active:scale-95 transition-transform shadow-md cursor-pointer"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -153,7 +153,7 @@ export default function FeatureCards({ items }) {
           <button
             onClick={nextSlide}
             aria-label="Slide Berikutnya"
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20 active:scale-95 transition-transform shadow-lg cursor-pointer"
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 hover:text-slate-900 border border-slate-200 active:scale-95 transition-transform shadow-md cursor-pointer"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -171,7 +171,7 @@ export default function FeatureCards({ items }) {
               className={`h-2.5 rounded-full transition-all duration-300 ${
                 mobileIndex === dotIdx
                   ? "w-8 bg-gradient-to-r from-[#7226FF] to-[#EF17D8] shadow-[0_0_12px_rgba(239,23,216,0.6)]"
-                  : "w-2.5 bg-white/25 hover:bg-white/40"
+                  : "w-2.5 bg-slate-300 hover:bg-slate-400"
               }`}
             />
           ))}
@@ -185,11 +185,11 @@ export default function FeatureCards({ items }) {
         {items.map((item, idx) => (
           <div
             key={item.title}
-            className={`group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#4B1E85]/40 p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:bg-[#4B1E85]/70 hover:shadow-2xl ${item.borderGlow}`}
+            className="group relative flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-7 shadow-xs transition-all duration-300 hover:-translate-y-2 hover:border-purple-300 hover:shadow-xl hover:shadow-purple-500/10"
           >
             <div>
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-black tracking-widest text-white/40 group-hover:text-[#EF17D8] transition-colors">
+                <span className="text-xs font-black tracking-widest text-slate-400 group-hover:text-purple-600 transition-colors">
                   {item.badge}
                 </span>
               </div>
@@ -197,7 +197,7 @@ export default function FeatureCards({ items }) {
               {/* Container Maskot Robot dengan Animasi Dari Besar ke Kecil Saat Scroll */}
               <div className="relative mb-6 flex h-32 w-32 items-center justify-center mx-auto overflow-visible">
                 <div
-                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${item.highlight} blur-xl`}
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${item.highlight} blur-xl opacity-60`}
                   style={{
                     transform: `scale(${scale})`,
                     transition: "transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -206,7 +206,7 @@ export default function FeatureCards({ items }) {
                 <img
                   src={item.icon}
                   alt={item.alt}
-                  className="relative z-10 h-full w-full object-contain drop-shadow-xl select-none"
+                  className="relative z-10 h-full w-full object-contain drop-shadow-md select-none"
                   style={{
                     transform: `scale(${scale})`,
                     transition: "transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -214,17 +214,17 @@ export default function FeatureCards({ items }) {
                 />
               </div>
 
-              <h3 className="mb-3 text-xl font-bold text-white group-hover:text-[#EF17D8] transition-colors">
+              <h3 className="mb-3 text-xl font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
                 {item.title}
               </h3>
-              <p className="text-sm leading-relaxed text-white/70">
+              <p className="text-sm leading-relaxed text-slate-600">
                 {item.desc}
               </p>
             </div>
 
             <Link
               href={item.link || "#alur"}
-              className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-[#EF17D8] group-hover:text-white transition-colors"
+              className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600 group-hover:text-[#EF17D8] transition-colors"
             >
               <span>{item.cta || "Pelajari lebih lanjut"}</span>
               <svg className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
