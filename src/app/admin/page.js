@@ -194,6 +194,14 @@ function IconStar({ className = "h-4 w-4" }) {
   );
 }
 
+function IconDocument({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
 // ========================================================
 // KOMPONEN UTAMA DASHBOARD ADMIN
 // ========================================================
@@ -267,12 +275,16 @@ export default function AdminDashboard() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [settingsMessage, setSettingsMessage] = useState(null);
 
-  // State untuk Tab Mitra Perusahaan & Verifikasi/Penyaringan
+  // State untuk Tab Mitra Perusahaan & Kurasi Lowongan Walk-In Interview
   const [mitraList, setMitraList] = useState([]);
-  const [mitraStats, setMitraStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 });
+  const [mitraJobsList, setMitraJobsList] = useState([]);
+  const [mitraStats, setMitraStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0, total_jobs: 0, walk_in_jobs: 0 });
   const [loadingMitra, setLoadingMitra] = useState(false);
+  const [mitraSubTab, setMitraSubTab] = useState("companies"); // "companies" | "walkin_jobs"
   const [searchMitra, setSearchMitra] = useState("");
+  const [searchMitraJob, setSearchMitraJob] = useState("");
   const [filterMitraStatus, setFilterMitraStatus] = useState("ALL");
+  const [filterMitraJobWalkIn, setFilterMitraJobWalkIn] = useState("ALL"); // "ALL" | "WALKIN" | "REGULAR"
   const [selectedMitraDetail, setSelectedMitraDetail] = useState(null);
   const [rejectModalMitra, setRejectModalMitra] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -386,7 +398,17 @@ export default function AdminDashboard() {
       const json = await res.json();
       if (res.ok && json.success) {
         setMitraList(json.companies || []);
-        setMitraStats(json.stats || { total: 0, pending: 0, verified: 0, rejected: 0 });
+        setMitraJobsList(json.jobs || []);
+        setMitraStats(
+          json.stats || {
+            total: 0,
+            pending: 0,
+            verified: 0,
+            rejected: 0,
+            total_jobs: 0,
+            walk_in_jobs: 0,
+          }
+        );
       }
     } catch (err) {
       console.error("Gagal memuat data mitra:", err);
@@ -398,6 +420,47 @@ export default function AdminDashboard() {
   function showMitraFeedback(type, text) {
     setMitraToast({ type, text });
     setTimeout(() => setMitraToast(null), 4000);
+  }
+
+  // Handle Toggle Akses Walk-In Lowongan (Khusus Admin)
+  async function handleToggleWalkIn(jobId, newStatus) {
+    try {
+      setActionLoadingId(jobId);
+      // Optimistic update pada daftar lowongan
+      setMitraJobsList((prev) =>
+        prev.map((j) => (j.id === jobId ? { ...j, is_walk_in: newStatus } : j))
+      );
+      setMitraStats((prev) => ({
+        ...prev,
+        walk_in_jobs: Math.max(0, (prev.walk_in_jobs || 0) + (newStatus ? 1 : -1)),
+      }));
+
+      const res = await fetch("/api/admin/mitra", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "toggle_walk_in",
+          job_id: jobId,
+          is_walk_in: newStatus,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal mengubah status walk-in lowongan.");
+      }
+
+      showMitraFeedback(
+        "success",
+        newStatus
+          ? "Lowongan berhasil dimasukkan ke daftar Walk-In Interview!"
+          : "Lowongan dikembalikan ke status Lamaran Reguler."
+      );
+    } catch (err) {
+      showMitraFeedback("error", err.message);
+      loadMitraData();
+    } finally {
+      setActionLoadingId(null);
+    }
   }
 
   // Handle Aksi Verifikasi Mitra (Approve / Reject / Reset)
@@ -597,6 +660,25 @@ export default function AdminDashboard() {
       return matchSearch && matchStatus;
     });
   }, [mitraList, searchMitra, filterMitraStatus]);
+
+  // Filtered Lowongan Mitra untuk Kurasi Walk-In Interview (Khusus Admin)
+  const filteredMitraJobs = useMemo(() => {
+    return (mitraJobsList || []).filter((job) => {
+      const q = searchMitraJob.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        job.title?.toLowerCase().includes(q) ||
+        job.company_name?.toLowerCase().includes(q) ||
+        job.location?.toLowerCase().includes(q);
+
+      const matchFilter =
+        filterMitraJobWalkIn === "ALL" ||
+        (filterMitraJobWalkIn === "WALKIN" && job.is_walk_in) ||
+        (filterMitraJobWalkIn === "REGULAR" && !job.is_walk_in);
+
+      return matchSearch && matchFilter;
+    });
+  }, [mitraJobsList, searchMitraJob, filterMitraJobWalkIn]);
 
   // ========================================================
   // EKSPOR CSV: 1 FORM = 1 FIELD (KOLOM RAPI TERPISAH DI EXCEL/SPREADSHEET)
@@ -2934,10 +3016,51 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Metrics Cards Grid (4 Kolom) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {/* Card 1: Total Mitra */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+            {/* Sub-Tab Switcher: Mitra Perusahaan vs Kurasi Walk-In Interview */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+              <button
+                type="button"
+                onClick={() => setMitraSubTab("companies")}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition cursor-pointer ${
+                  mitraSubTab === "companies"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
+                }`}
+              >
+                <IconBuilding className="h-4 w-4" />
+                <span>Daftar Mitra Perusahaan ({mitraList.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMitraSubTab("walkin_jobs")}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition cursor-pointer ${
+                  mitraSubTab === "walkin_jobs"
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "bg-white text-slate-600 hover:text-purple-600 border border-slate-200"
+                }`}
+              >
+                <IconBriefcase className="h-4 w-4" />
+                <span>Kurasi Lowongan Walk-In Interview</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                    mitraSubTab === "walkin_jobs"
+                      ? "bg-white/20 text-white"
+                      : "bg-purple-100 text-purple-700"
+                  }`}
+                >
+                  {mitraStats.walk_in_jobs || 0} Posisi Walk-In
+                </span>
+              </button>
+            </div>
+
+            {/* VIEW 1: DAFTAR PERUSAHAAN MITRA */}
+            {mitraSubTab === "companies" && (
+              <>
+                {/* Metrics Cards Grid (4 Kolom) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {/* Card 1: Total Mitra */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
                 <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
                   <span>Total Mitra</span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
@@ -3216,10 +3339,19 @@ export default function AdminDashboard() {
 
                             {/* Lowongan */}
                             <td className="px-4 py-3.5 text-center">
-                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 border border-slate-200">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSearchMitraJob(item.name);
+                                  setFilterMitraJobWalkIn("ALL");
+                                  setMitraSubTab("walkin_jobs");
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 hover:bg-purple-100 px-2.5 py-1 text-xs font-bold text-slate-700 hover:text-purple-800 border border-slate-200 transition cursor-pointer"
+                                title="Lihat & kurasi lowongan perusahaan ini untuk Walk-In Interview"
+                              >
                                 <IconBriefcase className="h-3 w-3 text-slate-500" />
-                                <span>{item.total_jobs}</span>
-                              </span>
+                                <span>{item.total_jobs} Lowongan</span>
+                              </button>
                             </td>
 
                             {/* Status Verifikasi Badge */}
@@ -3343,9 +3475,359 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+          </>
+        )}
+
+        {/* VIEW 2: KURASI LOWONGAN WALK-IN INTERVIEW (HAK AKSES EKSKLUSIF ADMIN) */}
+        {mitraSubTab === "walkin_jobs" && (
+          <div className="space-y-6">
+            {/* Banner Penjelasan Hak Akses Eksklusif Admin */}
+            <div className="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 via-fuchsia-50/40 to-white p-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-600 text-white shadow-sm mt-0.5">
+                    <IconBriefcase className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      <span>Kurasi Jalur Walk-In Interview CCE 2026</span>
+                      <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-extrabold text-purple-700 border border-purple-200 uppercase tracking-wider">
+                        Khusus Akses Admin
+                      </span>
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed max-w-3xl">
+                      Hanya lowongan yang <strong>diaktifkan oleh Admin</strong> di bawah ini yang akan muncul pada <strong>Formulir Pendaftaran Walk-In Interview</strong> pelamar (untuk wawancara langsung di booth). Lowongan yang dinonaktifkan tetap dapat dilamar melalui <strong>Formulir Lamaran Pekerjaan Reguler (Online)</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {(searchMitraJob || filterMitraJobWalkIn !== "ALL") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchMitraJob("");
+                      setFilterMitraJobWalkIn("ALL");
+                    }}
+                    className="shrink-0 text-xs font-bold text-purple-700 hover:text-purple-900 underline underline-offset-4 cursor-pointer"
+                  >
+                    Reset Pencarian
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Metric Cards Lowongan */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {/* Total Lowongan Terbit */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                  <span>Total Lowongan Terbit</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <IconBriefcase className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {mitraJobsList.length}
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500">
+                  Dari seluruh mitra perusahaan terverifikasi
+                </div>
+              </div>
+
+              {/* Lowongan Jalur Walk-In (Aktif) */}
+              <div className="rounded-2xl border border-fuchsia-300 bg-fuchsia-50/50 p-5 shadow-xs">
+                <div className="flex items-center justify-between text-fuchsia-800 text-xs font-bold uppercase tracking-wider">
+                  <span>Akses Walk-In Interview</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-fuchsia-100 text-fuchsia-700">
+                    <IconCheck className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-fuchsia-950">
+                  {mitraJobsList.filter((j) => j.is_walk_in).length}
+                </div>
+                <div className="mt-1 text-[11px] font-semibold text-fuchsia-800 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-600 animate-pulse" />
+                  Muncul di formulir walk-in expo
+                </div>
+              </div>
+
+              {/* Lowongan Jalur Lamaran Reguler */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between text-slate-600 text-xs font-bold uppercase tracking-wider">
+                  <span>Lamaran Reguler Saja</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <IconDocument className="h-4 w-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {mitraJobsList.filter((j) => !j.is_walk_in).length}
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500">
+                  Khusus seleksi berkas online
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Pencarian Lowongan */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+              <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                {/* Search Bar */}
+                <div className="relative flex-1">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <IconSearch className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchMitraJob}
+                    onChange={(e) => setSearchMitraJob(e.target.value)}
+                    placeholder="Cari lowongan berdasarkan judul posisi, perusahaan, atau lokasi..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                  />
+                  {searchMitraJob && (
+                    <button
+                      onClick={() => setSearchMitraJob("")}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-700 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-1 overflow-x-auto text-xs font-semibold shrink-0">
+                  <button
+                    onClick={() => setFilterMitraJobWalkIn("ALL")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraJobWalkIn === "ALL"
+                        ? "bg-white text-slate-900 shadow-xs font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Semua ({mitraJobsList.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterMitraJobWalkIn("WALKIN")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraJobWalkIn === "WALKIN"
+                        ? "bg-fuchsia-600 text-white shadow-xs font-bold"
+                        : "text-fuchsia-800 hover:bg-fuchsia-100/60"
+                    }`}
+                  >
+                    ✓ Walk-In ({mitraJobsList.filter((j) => j.is_walk_in).length})
+                  </button>
+                  <button
+                    onClick={() => setFilterMitraJobWalkIn("REGULAR")}
+                    className={`rounded-lg px-3 py-1.5 transition cursor-pointer whitespace-nowrap ${
+                      filterMitraJobWalkIn === "REGULAR"
+                        ? "bg-slate-800 text-white shadow-xs font-bold"
+                        : "text-slate-700 hover:bg-slate-200/60"
+                    }`}
+                  >
+                    Reguler ({mitraJobsList.filter((j) => !j.is_walk_in).length})
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                <span>
+                  Menampilkan <strong>{filteredMitraJobs.length}</strong> dari <strong>{mitraJobsList.length}</strong> posisi lowongan
+                </span>
+                {(searchMitraJob || filterMitraJobWalkIn !== "ALL") && (
+                  <button
+                    onClick={() => {
+                      setSearchMitraJob("");
+                      setFilterMitraJobWalkIn("ALL");
+                    }}
+                    className="text-purple-600 font-semibold hover:underline"
+                  >
+                    Reset Filter
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tabel Kurasi Lowongan */}
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      <th className="px-4 py-3.5 text-center w-12">No</th>
+                      <th className="px-4 py-3.5">Perusahaan Mitra</th>
+                      <th className="px-4 py-3.5">Posisi Lowongan</th>
+                      <th className="px-4 py-3.5">Lokasi &amp; Batas Waktu</th>
+                      <th className="px-4 py-3.5 text-center">Status Akses Lowongan</th>
+                      <th className="px-4 py-3.5 text-center">Aksi Kurasi Walk-In (Admin)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loadingMitra ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <IconRefresh className="h-6 w-6 animate-spin text-purple-600" />
+                            <span>Memuat daftar lowongan mitra...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredMitraJobs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                          <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                              <IconBriefcase className="h-6 w-6" />
+                            </div>
+                            <span className="font-bold text-slate-700">Tidak ada lowongan ditemukan</span>
+                            <span className="text-[11px] text-slate-400">
+                              Coba ubah kata kunci pencarian atau sesuaikan filter status akses lowongan.
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredMitraJobs.map((job, idx) => {
+                        const isActionLoading = actionLoadingId === job.id;
+                        return (
+                          <tr key={job.id} className="hover:bg-slate-50/60 transition">
+                            <td className="px-4 py-3.5 text-center text-slate-400 font-mono">
+                              {idx + 1}
+                            </td>
+
+                            {/* Perusahaan */}
+                            <td className="px-4 py-3.5">
+                              <div className="flex items-center gap-3">
+                                {job.company_logo ? (
+                                  <div className="h-8 w-8 shrink-0 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center overflow-hidden">
+                                    <img
+                                      src={job.company_logo}
+                                      alt={job.company_name}
+                                      className="h-full w-full object-contain"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white font-bold text-xs">
+                                    {job.company_name?.charAt(0) || "P"}
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <span className="font-bold text-slate-900 block truncate max-w-xs">
+                                    {job.company_name}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Posisi Lowongan */}
+                            <td className="px-4 py-3.5">
+                              <div className="space-y-0.5">
+                                <Link
+                                  href={`/lowongan/${job.id}`}
+                                  target="_blank"
+                                  className="font-bold text-slate-900 hover:text-purple-600 transition inline-flex items-center gap-1"
+                                >
+                                  <span>{job.title}</span>
+                                  <IconExternal className="h-3 w-3 text-slate-400" />
+                                </Link>
+                                {job.description && (
+                                  <p className="text-[11px] text-slate-500 line-clamp-1 max-w-md">
+                                    {job.description}
+                                  </p>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Lokasi & Batas Waktu */}
+                            <td className="px-4 py-3.5">
+                              <div className="space-y-0.5">
+                                <div className="text-slate-700 font-medium">{job.location || "Jakarta"}</div>
+                                <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                                  {job.end_date ? (
+                                    <>
+                                      <span>s.d {new Date(job.end_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</span>
+                                      {job.is_expired && (
+                                        <span className="rounded-full bg-rose-100 text-rose-700 text-[9px] font-bold px-1.5 py-0.2">
+                                          Kedaluwarsa
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <span className="text-slate-400">Selama Expo</span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Status Akses Lowongan */}
+                            <td className="px-4 py-3.5 text-center">
+                              {job.is_walk_in ? (
+                                <div className="inline-flex flex-col items-center gap-0.5">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-fuchsia-100 px-3 py-1 text-[11px] font-extrabold text-fuchsia-800 border border-fuchsia-300 shadow-xs">
+                                    <span className="h-2 w-2 rounded-full bg-fuchsia-600 animate-pulse" />
+                                    <span>✓ Walk-In Interview</span>
+                                  </span>
+                                  <span className="text-[10px] text-fuchsia-700/80 font-medium">
+                                    Tampil di Form Walk-In
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="inline-flex flex-col items-center gap-0.5">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-700 border border-slate-200">
+                                    <span>📄 Lamaran Reguler</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">
+                                    Form Reguler Saja
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Aksi Kurasi Walk-In (Admin) */}
+                            <td className="px-4 py-3.5 text-center">
+                              {job.is_walk_in ? (
+                                <button
+                                  type="button"
+                                  disabled={isActionLoading}
+                                  onClick={() => handleToggleWalkIn(job.id, false)}
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 transition cursor-pointer disabled:opacity-50 shadow-xs"
+                                  title="Hapus lowongan ini dari jalur Walk-In Interview"
+                                >
+                                  {isActionLoading ? (
+                                    <IconRefresh className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <IconX className="h-3.5 w-3.5" />
+                                  )}
+                                  <span>Nonaktifkan Walk-In</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={isActionLoading}
+                                  onClick={() => handleToggleWalkIn(job.id, true)}
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-purple-300 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 text-xs font-bold text-purple-700 transition cursor-pointer disabled:opacity-50 shadow-xs"
+                                  title="Izinkan lowongan ini masuk ke formulir Walk-In Interview"
+                                >
+                                  {isActionLoading ? (
+                                    <IconRefresh className="h-3.5 w-3.5 animate-spin text-purple-700" />
+                                  ) : (
+                                    <IconCheck className="h-3.5 w-3.5" />
+                                  )}
+                                  <span>+ Jadikan Walk-In</span>
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
-      </main>
+      </div>
+    )}
+  </main>
 
       {/* ========================================================
           MODAL DETAIL PESERTA
@@ -3688,6 +4170,79 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-700">{selectedMitraDetail.admin_notes}</p>
                 </div>
               )}
+
+              {/* Kurasi Lowongan Walk-In untuk Mitra Ini */}
+              {(() => {
+                const compJobs = (mitraJobsList || []).filter(
+                  (j) => j.company_id === selectedMitraDetail.id
+                );
+                return (
+                  <div className="rounded-2xl border border-purple-200 bg-purple-50/40 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] uppercase font-bold text-slate-600 flex items-center gap-1.5">
+                        <IconBriefcase className="h-3.5 w-3.5 text-purple-600" />
+                        <span>Lowongan Perusahaan ({compJobs.length})</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                        {compJobs.filter((j) => j.is_walk_in).length} Jalur Walk-In
+                      </span>
+                    </div>
+
+                    {compJobs.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic py-2">
+                        Perusahaan ini belum menambahkan lowongan pekerjaan di dashboard mereka.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {compJobs.map((job) => {
+                          const isActionLoading = actionLoadingId === job.id;
+                          return (
+                            <div
+                              key={job.id}
+                              className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 gap-3 shadow-2xs"
+                            >
+                              <div className="min-w-0">
+                                <div className="font-bold text-xs text-slate-900 truncate">
+                                  {job.title}
+                                </div>
+                                <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                                  <span>{job.location || "Jakarta"}</span>
+                                  <span>&bull;</span>
+                                  {job.is_walk_in ? (
+                                    <span className="text-fuchsia-700 font-extrabold flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-600" />
+                                      Walk-In Interview
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-500 font-medium">Lamaran Reguler</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                disabled={isActionLoading}
+                                onClick={() => handleToggleWalkIn(job.id, !job.is_walk_in)}
+                                className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer border shadow-xs ${
+                                  job.is_walk_in
+                                    ? "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                                    : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                                }`}
+                              >
+                                {isActionLoading
+                                  ? "Menyimpan..."
+                                  : job.is_walk_in
+                                  ? "Nonaktifkan Walk-In"
+                                  : "+ Jadikan Walk-In"}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Modal Actions */}

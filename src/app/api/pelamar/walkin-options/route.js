@@ -15,7 +15,7 @@ function getSupabase() {
 }
 
 function parseJobDescription(desc) {
-  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false };
+  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
   try {
     if (typeof desc === "string" && desc.trim().startsWith("{")) {
       const parsed = JSON.parse(desc);
@@ -37,13 +37,14 @@ function parseJobDescription(desc) {
         start_date,
         end_date,
         is_expired,
+        is_walk_in: Boolean(parsed.is_walk_in),
       };
     }
   } catch {}
-  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
 }
 
-// GET: Ambil daftar perusahaan & lowongan aktif untuk formulir Walk-In Interview (Gambar 2 & 3)
+// GET: Ambil daftar perusahaan & lowongan aktif untuk formulir Walk-In Interview & Lamaran Pekerjaan
 export async function GET() {
   try {
     const supabase = getSupabase();
@@ -93,6 +94,7 @@ export async function GET() {
         location: job.location,
         employment_type: job.employment_type,
         quota: job.quota,
+        is_walk_in: Boolean(descObj.is_walk_in),
       });
     });
 

@@ -37,10 +37,11 @@ function parseJobDescription(desc) {
         start_date,
         end_date,
         is_expired,
+        is_walk_in: Boolean(parsed.is_walk_in),
       };
     }
   } catch {}
-  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
 }
 
 // GET: Ambil daftar lowongan milik perusahaan tertentu
@@ -95,6 +96,7 @@ export async function GET(request) {
         start_date: descObj.start_date,
         end_date: descObj.end_date,
         is_expired: descObj.is_expired,
+        is_walk_in: descObj.is_walk_in,
         applicant_count: applicationCounts[j.id]?.total || 0,
         accepted_count: applicationCounts[j.id]?.accepted || 0,
         review_count: applicationCounts[j.id]?.in_review || 0,
@@ -286,6 +288,7 @@ export async function PUT(request) {
         poster_url: posterToUse || "",
         start_date: startToUse || "",
         end_date: endToUse || "",
+        is_walk_in: Boolean(existingDesc.is_walk_in),
       });
     }
 

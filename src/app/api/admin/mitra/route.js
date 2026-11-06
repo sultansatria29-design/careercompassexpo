@@ -27,18 +27,61 @@ export async function GET() {
 
     if (cErr) throw cErr;
 
-    // 2. Ambil seluruh data lowongan untuk menghitung jumlah lowongan per perusahaan
-    const { data: jobs, error: jErr } = await supabase
+    // 2. Ambil seluruh data lowongan lengkap untuk kurasi Walk-In Interview oleh Admin
+    const { data: allJobs, error: jErr } = await supabase
       .from("jobs")
-      .select("id, company_id, is_active");
+      .select("id, company_id, title, description, requirements, location, is_active, created_at")
+      .order("created_at", { ascending: false });
 
     const jobCountMap = {};
-    if (!jErr && jobs) {
-      jobs.forEach((j) => {
+    if (!jErr && allJobs) {
+      allJobs.forEach((j) => {
         if (!jobCountMap[j.company_id]) jobCountMap[j.company_id] = 0;
         jobCountMap[j.company_id] += 1;
       });
     }
+
+    const companyMap = {};
+    (companies || []).forEach((c) => {
+      companyMap[c.id] = c;
+    });
+
+    const parsedJobs = (allJobs || []).map((j) => {
+      let descObj = {};
+      try {
+        descObj = typeof j.description === "string" ? JSON.parse(j.description) : j.description || {};
+      } catch {
+        descObj = { text: j.description || "" };
+      }
+
+      let is_expired = false;
+      if (descObj.end_date) {
+        const end = new Date(descObj.end_date);
+        end.setHours(23, 59, 59, 999);
+        if (new Date() > end) {
+          is_expired = true;
+        }
+      }
+
+      const comp = companyMap[j.company_id] || {};
+
+      return {
+        id: j.id,
+        company_id: j.company_id,
+        company_name: comp.name || "Perusahaan Mitra",
+        company_logo: comp.logo_url || "",
+        title: j.title,
+        description: descObj.text || "",
+        poster_url: descObj.poster_url || "",
+        start_date: descObj.start_date || "",
+        end_date: descObj.end_date || "",
+        is_expired,
+        location: j.location || "Jakarta",
+        is_active: Boolean(j.is_active),
+        is_walk_in: Boolean(descObj.is_walk_in),
+        created_at: j.created_at,
+      };
+    });
 
     // 3. Parsing metadata perusahaan
     const parsedCompanies = (companies || []).map((c) => {
@@ -75,11 +118,12 @@ export async function GET() {
       };
     });
 
-    // 4. Hitung statistik verifikasi mitra
+    // 4. Hitung statistik verifikasi mitra & lowongan walk-in
     const totalCompanies = parsedCompanies.length;
     const pendingCount = parsedCompanies.filter((c) => c.verification_status === "pending").length;
     const verifiedCount = parsedCompanies.filter((c) => c.verification_status === "verified").length;
     const rejectedCount = parsedCompanies.filter((c) => c.verification_status === "rejected").length;
+    const walkInJobsCount = parsedJobs.filter((j) => j.is_walk_in).length;
 
     return NextResponse.json({
       success: true,
@@ -88,8 +132,11 @@ export async function GET() {
         pending: pendingCount,
         verified: verifiedCount,
         rejected: rejectedCount,
+        total_jobs: parsedJobs.length,
+        walk_in_jobs: walkInJobsCount,
       },
       companies: parsedCompanies,
+      jobs: parsedJobs,
     });
   } catch (error) {
     console.error("Admin mitra fetch error:", error);
@@ -100,11 +147,59 @@ export async function GET() {
   }
 }
 
-// PATCH: Verifikasi (Setujui / Tolak / Reset) status pendaftaran mitra
+// PATCH: Verifikasi status pendaftaran mitra ATAU kurasi akses Walk-In Interview lowongan
 export async function PATCH(request) {
   try {
     const body = await request.json();
-    const { company_id, action, reason, notes } = body;
+    const { action, company_id, job_id, is_walk_in, reason, notes } = body;
+
+    const supabase = getSupabase();
+
+    // 1. Kurasi Akses Walk-In Interview Lowongan (Khusus Admin)
+    if (action === "toggle_walk_in") {
+      if (!job_id) {
+        return NextResponse.json(
+          { success: false, message: "Job ID diperlukan." },
+          { status: 400 }
+        );
+      }
+
+      const { data: targetJob, error: tjErr } = await supabase
+        .from("jobs")
+        .select("id, title, description")
+        .eq("id", job_id)
+        .single();
+
+      if (tjErr || !targetJob) {
+        return NextResponse.json(
+          { success: false, message: "Lowongan tidak ditemukan." },
+          { status: 404 }
+        );
+      }
+
+      let descObj = {};
+      try {
+        descObj = typeof targetJob.description === "string" ? JSON.parse(targetJob.description) : targetJob.description || {};
+      } catch {
+        descObj = { text: targetJob.description || "" };
+      }
+
+      descObj.is_walk_in = Boolean(is_walk_in);
+
+      const { error: updErr } = await supabase
+        .from("jobs")
+        .update({ description: JSON.stringify(descObj) })
+        .eq("id", job_id);
+
+      if (updErr) throw updErr;
+
+      return NextResponse.json({
+        success: true,
+        message: `Akses Walk-In Interview untuk posisi "${targetJob.title}" berhasil di${is_walk_in ? "aktifkan" : "nonaktifkan"}.`,
+        job_id,
+        is_walk_in: descObj.is_walk_in,
+      });
+    }
 
     if (!company_id || !action) {
       return NextResponse.json(
@@ -112,8 +207,6 @@ export async function PATCH(request) {
         { status: 400 }
       );
     }
-
-    const supabase = getSupabase();
 
     // 1. Ambil data perusahaan lama
     const { data: existing, error: eErr } = await supabase

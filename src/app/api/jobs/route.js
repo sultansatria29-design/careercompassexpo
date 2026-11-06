@@ -40,10 +40,11 @@ function parseJobDescription(desc) {
         start_date,
         end_date,
         is_expired,
+        is_walk_in: Boolean(parsed.is_walk_in),
       };
     }
   } catch {}
-  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
 }
 
 // GET: Ambil semua lowongan aktif yang siap dilamar peserta di landing page
@@ -82,6 +83,7 @@ export async function GET() {
         start_date: descObj.start_date,
         end_date: descObj.end_date,
         is_expired: descObj.is_expired,
+        is_walk_in: descObj.is_walk_in,
         company_name: j.companies?.name || "Perusahaan Rekanan",
         company_logo: j.companies?.logo_url || "",
         company_website: j.companies?.website || "",

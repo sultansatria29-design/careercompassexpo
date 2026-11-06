@@ -9,6 +9,10 @@ function WalkInFormContent() {
   const searchParams = useSearchParams();
   const initialJobId = searchParams.get("job") || "";
   const initialCompanyId = searchParams.get("company") || "";
+  const initialType = searchParams.get("type") === "walkin" ? "walkin" : "regular";
+
+  // Mode Formulir: 'regular' (Formulir Pendaftaran Lamaran Pekerjaan) atau 'walkin' (Formulir Pendaftaran Walk-In Interview)
+  const [formType, setFormType] = useState(initialType);
 
   // Session Pelamar
   const [pelamar, setPelamar] = useState(null);
@@ -18,7 +22,7 @@ function WalkInFormContent() {
   const [companies, setCompanies] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
-  // Stepper Form (1 = Pilih Perusahaan [Gambar 2], 2 = Pilih Posisi & Upload CV [Gambar 3])
+  // Stepper Form (1 = Pilih Perusahaan, 2 = Pilih Posisi & Upload CV)
   const [step, setStep] = useState(1);
 
   // Form Fields
@@ -65,23 +69,31 @@ function WalkInFormContent() {
         if (res.ok && Array.isArray(data.companies)) {
           setCompanies(data.companies);
 
-          // Jika ada initialCompanyId atau initialJobId, auto-select
-          if (initialCompanyId) {
+          // Jika ada initialJobId, tentukan formType otomatis sesuai status lowongan
+          if (initialJobId) {
+            let foundJob = null;
+            let foundCompany = null;
+            data.companies.forEach((c) => {
+              const match = (c.jobs || []).find((j) => j.id === initialJobId);
+              if (match) {
+                foundJob = match;
+                foundCompany = c;
+              }
+            });
+            if (foundJob) {
+              if (foundJob.is_walk_in && !searchParams.get("type")) {
+                setFormType("walkin");
+              } else if (!foundJob.is_walk_in && !searchParams.get("type")) {
+                setFormType("regular");
+              }
+              if (foundCompany) {
+                setSelectedCompanyId(foundCompany.id);
+                setSelectedJobId(foundJob.id);
+                setStep(2);
+              }
+            }
+          } else if (initialCompanyId) {
             setSelectedCompanyId(initialCompanyId);
-            if (initialJobId) {
-              setSelectedJobId(initialJobId);
-              setStep(2); // langsung ke langkah 2 jika datang dari halaman lowongan
-            }
-          } else if (initialJobId) {
-            // Cari company id berdasarkan job id
-            const matchedComp = data.companies.find((c) =>
-              c.jobs.some((j) => j.id === initialJobId)
-            );
-            if (matchedComp) {
-              setSelectedCompanyId(matchedComp.id);
-              setSelectedJobId(initialJobId);
-              setStep(2);
-            }
           }
         }
       } catch (err) {
@@ -91,15 +103,64 @@ function WalkInFormContent() {
       }
     }
     fetchOptions();
-  }, [initialCompanyId, initialJobId]);
+  }, [initialCompanyId, initialJobId, searchParams]);
 
   function showToast(msg) {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 4000);
   }
 
+  // Switcher Mode Formulir: 'regular' vs 'walkin'
+  function handleSwitchFormType(newType) {
+    if (newType === formType) return;
+    setFormType(newType);
+    setErrorMsg("");
+
+    // Periksa apakah perusahaan saat ini memiliki lowongan di mode baru
+    const compValid = companies.some((c) => {
+      if (c.id !== selectedCompanyId) return false;
+      const relevantJobs = newType === "walkin"
+        ? (c.jobs || []).filter((j) => j.is_walk_in)
+        : (c.jobs || []);
+      return relevantJobs.length > 0;
+    });
+
+    if (!compValid) {
+      setSelectedCompanyId("");
+      setSelectedJobId("");
+      setStep(1);
+    } else {
+      const targetComp = companies.find((c) => c.id === selectedCompanyId);
+      const relevantJobs = newType === "walkin"
+        ? (targetComp?.jobs || []).filter((j) => j.is_walk_in)
+        : (targetComp?.jobs || []);
+      if (!relevantJobs.some((j) => j.id === selectedJobId)) {
+        if (relevantJobs.length > 0) {
+          setSelectedJobId(relevantJobs[0].id);
+        } else {
+          setSelectedJobId("");
+          setStep(1);
+        }
+      }
+    }
+  }
+
+  // Saring perusahaan & lowongan sesuai mode formulir yang aktif
+  const availableCompanies = companies
+    .map((c) => {
+      const modeJobs = formType === "walkin"
+        ? (c.jobs || []).filter((j) => j.is_walk_in)
+        : (c.jobs || []);
+      return {
+        ...c,
+        jobs: modeJobs,
+        total_jobs: modeJobs.length,
+      };
+    })
+    .filter((c) => c.jobs.length > 0);
+
   // Dapatkan detail perusahaan terpilih
-  const selectedCompany = companies.find((c) => c.id === selectedCompanyId) || null;
+  const selectedCompany = availableCompanies.find((c) => c.id === selectedCompanyId) || null;
   // Lowongan untuk perusahaan terpilih
   const availableJobs = selectedCompany ? selectedCompany.jobs || [] : [];
   // Detail lowongan terpilih
@@ -234,7 +295,11 @@ function WalkInFormContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal mengirim formulir lamaran.");
 
-      showToast("Lamaran Walk-In Interview berhasil dikirim!");
+      showToast(
+        formType === "walkin"
+          ? "Lamaran Walk-In Interview berhasil dikirim!"
+          : "Lamaran Pekerjaan berhasil dikirim!"
+      );
 
       // Arahkan ke dashboard pelamar
       setTimeout(() => {
@@ -332,19 +397,79 @@ function WalkInFormContent() {
           </div>
         )}
 
-        {/* Title Header Form Walk In Interview */}
+        {/* Pilihan Jenis Formulir Pendaftaran */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => handleSwitchFormType("regular")}
+            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
+              formType === "regular"
+                ? "border-purple-400 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 shadow-xl shadow-purple-900/40 ring-1 ring-purple-400/40"
+                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-70 hover:opacity-100"
+            }`}
+          >
+            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "regular" ? "bg-purple-600 text-white shadow-md" : "bg-white/10 text-purple-300"}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-extrabold text-sm sm:text-base text-white">Formulir Lamaran Pekerjaan</span>
+                {formType === "regular" && (
+                  <span className="rounded-full bg-purple-500 text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
+                )}
+              </div>
+              <p className="text-xs text-purple-200/70 mt-1 leading-relaxed">
+                Pendaftaran lamaran pekerjaan reguler / online untuk peninjauan berkas mitra expo.
+              </p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSwitchFormType("walkin")}
+            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
+              formType === "walkin"
+                ? "border-fuchsia-400 bg-gradient-to-r from-purple-900/60 to-fuchsia-950/60 shadow-xl shadow-fuchsia-900/40 ring-1 ring-fuchsia-400/40"
+                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-70 hover:opacity-100"
+            }`}
+          >
+            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "walkin" ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md" : "bg-white/10 text-purple-300"}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-extrabold text-sm sm:text-base text-white">Formulir Walk-In Interview</span>
+                {formType === "walkin" && (
+                  <span className="rounded-full bg-fuchsia-500 text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
+                )}
+              </div>
+              <p className="text-xs text-purple-200/70 mt-1 leading-relaxed">
+                Pendaftaran wawancara langsung di booth expo UIN Jakarta (khusus posisi pilihan admin).
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* Title Header Form */}
         <div className="rounded-3xl border border-white/15 bg-gradient-to-br from-[#2D1252] via-[#1F0C3B] to-[#140827] p-6 sm:p-8 shadow-2xl backdrop-blur-xl mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-0.5 text-[10px] font-extrabold text-fuchsia-300 border border-purple-500/30 uppercase tracking-widest">
-                Official Walk-In Interview Form
+                {formType === "walkin" ? "Official Walk-In Interview Form" : "Official Job Application Form"}
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Formulir Pendaftaran Walk-In Interview
+                {formType === "walkin"
+                  ? "Formulir Pendaftaran Walk-In Interview"
+                  : "Formulir Pendaftaran Lamaran Pekerjaan"}
               </h1>
               <p className="text-xs text-purple-200/70 leading-relaxed max-w-xl">
-                Career Compass Expo 2026 — Auditorium Harun Nasution UIN Jakarta.
-                Lamaran akan langsung masuk ke dashboard HR mitra untuk proses seleksi &amp; jadwal wawancara langsung di booth.
+                {formType === "walkin"
+                  ? "Career Compass Expo 2026 — Auditorium Harun Nasution UIN Jakarta. Lamaran akan langsung masuk ke dashboard HR mitra untuk proses seleksi & jadwal wawancara langsung di booth."
+                  : "Career Compass Expo 2026. Lamaran Anda akan dikirim langsung ke tim rekrutmen mitra perusahaan untuk peninjauan berkas secara online."}
               </p>
             </div>
 
@@ -372,7 +497,7 @@ function WalkInFormContent() {
         )}
 
         {/* ============================================================== */}
-        {/* LANGKAH 1: PERUSAHAAN YANG KAMU MINATI (PERSIS GAMBAR 2)      */}
+        {/* LANGKAH 1: PERUSAHAAN YANG KAMU MINATI                         */}
         {/* ============================================================== */}
         {step === 1 && (
           <div className="rounded-3xl border border-white/15 bg-[#170A2D]/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-fadeIn space-y-6">
@@ -382,7 +507,9 @@ function WalkInFormContent() {
                 <span className="text-rose-400">*</span>
               </h2>
               <p className="text-xs text-purple-300/70 mt-1">
-                Pilih salah satu perusahaan rekanan CCE 2026 yang ingin Anda tuju untuk proses walk-in interview.
+                {formType === "walkin"
+                  ? "Pilih salah satu perusahaan rekanan CCE 2026 yang membuka posisi walk-in interview (khusus pilihan admin)."
+                  : "Pilih salah satu perusahaan rekanan CCE 2026 yang membuka lowongan pekerjaan."}
               </p>
             </div>
 
@@ -390,13 +517,26 @@ function WalkInFormContent() {
               <div className="py-12 text-center text-xs text-purple-300/60">
                 Memuat daftar perusahaan mitra...
               </div>
-            ) : companies.length === 0 ? (
-              <div className="py-10 text-center text-xs text-purple-300/70">
-                Belum ada perusahaan mitra dengan lowongan aktif saat ini.
+            ) : availableCompanies.length === 0 ? (
+              <div className="py-12 text-center text-xs text-purple-300/70 space-y-3">
+                <p>
+                  {formType === "walkin"
+                    ? "Belum ada posisi lowongan yang diaktifkan untuk Walk-In Interview oleh admin expo saat ini."
+                    : "Belum ada perusahaan mitra dengan lowongan aktif saat ini."}
+                </p>
+                {formType === "walkin" && (
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchFormType("regular")}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 px-4 py-2 text-xs font-bold text-white transition cursor-pointer"
+                  >
+                    <span>Beralih ke Formulir Lamaran Pekerjaan Reguler →</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                {companies.map((comp) => {
+                {availableCompanies.map((comp) => {
                   const isChecked = selectedCompanyId === comp.id;
                   return (
                     <label
@@ -449,7 +589,7 @@ function WalkInFormContent() {
 
                       {/* Badge kuantitas posisi */}
                       <span className="shrink-0 ml-3 rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-bold text-purple-300 border border-purple-500/30">
-                        {comp.total_jobs} Posisi
+                        {comp.total_jobs} Posisi {formType === "walkin" ? "Walk-In" : ""}
                       </span>
                     </label>
                   );
@@ -604,14 +744,11 @@ function WalkInFormContent() {
                               {job.title}
                             </span>
                             <div className="flex items-center gap-2 text-[11px] text-purple-300/70 mt-0.5">
-                              <span>{job.employment_type || "Full-time"}</span>
-                              <span>•</span>
                               <span>{job.location || "Jakarta"}</span>
-                              {job.quota && (
-                                <>
-                                  <span>•</span>
-                                  <span>Kuota: {job.quota}</span>
-                                </>
+                              {job.is_walk_in && (
+                                <span className="rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] font-extrabold text-fuchsia-300 border border-fuchsia-500/30">
+                                  ✓ Walk-In Interview
+                                </span>
                               )}
                             </div>
                           </div>
@@ -757,7 +894,9 @@ function WalkInFormContent() {
                   </>
                 ) : (
                   <>
-                    <span>Kirim Lamaran Walk-In Interview</span>
+                    <span>
+                      {formType === "walkin" ? "Kirim Lamaran Walk-In Interview" : "Kirim Lamaran Pekerjaan"}
+                    </span>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -771,7 +910,7 @@ function WalkInFormContent() {
 
       {/* Footer Mini */}
       <footer className="border-t border-white/10 py-4 text-center text-xs text-purple-300/50">
-        © 2026 Career Compass Expo — Walk-In Interview Registration Portal
+        © 2026 Career Compass Expo — Portal Pendaftaran Lamaran & Walk-In Interview
       </footer>
     </div>
   );
