@@ -66,6 +66,23 @@ export default function Home() {
         <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-pink-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-purple-200/40 blur-3xl" />
 
+        {/* Ornamen Wave Halus (Clean Background Accents) */}
+        <img
+          src="/images/icons/wave%201.png"
+          alt=""
+          className="pointer-events-none absolute -left-16 -top-10 w-60 sm:w-80 md:w-96 lg:w-[28rem] opacity-45 select-none"
+        />
+        <img
+          src="/images/icons/wave%204.png"
+          alt=""
+          className="pointer-events-none absolute -right-16 top-6 w-60 sm:w-80 md:w-96 lg:w-[28rem] opacity-45 select-none"
+        />
+        <img
+          src="/images/icons/wave%202.png"
+          alt=""
+          className="pointer-events-none absolute -right-12 bottom-6 w-48 sm:w-64 md:w-80 opacity-35 select-none"
+        />
+
         <div className="relative mx-auto max-w-7xl">
           {/* Baris Robot 5 (Kiri) - Teks Judul - Robot 1 (Kanan) */}
           <div className="flex items-center justify-center gap-2 sm:gap-6 md:gap-8 lg:gap-12">
@@ -169,8 +186,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="tentang" className="mx-auto max-w-7xl px-6 py-20 sm:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+      <section id="tentang" className="relative overflow-hidden mx-auto max-w-7xl px-6 py-20 sm:py-24">
+        {/* Ornamen Wave Halus di Tepi Section */}
+        <img
+          src="/images/icons/wave%205.png"
+          alt=""
+          className="pointer-events-none absolute -right-16 top-1/2 -translate-y-1/2 w-56 sm:w-72 md:w-88 opacity-30 select-none"
+        />
+        <img
+          src="/images/icons/wave%203.png"
+          alt=""
+          className="pointer-events-none absolute -left-16 bottom-6 w-52 sm:w-68 md:w-80 opacity-25 select-none"
+        />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           {/* Kolom Kiri: Teks Tentang Acara */}
           <div className="lg:col-span-6 space-y-5">
             <p className="font-bold text-[#EF17D8] tracking-widest uppercase text-xs sm:text-sm">
@@ -238,8 +267,20 @@ export default function Home() {
       </section>
 
       {/* SECTION: LOWONGAN PEKERJAAN (Tepat Setelah Informasi Acara) */}
-      <section id="lowongan" className="mx-auto max-w-7xl px-6 py-24">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+      <section id="lowongan" className="relative overflow-hidden mx-auto max-w-7xl px-6 py-24">
+        {/* Ornamen Wave Halus */}
+        <img
+          src="/images/icons/wave%206.png"
+          alt=""
+          className="pointer-events-none absolute -left-16 top-10 w-56 sm:w-72 md:w-88 opacity-25 select-none"
+        />
+        <img
+          src="/images/icons/wave%202.png"
+          alt=""
+          className="pointer-events-none absolute -right-14 bottom-10 w-52 sm:w-64 md:w-76 opacity-20 select-none rotate-45"
+        />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div>
             <p className="mb-3 font-bold text-[#EF17D8]">PELUANG KARIER</p>
             <h2 className="text-3xl font-extrabold md:text-5xl text-slate-900">Lowongan Pekerjaan</h2>
@@ -258,9 +299,11 @@ export default function Home() {
           </Link>
         </div>
 
-        <Suspense fallback={<JobsFallback />}>
-          <JobsSection />
-        </Suspense>
+        <div className="relative z-10">
+          <Suspense fallback={<JobsFallback />}>
+            <JobsSection />
+          </Suspense>
+        </div>
       </section>
 
       {/* SECTION: PANDUAN & FITUR ACARA (Apa yang Bisa Kamu Lakukan?) */}
@@ -269,6 +312,13 @@ export default function Home() {
         {/* Ambient background blur */}
         <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#7226FF]/5 blur-3xl" />
         <div className="pointer-events-none absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-[#EF17D8]/5 blur-3xl" />
+
+        {/* Ornamen Wave Halus */}
+        <img
+          src="/images/icons/wave%201.png"
+          alt=""
+          className="pointer-events-none absolute -right-16 top-12 w-60 sm:w-80 md:w-96 opacity-25 select-none"
+        />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="mb-12 text-center md:text-left">
