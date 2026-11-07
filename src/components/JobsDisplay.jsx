@@ -416,7 +416,7 @@ export default function JobsDisplay({ initialJobs = [] }) {
               href="/morelowongan#morelowongan"
               className="group inline-flex items-center gap-2.5 rounded-full border border-purple-200 bg-white px-8 py-3.5 text-xs sm:text-sm font-bold text-slate-800 shadow-sm transition-all duration-200 hover:border-purple-400 hover:bg-purple-50/70 hover:text-purple-700 hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <span>Lihat Lebih Banyak Lowongan ({displayJobs.length - INITIAL_LIMIT} posisi lainnya)</span>
+              <span>Lihat Lebih Banyak Lowongan</span>
               <svg className="h-4 w-4 text-purple-600 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
