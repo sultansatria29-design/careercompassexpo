@@ -289,7 +289,7 @@ export default function Home() {
             </p>
           </div>
           <Link
-            href="/registrasi"
+            href="/pelamar"
             className="inline-flex shrink-0 items-center gap-2 rounded-full bg-purple-50 border border-purple-200 px-6 py-3 font-bold text-purple-700 shadow-xs transition hover:bg-purple-100 hover:scale-105"
           >
             <span>Daftar untuk Melamar</span>
