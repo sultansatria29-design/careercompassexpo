@@ -248,43 +248,43 @@ function PelamarAuthContent() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0E041A] text-white selection:bg-[#EF17D8] selection:text-white flex flex-col justify-between overflow-x-hidden">
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 selection:bg-purple-100 selection:text-purple-900 flex flex-col justify-between overflow-x-hidden">
       {/* Background Glow Orbs */}
-      <div className="pointer-events-none fixed -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-[#7226FF]/20 blur-[130px]" />
-      <div className="pointer-events-none fixed -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-[#EF17D8]/20 blur-[140px]" />
+      <div className="pointer-events-none fixed -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-purple-200/40 blur-[130px]" />
+      <div className="pointer-events-none fixed -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-fuchsia-200/30 blur-[140px]" />
 
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed top-5 right-5 z-50 animate-bounce rounded-2xl border border-white/20 bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-3.5 text-xs sm:text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
+        <div className="fixed top-5 right-5 z-50 animate-bounce rounded-2xl border border-purple-200 bg-white px-5 py-3.5 text-xs sm:text-sm font-bold text-purple-700 shadow-xl backdrop-blur-xl">
           {toastMsg}
         </div>
       )}
 
       {/* Header Mini */}
-      <header className="border-b border-white/10 bg-[#170A2D]/80 backdrop-blur-md px-4 sm:px-8 py-3.5">
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md px-4 sm:px-8 py-3.5 shadow-xs">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-22 items-center justify-center rounded-lg bg-white p-1 shadow-sm">
+            <div className="flex h-9 w-22 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 shadow-xs">
               <img
                 src="/images/logo-puskar.png"
                 alt="Pusat Karier UIN Jakarta"
                 className="h-full w-full object-contain"
               />
             </div>
-            <span className="text-base font-black tracking-tight hidden sm:inline">
+            <span className="text-base font-black tracking-tight text-slate-900 hidden sm:inline">
               CCE<span className="text-[#EF17D8]"> 2026</span>
             </span>
           </Link>
           <div className="flex items-center gap-3 text-xs">
             <Link
               href="/"
-              className="text-purple-300/80 hover:text-white transition font-semibold"
+              className="text-slate-600 hover:text-purple-600 transition font-semibold"
             >
               ← Kembali ke Beranda
             </Link>
             <Link
               href="/mitra"
-              className="hidden sm:inline-block rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-purple-200 hover:bg-white/10 transition"
+              className="hidden sm:inline-block rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition shadow-xs"
             >
               Portal Mitra HR
             </Link>
@@ -295,19 +295,19 @@ function PelamarAuthContent() {
       {/* Main Container */}
       <main className="mx-auto max-w-xl w-full px-4 py-8 sm:py-12 z-10 flex-1 flex flex-col justify-center">
         {/* Card Form Utama */}
-        <div className="rounded-3xl border border-white/15 bg-[#170A2D]/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-xl shadow-purple-500/5">
           {/* Badge & Title */}
           <div className="text-center space-y-2 mb-6">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 border border-fuchsia-500/30 px-3 py-1 text-[11px] font-bold text-fuchsia-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 border border-purple-200 px-3 py-1 text-[11px] font-bold text-purple-700 shadow-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse"></span>
               <span>Portal Khusus Pelamar &amp; Pencari Kerja</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {mode === "login" ? "Masuk ke Akun Pelamar" : "Daftar Akun Pelamar Baru"}
             </h1>
-            <p className="text-xs text-purple-200/70 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
               {jobParam ? (
-                <span className="text-amber-300 font-semibold">
+                <span className="text-amber-600 font-semibold">
                   Silakan masuk atau daftar terlebih dahulu untuk mengirim berkas lamaran ke posisi pilihan Anda.
                 </span>
               ) : (
@@ -317,7 +317,7 @@ function PelamarAuthContent() {
           </div>
 
           {/* Tab Switcher: Masuk / Daftar */}
-          <div className="grid grid-cols-2 rounded-2xl bg-white/5 p-1 mb-6 border border-white/10 text-xs font-bold">
+          <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 mb-6 border border-slate-200 text-xs font-bold">
             <button
               type="button"
               onClick={() => {
@@ -326,8 +326,8 @@ function PelamarAuthContent() {
               }}
               className={`rounded-xl py-2.5 transition cursor-pointer ${
                 mode === "login"
-                  ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-lg"
-                  : "text-purple-300/70 hover:text-white"
+                  ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-md shadow-purple-600/30"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Masuk Akun
@@ -340,8 +340,8 @@ function PelamarAuthContent() {
               }}
               className={`rounded-xl py-2.5 transition cursor-pointer ${
                 mode === "register"
-                  ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-lg"
-                  : "text-purple-300/70 hover:text-white"
+                  ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white shadow-md shadow-purple-600/30"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Daftar Baru
@@ -350,8 +350,8 @@ function PelamarAuthContent() {
 
           {/* Alert Error */}
           {error && (
-            <div className="mb-5 rounded-2xl border border-red-500/40 bg-red-950/40 p-3.5 text-xs text-red-200 flex items-start gap-2.5 animate-fadeIn">
-              <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 flex items-start gap-2.5 animate-fadeIn">
+              <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{error}</span>
@@ -364,8 +364,8 @@ function PelamarAuthContent() {
           {mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-purple-200 mb-1.5">
-                  Email <span className="text-fuchsia-400">*</span>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Email <span className="text-purple-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -373,13 +373,13 @@ function PelamarAuthContent() {
                   value={loginForm.identifier}
                   onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
                   placeholder="Contoh: nama@email.com"
-                  className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-purple-200 mb-1.5">
-                  Kata Sandi <span className="text-fuchsia-400">*</span>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Kata Sandi <span className="text-purple-600">*</span>
                 </label>
                 <input
                   type="password"
@@ -387,15 +387,14 @@ function PelamarAuthContent() {
                   value={loginForm.password}
                   onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                   placeholder="Masukkan kata sandi akun Anda"
-                  className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                 />
-               
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-[1.02] hover:shadow-2xl disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-2"
+                className="w-full rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-purple-600/25 transition hover:scale-[1.01] hover:opacity-95 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-2"
               >
                 {loading ? (
                   <>
@@ -423,8 +422,8 @@ function PelamarAuthContent() {
           {mode === "register" && (
             <form onSubmit={handleRegister} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-purple-200 mb-1">
-                  Nama Lengkap <span className="text-fuchsia-400">*</span>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Nama Lengkap <span className="text-purple-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -432,14 +431,14 @@ function PelamarAuthContent() {
                   value={registerForm.full_name}
                   onChange={(e) => setRegisterForm({ ...registerForm, full_name: e.target.value })}
                   placeholder="Nama sesuai KTP / KTM"
-                  className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Alamat Email <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Alamat Email <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="email"
@@ -447,12 +446,12 @@ function PelamarAuthContent() {
                     value={registerForm.email}
                     onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                     placeholder="email@anda.com"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    No. WhatsApp / HP <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    No. WhatsApp / HP <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="tel"
@@ -460,20 +459,20 @@ function PelamarAuthContent() {
                     value={registerForm.phone}
                     onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
                     placeholder="08xxxxxxxxxx"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Status Peserta <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Status Peserta <span className="text-purple-600">*</span>
                   </label>
                   <select
                     value={registerForm.participant_status}
                     onChange={(e) => setRegisterForm({ ...registerForm, participant_status: e.target.value })}
-                    className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-3.5 py-2 text-white focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   >
                     <option value="Mahasiswa">Mahasiswa Aktif</option>
                     <option value="Fresh Graduate">Fresh Graduate</option>
@@ -483,8 +482,8 @@ function PelamarAuthContent() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Usia / Umur <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Usia / Umur <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="number"
@@ -494,15 +493,15 @@ function PelamarAuthContent() {
                     value={registerForm.age}
                     onChange={(e) => setRegisterForm({ ...registerForm, age: e.target.value })}
                     placeholder="Contoh: 22"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Asal Kampus / Instansi <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Asal Kampus / Instansi <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -510,18 +509,18 @@ function PelamarAuthContent() {
                     value={registerForm.institution}
                     onChange={(e) => setRegisterForm({ ...registerForm, institution: e.target.value })}
                     placeholder="Misal: UIN Jakarta, UI, ITB, dll"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Kota Domisili <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Kota Domisili <span className="text-purple-600">*</span>
                   </label>
                   <select
                     value={registerForm.domicile}
                     onChange={(e) => setRegisterForm({ ...registerForm, domicile: e.target.value })}
-                    className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-3.5 py-2 text-white focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   >
                     <option value="DKI Jakarta">DKI Jakarta</option>
                     <option value="Tangerang Selatan">Tangerang Selatan</option>
@@ -537,14 +536,14 @@ function PelamarAuthContent() {
 
               {/* FAKULTAS (Gambar 2) */}
               <div>
-                <label className="block font-bold text-purple-200 mb-1">
-                  Fakultas <span className="text-fuchsia-400">*</span>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Fakultas <span className="text-purple-600">*</span>
                 </label>
                 <select
                   required
                   value={registerForm.faculty}
                   onChange={(e) => setRegisterForm({ ...registerForm, faculty: e.target.value })}
-                  className="w-full rounded-xl border border-white/15 bg-[#1E0C36] px-3.5 py-2.5 text-white focus:border-fuchsia-400 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-slate-900 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                 >
                   {UIN_FACULTIES.map((fac) => (
                     <option key={fac} value={fac}>
@@ -561,7 +560,7 @@ function PelamarAuthContent() {
                       value={registerForm.custom_faculty}
                       onChange={(e) => setRegisterForm({ ...registerForm, custom_faculty: e.target.value })}
                       placeholder="Tuliskan nama fakultas Anda..."
-                      className="w-full rounded-xl border border-fuchsia-500/40 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                      className="w-full rounded-xl border border-purple-300 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                     />
                   </div>
                 )}
@@ -569,8 +568,8 @@ function PelamarAuthContent() {
 
               {/* PROGRAM STUDI / JURUSAN */}
               <div>
-                <label className="block font-bold text-purple-200 mb-1">
-                  Program Studi / Jurusan <span className="text-fuchsia-400">*</span>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Program Studi / Jurusan <span className="text-purple-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -578,7 +577,7 @@ function PelamarAuthContent() {
                   value={registerForm.major}
                   onChange={(e) => setRegisterForm({ ...registerForm, major: e.target.value })}
                   placeholder="Contoh: Teknik Informatika / Manajemen / Psikologi"
-                  className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                 />
               </div>
 
@@ -586,8 +585,8 @@ function PelamarAuthContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-purple-200">
-                      Tahun Kelulusan <span className="text-fuchsia-400">*</span>
+                    <label className="block font-bold text-slate-700">
+                      Tahun Kelulusan <span className="text-purple-600">*</span>
                     </label>
                   </div>
                   <input
@@ -596,16 +595,16 @@ function PelamarAuthContent() {
                     value={registerForm.graduation_year}
                     onChange={(e) => setRegisterForm({ ...registerForm, graduation_year: e.target.value })}
                     placeholder="Misal: 2024 atau Semester 7"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
-                  <span className="text-[10px] text-purple-300/60 mt-1 block italic">
+                  <span className="text-[10px] text-slate-500 mt-1 block italic">
                     * Jika belum lulus, tuliskan semester Anda saat ini
                   </span>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    GPA / IPK Terakhir <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    GPA / IPK Terakhir <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -613,26 +612,26 @@ function PelamarAuthContent() {
                     value={registerForm.gpa}
                     onChange={(e) => setRegisterForm({ ...registerForm, gpa: e.target.value })}
                     placeholder="Contoh: 3.75"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
-                  <span className="text-[10px] text-purple-300/60 mt-1 block">
+                  <span className="text-[10px] text-slate-500 mt-1 block">
                     IPK Kumulatif terakhir (skala 4.00)
                   </span>
                 </div>
               </div>
 
               {/* KONFIRMASI REGISTRASI CCE 2026 (Gambar 3) */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 space-y-2">
-                <label className="block font-bold text-purple-200">
-                  Apakah sudah mengisi form registrasi Career Compass Expo (CCE) 2026? <span className="text-fuchsia-400">*</span>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
+                <label className="block font-bold text-slate-700">
+                  Apakah sudah mengisi form registrasi Career Compass Expo (CCE) 2026? <span className="text-purple-600">*</span>
                 </label>
-                <div className="text-[11px] text-purple-300/70">
+                <div className="text-[11px] text-slate-500">
                   Wajib mengisi form registrasi CCE 2026 (
                   <a
                     href="https://www.careercompassexpo.web.id/registrasi?source=gate_standee"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-fuchsia-400 underline hover:text-fuchsia-300 font-semibold"
+                    className="text-purple-600 underline hover:text-purple-800 font-semibold"
                   >
                     Registrasi CCE 2026
                   </a>
@@ -646,9 +645,9 @@ function PelamarAuthContent() {
                       value="Sudah"
                       checked={registerForm.cce_regis_confirmed === "Sudah"}
                       onChange={(e) => setRegisterForm({ ...registerForm, cce_regis_confirmed: e.target.value })}
-                      className="accent-fuchsia-500 h-4 w-4"
+                      className="accent-purple-600 h-4 w-4"
                     />
-                    <span className="font-semibold text-white">Sudah</span>
+                    <span className="font-semibold text-slate-900">Sudah</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -657,44 +656,44 @@ function PelamarAuthContent() {
                       value="Belum"
                       checked={registerForm.cce_regis_confirmed === "Belum"}
                       onChange={(e) => setRegisterForm({ ...registerForm, cce_regis_confirmed: e.target.value })}
-                      className="accent-fuchsia-500 h-4 w-4"
+                      className="accent-purple-600 h-4 w-4"
                     />
-                    <span className="font-semibold text-purple-200">Belum</span>
+                    <span className="font-semibold text-slate-600">Belum</span>
                   </label>
                 </div>
               </div>
 
               {/* UPLOAD BUKTI REGISTRASI CCE 2026 (Gambar 4) */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 space-y-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block font-bold text-purple-200">
+                  <label className="block font-bold text-slate-700">
                     Upload Bukti Registrasi Career Compass Expo (CCE) 2026
                   </label>
-                  <span className="text-[10px] text-fuchsia-300 bg-fuchsia-500/15 border border-fuchsia-500/30 px-2 py-0.5 rounded-full font-semibold">
+                  <span className="text-[10px] text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
                     Maks 10 MB
                   </span>
                 </div>
-                <p className="text-[11px] text-purple-300/70">
+                <p className="text-[11px] text-slate-500">
                   Unggah tangkapan layar (screenshot) atau PDF bukti pengisian form registrasi / tiket masuk CCE 2026.
                 </p>
 
                 {registerForm.cce_proof_url ? (
-                  <div className="flex items-center justify-between rounded-xl bg-emerald-950/40 border border-emerald-500/30 p-3">
+                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 p-3">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                       <div className="truncate">
-                        <span className="block text-xs font-bold text-emerald-300 truncate">
+                        <span className="block text-xs font-bold text-emerald-800 truncate">
                           {registerForm.cce_proof_name || "Bukti Registrasi CCE"}
                         </span>
                         <a
                           href={registerForm.cce_proof_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[10px] text-purple-300 underline hover:text-white"
+                          className="text-[10px] text-purple-600 underline hover:text-purple-800"
                         >
                           Lihat file terunggah ↗
                         </a>
@@ -703,13 +702,13 @@ function PelamarAuthContent() {
                     <button
                       type="button"
                       onClick={handleRemoveProof}
-                      className="rounded-lg bg-red-500/20 px-2.5 py-1 text-[11px] font-bold text-red-300 hover:bg-red-500/30 transition cursor-pointer"
+                      className="rounded-lg bg-red-100 border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-600 hover:bg-red-200 transition cursor-pointer"
                     >
                       Hapus
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 py-3.5 px-4 text-center cursor-pointer hover:border-fuchsia-400 hover:bg-white/10 transition">
+                  <label className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white py-3.5 px-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/30 transition">
                     <input
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg,.webp"
@@ -718,7 +717,7 @@ function PelamarAuthContent() {
                       className="hidden"
                     />
                     {registerForm.is_uploading_proof ? (
-                      <div className="flex items-center gap-2 text-xs text-fuchsia-300">
+                      <div className="flex items-center gap-2 text-xs text-purple-600">
                         <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -726,12 +725,12 @@ function PelamarAuthContent() {
                         <span>Mengunggah berkas bukti (maks 10MB)...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-xs font-semibold text-purple-200">
-                        <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                        <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
                         <span>Pilih File Bukti Registrasi</span>
-                        <span className="text-[10px] text-purple-400">(PDF, JPG, PNG)</span>
+                        <span className="text-[10px] text-slate-400">(PDF, JPG, PNG)</span>
                       </div>
                     )}
                   </label>
@@ -740,8 +739,8 @@ function PelamarAuthContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Kata Sandi <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Kata Sandi <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="password"
@@ -749,12 +748,12 @@ function PelamarAuthContent() {
                     value={registerForm.password}
                     onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                     placeholder="Minimal 6 karakter"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-purple-200 mb-1">
-                    Ulangi Kata Sandi <span className="text-fuchsia-400">*</span>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Ulangi Kata Sandi <span className="text-purple-600">*</span>
                   </label>
                   <input
                     type="password"
@@ -762,7 +761,7 @@ function PelamarAuthContent() {
                     value={registerForm.confirm_password}
                     onChange={(e) => setRegisterForm({ ...registerForm, confirm_password: e.target.value })}
                     placeholder="Ketik ulang kata sandi"
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
                   />
                 </div>
               </div>
@@ -770,7 +769,7 @@ function PelamarAuthContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-[1.02] hover:shadow-2xl disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-4"
+                className="w-full rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-purple-600/25 transition hover:scale-[1.01] hover:opacity-95 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 mt-4"
               >
                 {loading ? (
                   <>
@@ -793,14 +792,14 @@ function PelamarAuthContent() {
           )}
 
           {/* Footer Card Info */}
-          <div className="mt-6 pt-5 border-t border-white/10 text-center text-[11px] text-purple-300/60 leading-relaxed">
+          <div className="mt-6 pt-5 border-t border-slate-200 text-center text-[11px] text-slate-500 leading-relaxed">
             Data pelamar dijaga kerahasiaannya dan hanya dibagikan kepada HR Perusahaan Rekanan Career Compass Expo 2026 yang Anda lamar.
           </div>
         </div>
       </main>
 
       {/* Footer Mini */}
-      <footer className="border-t border-white/10 py-4 text-center text-xs text-purple-300/50">
+      <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-500">
         © 2026 Career Compass Expo — Pusat Pengembangan Karier UIN Syarif Hidayatullah Jakarta
       </footer>
     </div>
@@ -811,7 +810,7 @@ export default function PelamarAuthPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0E041A] flex items-center justify-center text-purple-300 text-sm">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-600 text-sm">
           Memuat formulir akun...
         </div>
       }
