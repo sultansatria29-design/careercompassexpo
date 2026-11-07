@@ -313,30 +313,30 @@ function WalkInFormContent() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0E041A] text-white selection:bg-[#EF17D8] selection:text-white flex flex-col justify-between overflow-x-hidden">
-      {/* Background Decorative Glow */}
-      <div className="pointer-events-none fixed -left-40 top-20 h-[500px] w-[500px] rounded-full bg-[#7226FF]/15 blur-[140px]" />
-      <div className="pointer-events-none fixed -right-40 bottom-10 h-[500px] w-[500px] rounded-full bg-[#EF17D8]/15 blur-[140px]" />
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 selection:bg-purple-100 selection:text-purple-900 flex flex-col justify-between overflow-x-hidden">
+      {/* Background Decorative Subtle Glow */}
+      <div className="pointer-events-none fixed -left-40 top-20 h-[500px] w-[500px] rounded-full bg-purple-200/30 blur-[140px]" />
+      <div className="pointer-events-none fixed -right-40 bottom-10 h-[500px] w-[500px] rounded-full bg-fuchsia-200/30 blur-[140px]" />
 
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed top-5 right-5 z-50 animate-bounce rounded-2xl border border-white/20 bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-3.5 text-xs sm:text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
+        <div className="fixed top-5 right-5 z-50 animate-bounce rounded-2xl border border-purple-200 bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-3.5 text-xs sm:text-sm font-bold text-white shadow-2xl backdrop-blur-xl">
           {toastMsg}
         </div>
       )}
 
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#170A2D]/95 px-4 sm:px-8 py-3.5 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 sm:px-8 py-3.5 backdrop-blur-md shadow-2xs">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-22 items-center justify-center rounded-lg bg-white p-1 shadow-sm">
+            <div className="flex h-9 w-22 items-center justify-center rounded-lg bg-white p-1 border border-slate-100 shadow-xs">
               <img
                 src="/images/logo-puskar.png"
                 alt="Pusat Karier UIN Jakarta"
                 className="h-full w-full object-contain"
               />
             </div>
-            <span className="text-base font-black tracking-tight hidden sm:inline">
+            <span className="text-base font-black tracking-tight text-slate-900 hidden sm:inline">
               CCE<span className="text-[#EF17D8]"> 2026</span>
             </span>
           </Link>
@@ -344,12 +344,12 @@ function WalkInFormContent() {
           <div className="flex items-center gap-2.5 sm:gap-4 text-xs">
             {pelamar ? (
               <div className="flex items-center gap-2">
-                <span className="hidden md:inline-block text-purple-200/80 font-medium">
-                  Masuk sebagai: <strong>{pelamar.full_name}</strong>
+                <span className="hidden md:inline-block text-slate-600 font-medium">
+                  Masuk sebagai: <strong className="text-slate-900">{pelamar.full_name}</strong>
                 </span>
                 <Link
                   href="/pelamar/dashboard"
-                  className="rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/15 px-3 py-1.5 font-bold text-fuchsia-300 hover:bg-fuchsia-500/25 transition flex items-center gap-1.5"
+                  className="rounded-xl border border-purple-200 bg-purple-50 px-3 py-1.5 font-bold text-purple-700 hover:bg-purple-100 transition flex items-center gap-1.5"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -375,9 +375,9 @@ function WalkInFormContent() {
       <main className="mx-auto max-w-3xl w-full px-4 py-8 sm:py-12 z-10 flex-1">
         {/* Banner Alert Jika Belum Login */}
         {!isCheckingSession && !pelamar && (
-          <div className="mb-6 rounded-2xl border border-amber-500/40 bg-amber-950/40 p-4 text-xs text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 border border-amber-200">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -390,7 +390,7 @@ function WalkInFormContent() {
               href={`/pelamar?redirect=${encodeURIComponent(
                 `/pelamar/walk-in?company=${selectedCompanyId}&job=${selectedJobId}`
               )}`}
-              className="shrink-0 rounded-xl bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-black hover:bg-amber-400 transition"
+              className="shrink-0 rounded-xl bg-amber-500 hover:bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-slate-950 transition"
             >
               Masuk / Daftar Sekarang
             </Link>
@@ -404,23 +404,25 @@ function WalkInFormContent() {
             onClick={() => handleSwitchFormType("regular")}
             className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
               formType === "regular"
-                ? "border-purple-400 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 shadow-xl shadow-purple-900/40 ring-1 ring-purple-400/40"
-                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-70 hover:opacity-100"
+                ? "border-purple-300 bg-white shadow-md ring-2 ring-purple-500/20"
+                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80 shadow-xs"
             }`}
           >
-            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "regular" ? "bg-purple-600 text-white shadow-md" : "bg-white/10 text-purple-300"}`}>
+            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "regular" ? "bg-purple-600 text-white shadow-xs" : "bg-slate-100 text-slate-500"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-extrabold text-sm sm:text-base text-white">Formulir Lamaran Pekerjaan</span>
+                <span className={`font-extrabold text-sm sm:text-base ${formType === "regular" ? "text-purple-900" : "text-slate-900"}`}>
+                  Formulir Lamaran Pekerjaan
+                </span>
                 {formType === "regular" && (
-                  <span className="rounded-full bg-purple-500 text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
+                  <span className="rounded-full bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
                 )}
               </div>
-              <p className="text-xs text-purple-200/70 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Pendaftaran lamaran pekerjaan reguler / online untuk peninjauan berkas mitra expo.
               </p>
             </div>
@@ -431,23 +433,25 @@ function WalkInFormContent() {
             onClick={() => handleSwitchFormType("walkin")}
             className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
               formType === "walkin"
-                ? "border-fuchsia-400 bg-gradient-to-r from-purple-900/60 to-fuchsia-950/60 shadow-xl shadow-fuchsia-900/40 ring-1 ring-fuchsia-400/40"
-                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-70 hover:opacity-100"
+                ? "border-purple-300 bg-white shadow-md ring-2 ring-purple-500/20"
+                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80 shadow-xs"
             }`}
           >
-            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "walkin" ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md" : "bg-white/10 text-purple-300"}`}>
+            <div className={`p-2.5 rounded-xl shrink-0 ${formType === "walkin" ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-xs" : "bg-slate-100 text-slate-500"}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-extrabold text-sm sm:text-base text-white">Formulir Walk-In Interview</span>
+                <span className={`font-extrabold text-sm sm:text-base ${formType === "walkin" ? "text-purple-900" : "text-slate-900"}`}>
+                  Formulir Walk-In Interview
+                </span>
                 {formType === "walkin" && (
-                  <span className="rounded-full bg-fuchsia-500 text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
+                  <span className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
                 )}
               </div>
-              <p className="text-xs text-purple-200/70 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 Pendaftaran wawancara langsung di booth expo UIN Jakarta (khusus posisi pilihan admin).
               </p>
             </div>
@@ -455,18 +459,18 @@ function WalkInFormContent() {
         </div>
 
         {/* Title Header Form */}
-        <div className="rounded-3xl border border-white/15 bg-gradient-to-br from-[#2D1252] via-[#1F0C3B] to-[#140827] p-6 sm:p-8 shadow-2xl backdrop-blur-xl mb-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-0.5 text-[10px] font-extrabold text-fuchsia-300 border border-purple-500/30 uppercase tracking-widest">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-0.5 text-[10px] font-extrabold text-purple-700 border border-purple-200 uppercase tracking-widest">
                 {formType === "walkin" ? "Official Walk-In Interview Form" : "Official Job Application Form"}
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {formType === "walkin"
                   ? "Formulir Pendaftaran Walk-In Interview"
                   : "Formulir Pendaftaran Lamaran Pekerjaan"}
               </h1>
-              <p className="text-xs text-purple-200/70 leading-relaxed max-w-xl">
+              <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
                 {formType === "walkin"
                   ? "Career Compass Expo 2026 — Auditorium Harun Nasution UIN Jakarta. Lamaran akan langsung masuk ke dashboard HR mitra untuk proses seleksi & jadwal wawancara langsung di booth."
                   : "Career Compass Expo 2026. Lamaran Anda akan dikirim langsung ke tim rekrutmen mitra perusahaan untuk peninjauan berkas secara online."}
@@ -474,13 +478,13 @@ function WalkInFormContent() {
             </div>
 
             {/* Step Progress Pill */}
-            <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-white/10 shrink-0">
-              <span className="text-[11px] font-bold text-purple-300">
+            <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 shrink-0">
+              <span className="text-[11px] font-bold text-purple-700">
                 Tahap {step} dari 2
               </span>
               <div className="flex items-center gap-1.5">
-                <span className={`h-2.5 w-7 rounded-full transition-all ${step >= 1 ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8]" : "bg-white/20"}`} />
-                <span className={`h-2.5 w-7 rounded-full transition-all ${step >= 2 ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8]" : "bg-white/20"}`} />
+                <span className={`h-2.5 w-7 rounded-full transition-all ${step >= 1 ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8]" : "bg-slate-200"}`} />
+                <span className={`h-2.5 w-7 rounded-full transition-all ${step >= 2 ? "bg-gradient-to-r from-[#7226FF] to-[#EF17D8]" : "bg-slate-200"}`} />
               </div>
             </div>
           </div>
@@ -488,8 +492,8 @@ function WalkInFormContent() {
 
         {/* Alert Error */}
         {errorMsg && (
-          <div className="mb-6 rounded-2xl border border-red-500/40 bg-red-950/40 p-4 text-xs text-red-200 flex items-start gap-2.5 animate-fadeIn">
-            <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-start gap-2.5 animate-fadeIn">
+            <svg className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span>{errorMsg}</span>
@@ -500,13 +504,13 @@ function WalkInFormContent() {
         {/* LANGKAH 1: PERUSAHAAN YANG KAMU MINATI                         */}
         {/* ============================================================== */}
         {step === 1 && (
-          <div className="rounded-3xl border border-white/15 bg-[#170A2D]/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-fadeIn space-y-6">
-            <div className="pb-4 border-b border-white/10">
-              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs animate-fadeIn space-y-6">
+            <div className="pb-4 border-b border-slate-100">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span>Perusahaan yang kamu minati:</span>
-                <span className="text-rose-400">*</span>
+                <span className="text-rose-500">*</span>
               </h2>
-              <p className="text-xs text-purple-300/70 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 {formType === "walkin"
                   ? "Pilih salah satu perusahaan rekanan CCE 2026 yang membuka posisi walk-in interview (khusus pilihan admin)."
                   : "Pilih salah satu perusahaan rekanan CCE 2026 yang membuka lowongan pekerjaan."}
@@ -514,11 +518,11 @@ function WalkInFormContent() {
             </div>
 
             {isLoadingOptions ? (
-              <div className="py-12 text-center text-xs text-purple-300/60">
+              <div className="py-12 text-center text-xs text-slate-400">
                 Memuat daftar perusahaan mitra...
               </div>
             ) : availableCompanies.length === 0 ? (
-              <div className="py-12 text-center text-xs text-purple-300/70 space-y-3">
+              <div className="py-12 text-center text-xs text-slate-600 space-y-3">
                 <p>
                   {formType === "walkin"
                     ? "Belum ada posisi lowongan yang diaktifkan untuk Walk-In Interview oleh admin expo saat ini."
@@ -544,8 +548,8 @@ function WalkInFormContent() {
                       onClick={() => setSelectedCompanyId(comp.id)}
                       className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
                         isChecked
-                          ? "border-fuchsia-500 bg-gradient-to-r from-purple-900/40 to-fuchsia-900/30 shadow-lg shadow-purple-900/30 scale-[1.01]"
-                          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                          ? "border-purple-500 bg-purple-50/60 shadow-sm ring-1 ring-purple-500/20 scale-[1.01]"
+                          : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -553,8 +557,8 @@ function WalkInFormContent() {
                         <div
                           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
                             isChecked
-                              ? "border-fuchsia-400 bg-fuchsia-500"
-                              : "border-purple-300/40 bg-white/5"
+                              ? "border-purple-600 bg-purple-600"
+                              : "border-slate-300 bg-slate-50"
                           }`}
                         >
                           {isChecked && <div className="h-2 w-2 rounded-full bg-white" />}
@@ -562,7 +566,7 @@ function WalkInFormContent() {
 
                         {/* Logo Perusahaan jika ada */}
                         {comp.logo_url ? (
-                          <div className="h-9 w-9 shrink-0 rounded-xl bg-white p-1 overflow-hidden shadow-xs flex items-center justify-center">
+                          <div className="h-9 w-9 shrink-0 rounded-xl bg-white p-1 border border-slate-200 overflow-hidden shadow-2xs flex items-center justify-center">
                             <img
                               src={comp.logo_url}
                               alt={comp.name}
@@ -570,17 +574,17 @@ function WalkInFormContent() {
                             />
                           </div>
                         ) : (
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 text-xs font-bold text-white">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 text-xs font-bold text-white shadow-2xs">
                             {comp.name.charAt(0).toUpperCase()}
                           </div>
                         )}
 
                         <div className="min-w-0">
-                          <span className="block text-sm font-bold text-white truncate">
+                          <span className={`block text-sm font-bold truncate ${isChecked ? "text-purple-950" : "text-slate-900"}`}>
                             {comp.name}
                           </span>
                           {comp.industry && (
-                            <span className="block text-[11px] text-purple-300/60 truncate">
+                            <span className="block text-[11px] text-slate-500 truncate">
                               {comp.industry}
                             </span>
                           )}
@@ -588,7 +592,11 @@ function WalkInFormContent() {
                       </div>
 
                       {/* Badge kuantitas posisi */}
-                      <span className="shrink-0 ml-3 rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-bold text-purple-300 border border-purple-500/30">
+                      <span className={`shrink-0 ml-3 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                        isChecked
+                          ? "bg-purple-100 text-purple-700 border-purple-200"
+                          : "bg-slate-100 text-slate-600 border-slate-200"
+                      }`}>
                         {comp.total_jobs} Posisi {formType === "walkin" ? "Walk-In" : ""}
                       </span>
                     </label>
@@ -598,11 +606,11 @@ function WalkInFormContent() {
             )}
 
             {/* Bottom Controls Langkah 1 */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setSelectedCompanyId("")}
-                className="text-xs font-semibold text-purple-300/70 hover:text-white transition"
+                className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
               >
                 Kosongkan pilihan
               </button>
@@ -611,7 +619,7 @@ function WalkInFormContent() {
                 type="button"
                 onClick={handleNextStep}
                 disabled={!selectedCompanyId}
-                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3 text-xs sm:text-sm font-bold text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/20 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center justify-center"
               >
                 <span>Berikutnya</span>
               </button>
@@ -625,13 +633,13 @@ function WalkInFormContent() {
         {step === 2 && (
           <form
             onSubmit={handleSubmitApplication}
-            className="rounded-3xl border border-white/15 bg-[#170A2D]/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-fadeIn space-y-6"
+            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs animate-fadeIn space-y-6"
           >
-            {/* Header Perusahaan Terpilih (Sesuai Banner Cyan / Biru di Gambar 3) */}
-            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/60 via-purple-950/50 to-purple-900/40 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* Header Perusahaan Terpilih (Sesuai Banner di Gambar 3) */}
+            <div className="rounded-2xl border border-purple-200 bg-purple-50/70 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {selectedCompany?.logo_url ? (
-                  <div className="h-10 w-10 shrink-0 rounded-xl bg-white p-1 overflow-hidden shadow-xs flex items-center justify-center">
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-white p-1 border border-slate-200 overflow-hidden shadow-2xs flex items-center justify-center">
                     <img
                       src={selectedCompany.logo_url}
                       alt={selectedCompany.name}
@@ -639,15 +647,15 @@ function WalkInFormContent() {
                     />
                   </div>
                 ) : (
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 text-sm font-bold text-white shadow-2xs">
                     {selectedCompany?.name?.charAt(0) || "P"}
                   </div>
                 )}
                 <div>
-                  <h2 className="text-base font-black text-white">
+                  <h2 className="text-base font-extrabold text-slate-900">
                     {selectedCompany?.name || "Perusahaan Rekanan"}
                   </h2>
-                  <p className="text-xs text-cyan-200/80">
+                  <p className="text-xs text-slate-600">
                     {selectedCompany?.industry || "Partner Rekrutmen CCE 2026"}
                   </p>
                 </div>
@@ -656,7 +664,7 @@ function WalkInFormContent() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="shrink-0 text-xs font-bold text-purple-300 hover:text-white transition flex items-center gap-1 underline underline-offset-4"
+                className="shrink-0 text-xs font-bold text-purple-700 hover:text-purple-900 transition flex items-center gap-1 underline underline-offset-4 cursor-pointer"
               >
                 <span>Ganti Perusahaan</span>
               </button>
@@ -664,32 +672,32 @@ function WalkInFormContent() {
 
             {/* SEKSI 0: Ringkasan Profil Pelamar */}
             {pelamar && (
-              <div className="rounded-2xl border border-purple-500/30 bg-purple-950/30 p-4 space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-purple-200">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                     <span>Pelamar: <strong>{pelamar.full_name}</strong></span>
                   </span>
-                  <span className="text-[10px] text-fuchsia-300 font-mono">
+                  <span className="text-[10px] text-purple-700 font-mono font-bold">
                     {pelamar.registration_number || "CCE2026-ONLINE"}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1 border-t border-white/5">
-                  <div className="rounded-xl bg-white/5 p-2">
-                    <span className="text-[10px] text-purple-300/70 block">Usia</span>
-                    <span className="font-semibold text-white">{pelamar.age ? `${pelamar.age} Thn` : "-"}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1 border-t border-slate-200">
+                  <div className="rounded-xl bg-white border border-slate-200 p-2 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block">Usia</span>
+                    <span className="font-semibold text-slate-900">{pelamar.age ? `${pelamar.age} Thn` : "-"}</span>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-2">
-                    <span className="text-[10px] text-purple-300/70 block">IPK Terakhir</span>
-                    <span className="font-semibold text-amber-300">{pelamar.gpa || "-"}</span>
+                  <div className="rounded-xl bg-white border border-slate-200 p-2 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block">IPK Terakhir</span>
+                    <span className="font-semibold text-purple-700">{pelamar.gpa || "-"}</span>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-2">
-                    <span className="text-[10px] text-purple-300/70 block">Kelulusan</span>
-                    <span className="font-semibold text-white truncate block">{pelamar.graduation_year || "-"}</span>
+                  <div className="rounded-xl bg-white border border-slate-200 p-2 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block">Kelulusan</span>
+                    <span className="font-semibold text-slate-900 truncate block">{pelamar.graduation_year || "-"}</span>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-2">
-                    <span className="text-[10px] text-purple-300/70 block">Bukti Regis CCE</span>
-                    <span className="font-semibold text-emerald-300 truncate block">
+                  <div className="rounded-xl bg-white border border-slate-200 p-2 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block">Bukti Regis CCE</span>
+                    <span className="font-semibold text-emerald-700 truncate block">
                       {pelamar.cce_proof_url ? "✓ Terlampir" : "Belum diunggah"}
                     </span>
                   </div>
@@ -700,16 +708,16 @@ function WalkInFormContent() {
             {/* SEKSI 1: Posisi yang diinginkan * (Radio List sesuai Gambar 3) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-bold text-white">
-                  Posisi yang diinginkan <span className="text-rose-400">*</span>
+                <label className="block text-sm font-bold text-slate-900">
+                  Posisi yang diinginkan <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-purple-300/70">
+                <span className="text-[11px] text-slate-500">
                   {availableJobs.length} posisi tersedia
                 </span>
               </div>
 
               {availableJobs.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-purple-300/70">
+                <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-500">
                   Belum ada posisi lowongan yang dibuka oleh perusahaan ini.
                 </div>
               ) : (
@@ -722,28 +730,28 @@ function WalkInFormContent() {
                         onClick={() => setSelectedJobId(job.id)}
                         className={`flex items-start justify-between p-3.5 rounded-xl border transition cursor-pointer ${
                           isSelected
-                            ? "border-fuchsia-500 bg-purple-900/40 shadow-md"
-                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                            ? "border-purple-500 bg-purple-50/60 shadow-xs ring-1 ring-purple-500/20"
+                            : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
                         }`}
                       >
                         <div className="flex items-start gap-3 min-w-0">
                           <div
                             className={`flex h-4 w-4 shrink-0 mt-0.5 items-center justify-center rounded-full border transition ${
                               isSelected
-                                ? "border-fuchsia-400 bg-fuchsia-500"
-                                : "border-purple-300/40 bg-white/5"
+                                ? "border-purple-600 bg-purple-600"
+                                : "border-slate-300 bg-slate-50"
                             }`}
                           >
                             {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                           </div>
                           <div>
-                            <span className="block text-xs sm:text-sm font-bold text-white">
+                            <span className={`block text-xs sm:text-sm font-bold ${isSelected ? "text-purple-950" : "text-slate-900"}`}>
                               {job.title}
                             </span>
-                            <div className="flex items-center gap-2 text-[11px] text-purple-300/70 mt-0.5">
+                            <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
                               <span>{job.location || "Jakarta"}</span>
                               {job.is_walk_in && (
-                                <span className="rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] font-extrabold text-fuchsia-300 border border-fuchsia-500/30">
+                                <span className="rounded-full bg-fuchsia-50 px-2 py-0.5 text-[9px] font-extrabold text-fuchsia-700 border border-fuchsia-200">
                                   ✓ Walk-In Interview
                                 </span>
                               )}
@@ -756,7 +764,7 @@ function WalkInFormContent() {
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 shrink-0 font-semibold underline mt-0.5"
+                          className="text-[10px] text-purple-600 hover:text-purple-800 shrink-0 font-semibold underline mt-0.5"
                           title="Lihat kualifikasi lengkap posisi ini"
                         >
                           Lihat Kualifikasi ↗
@@ -769,30 +777,30 @@ function WalkInFormContent() {
             </div>
 
             {/* SEKSI 2: Masukkan CV * (Upload Berkas Gambar 3) */}
-            <div className="space-y-2 pt-2 border-t border-white/10">
+            <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-bold text-white">
-                  Masukkan CV <span className="text-rose-400">*</span>
+                <label className="block text-sm font-bold text-slate-900">
+                  Masukkan CV <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-purple-300/70">
+                <span className="text-[11px] text-slate-500">
                   Maks. 10 MB (PDF, DOC, DOCX, PNG, JPG)
                 </span>
               </div>
 
               {cvUrl ? (
                 /* Card Preview CV Terunggah */
-                <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/20 p-4 flex items-center justify-between gap-3 animate-fadeIn">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 flex items-center justify-between gap-3 animate-fadeIn">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-2xs">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </span>
                     <div className="min-w-0">
-                      <span className="block text-xs font-bold text-white truncate max-w-xs sm:max-w-md">
+                      <span className="block text-xs font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
                         {cvFileName || "CV_Pelamar.pdf"}
                       </span>
-                      <span className="block text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                      <span className="block text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
@@ -806,14 +814,14 @@ function WalkInFormContent() {
                       href={cvUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-purple-200 hover:bg-white/20 transition"
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs transition"
                     >
                       Buka
                     </a>
                     <button
                       type="button"
                       onClick={handleRemoveCv}
-                      className="rounded-xl border border-red-500/30 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-300 hover:bg-red-900/60 transition cursor-pointer"
+                      className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 shadow-2xs transition cursor-pointer"
                     >
                       Ganti
                     </button>
@@ -821,10 +829,10 @@ function WalkInFormContent() {
                 </div>
               ) : (
                 /* Box Upload Berkas Kosong */
-                <label className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center cursor-pointer hover:border-fuchsia-400 hover:bg-fuchsia-500/5 transition group">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/30 text-fuchsia-400 group-hover:scale-110 transition">
+                <label className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/30 transition group">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 group-hover:scale-110 transition shadow-2xs">
                     {isUploadingCv ? (
-                      <svg className="w-6 h-6 animate-spin text-fuchsia-400" viewBox="0 0 24 24" fill="none">
+                      <svg className="w-6 h-6 animate-spin text-purple-600" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                       </svg>
@@ -835,10 +843,10 @@ function WalkInFormContent() {
                     )}
                   </div>
 
-                  <div className="text-xs font-bold text-white group-hover:text-fuchsia-300 transition">
+                  <div className="text-xs font-bold text-slate-800 group-hover:text-purple-700 transition">
                     {isUploadingCv ? "Mengunggah berkas CV ke server..." : "Tambahkan Berkas CV"}
                   </div>
-                  <div className="text-[11px] text-purple-300/60">
+                  <div className="text-[11px] text-slate-500">
                     Klik untuk memilih berkas dari perangkat (Maks. 10 MB)
                   </div>
 
@@ -853,25 +861,25 @@ function WalkInFormContent() {
             </div>
 
             {/* SEKSI 3: Tautan Portofolio (Opsional) */}
-            <div className="space-y-1.5 pt-2 border-t border-white/10 text-xs">
-              <label className="block font-bold text-purple-200">
-                Tautan Portofolio / LinkedIn <span className="text-purple-400/60 font-normal">(Opsional)</span>
+            <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+              <label className="block font-bold text-slate-700">
+                Tautan Portofolio / LinkedIn <span className="text-slate-400 font-normal">(Opsional)</span>
               </label>
               <input
                 type="url"
                 value={portfolioUrl}
                 onChange={(e) => setPortfolioUrl(e.target.value)}
                 placeholder="https://linkedin.com/in/... atau tautan portofolio online"
-                className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-white placeholder-purple-300/40 focus:border-fuchsia-400 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-600/10"
               />
             </div>
 
             {/* Bottom Navigation Buttons */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-bold text-purple-200 hover:bg-white/10 transition cursor-pointer flex items-center gap-1.5"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs transition cursor-pointer flex items-center gap-1.5"
               >
                 <span>← Kembali</span>
               </button>
@@ -879,7 +887,7 @@ function WalkInFormContent() {
               <button
                 type="submit"
                 disabled={isSubmitting || !selectedJobId || !cvUrl || isUploadingCv}
-                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-md shadow-purple-600/20 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -906,8 +914,8 @@ function WalkInFormContent() {
       </main>
 
       {/* Footer Mini */}
-      <footer className="border-t border-white/10 py-4 text-center text-xs text-purple-300/50">
-        © 2026 Career Compass Expo — Portal Pendaftaran Lamaran & Walk-In Interview
+      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+        © 2026 Career Compass Expo — Portal Pendaftaran Lamaran &amp; Walk-In Interview
       </footer>
     </div>
   );
@@ -917,7 +925,7 @@ export default function WalkInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0E041A] flex items-center justify-center text-purple-300 text-sm">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-600 text-sm">
           Memuat formulir walk-in interview...
         </div>
       }
