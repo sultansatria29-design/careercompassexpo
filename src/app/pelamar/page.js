@@ -399,12 +399,7 @@ function PelamarAuthContent() {
                     <span>Memverifikasi Akun...</span>
                   </>
                 ) : (
-                  <>
-                    <span>Masuk ke Dashboard</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </>
+                  <span>Masuk ke Dashboard</span>
                 )}
               </button>
             </form>
@@ -774,12 +769,7 @@ function PelamarAuthContent() {
                     <span>Mendaftarkan Akun...</span>
                   </>
                 ) : (
-                  <>
-                    <span>Daftar Akun &amp; Lanjutkan</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </>
+                  <span>Daftar Akun &amp; Lanjutkan</span>
                 )}
               </button>
             </form>

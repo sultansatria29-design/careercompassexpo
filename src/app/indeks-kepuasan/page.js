@@ -490,12 +490,7 @@ export default function IndeksKepuasanPage() {
                         <span>Mengirim Penilaian...</span>
                       </>
                     ) : (
-                      <>
-                        <span>Kirim Indeks Kepuasan</span>
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </>
+                      <span>Kirim Indeks Kepuasan</span>
                     )}
                   </button>
                 </div>

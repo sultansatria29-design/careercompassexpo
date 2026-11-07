@@ -157,12 +157,9 @@ export default function Home() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/registrasi"
-              className="rounded-full bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-500/25 transition-all duration-200 hover:scale-105 hover:opacity-95 flex items-center gap-2"
+              className="rounded-full bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-500/25 transition-all duration-200 hover:scale-105 hover:opacity-95 flex items-center justify-center"
             >
               <span>Registrasi Peserta (E-Ticket)</span>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
             </Link>
             <Link
               href="/pelamar/walk-in"
@@ -290,12 +287,9 @@ export default function Home() {
           </div>
           <Link
             href="/pelamar"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-purple-50 border border-purple-200 px-6 py-3 font-bold text-purple-700 shadow-xs transition hover:bg-purple-100 hover:scale-105"
+            className="inline-flex shrink-0 items-center justify-center rounded-full bg-purple-50 border border-purple-200 px-6 py-3 font-bold text-purple-700 shadow-xs transition hover:bg-purple-100 hover:scale-105"
           >
             <span>Daftar untuk Melamar</span>
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
           </Link>
         </div>
 
@@ -391,9 +385,6 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                   <span>Gabung Menjadi Mitra Perusahaan</span>
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
                 </Link>
                 <Link
                   href="/mitra/dashboard"

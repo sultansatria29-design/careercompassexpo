@@ -785,10 +785,9 @@ export default function RegistrasiPage() {
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-4 font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.01]"
+                  className="w-full flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-4 font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.01]"
                 >
                   <span>Berikutnya</span>
-                  <span className="text-lg">→</span>
                 </button>
               </div>
             )}
@@ -961,10 +960,9 @@ export default function RegistrasiPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.02] disabled:opacity-50"
+                      className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.02] disabled:opacity-50"
                     >
                       <span>Lanjut ke Langkah 3</span>
-                      <span className="text-lg">→</span>
                     </button>
                   </div>
                 </div>
@@ -1153,10 +1151,7 @@ export default function RegistrasiPage() {
                           <span>Mengirim...</span>
                         </>
                       ) : (
-                        <>
-                          <span>Kirim Registrasi & Klaim Tiket</span>
-                          <span className="text-lg">→</span>
-                        </>
+                        <span>Kirim Registrasi & Klaim Tiket</span>
                       )}
                     </button>
                   </div>

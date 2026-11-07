@@ -173,13 +173,6 @@ export default function EventInfoTabs() {
                       </div>
                     </div>
 
-                    <span
-                      className={`text-base font-bold transition-transform ${
-                        isActive ? "translate-x-1 text-white" : "text-white/40"
-                      }`}
-                    >
-                      →
-                    </span>
                   </button>
                 );
               })}
@@ -251,18 +244,16 @@ export default function EventInfoTabs() {
                   href={current.ctaLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 active:scale-95 shrink-0"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 active:scale-95 shrink-0"
                 >
                   <span>{current.ctaText}</span>
-                  <span>→</span>
                 </a>
               ) : (
                 <Link
                   href={current.ctaLink}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 active:scale-95 shrink-0"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-purple-600/30 transition hover:scale-105 active:scale-95 shrink-0"
                 >
                   <span>{current.ctaText}</span>
-                  <span>→</span>
                 </Link>
               )}
             </div>

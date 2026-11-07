@@ -411,18 +411,16 @@ export default function EventInfoBook() {
                           href={item.ctaLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition hover:opacity-95"
+                          className="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition hover:opacity-95"
                         >
                           <span>{item.ctaText}</span>
-                          <span>→</span>
                         </a>
                       ) : (
                         <Link
                           href={item.ctaLink}
-                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition hover:opacity-95"
+                          className="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition hover:opacity-95"
                         >
                           <span>{item.ctaText}</span>
-                          <span>→</span>
                         </Link>
                       )}
                     </div>
@@ -593,18 +591,16 @@ export default function EventInfoBook() {
                       href={page.ctaLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-purple-600/25 transition hover:scale-105 active:scale-95"
+                      className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-purple-600/25 transition hover:scale-105 active:scale-95"
                     >
                       <span>{page.ctaText}</span>
-                      <span>→</span>
                     </a>
                   ) : (
                     <Link
                       href={page.ctaLink}
-                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-purple-600/25 transition hover:scale-105 active:scale-95"
+                      className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-purple-600/25 transition hover:scale-105 active:scale-95"
                     >
                       <span>{page.ctaText}</span>
-                      <span>→</span>
                     </Link>
                   )}
 
@@ -619,7 +615,6 @@ export default function EventInfoBook() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                     <span>Balik Halaman</span>
-                    <span className="transition-transform group-hover:translate-x-1">→</span>
                   </button>
                 </div>
               </div>
@@ -666,10 +661,9 @@ export default function EventInfoBook() {
         <button
           type="button"
           onClick={nextPage}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           <span>Lembar Selanjutnya</span>
-          <span>→</span>
         </button>
       </div>
     </div>

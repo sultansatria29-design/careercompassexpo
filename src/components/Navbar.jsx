@@ -249,12 +249,9 @@ export default function Navbar() {
               <Link
                 href="/registrasi"
                 onClick={handleNavClick}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-md shadow-purple-600/20 transition hover:opacity-95"
+                className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] py-3.5 text-center text-sm font-black text-white shadow-md shadow-purple-600/20 transition hover:opacity-95"
               >
                 <span>Registrasi Peserta (E-Ticket)</span>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
               </Link>
             </div>
           </div>

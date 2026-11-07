@@ -667,11 +667,8 @@ export default function MitraAuthPage() {
                   {isLoading ? (
                     "Memproses Pendaftaran..."
                   ) : (
-                    <span className="flex items-center justify-center gap-2">
+                    <span className="flex items-center justify-center">
                       <span>Daftarkan Perusahaan &amp; Buka Dashboard Mitra</span>
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
                     </span>
                   )}
                 </button>
@@ -726,7 +723,7 @@ export default function MitraAuthPage() {
                   disabled={isLoading}
                   className="w-full rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#B838FD] to-[#EF17D8] py-4 text-center text-sm font-black text-white shadow-xl shadow-purple-600/25 transition hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? "Memverifikasi Kredensial..." : "Masuk ke Dashboard Mitra →"}
+                  {isLoading ? "Memverifikasi Kredensial..." : "Masuk ke Dashboard Mitra"}
                 </button>
               </div>
 

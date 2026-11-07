@@ -530,7 +530,7 @@ function WalkInFormContent() {
                     onClick={() => handleSwitchFormType("regular")}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 px-4 py-2 text-xs font-bold text-white transition cursor-pointer"
                   >
-                    <span>Beralih ke Formulir Lamaran Pekerjaan Reguler →</span>
+                    <span>Beralih ke Formulir Lamaran Pekerjaan Reguler</span>
                   </button>
                 )}
               </div>
@@ -611,12 +611,9 @@ function WalkInFormContent() {
                 type="button"
                 onClick={handleNextStep}
                 disabled={!selectedCompanyId}
-                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3 text-xs sm:text-sm font-bold text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-3 text-xs sm:text-sm font-bold text-white shadow-xl shadow-fuchsia-600/30 transition hover:scale-105 disabled:opacity-50 cursor-pointer flex items-center justify-center"
               >
                 <span>Berikutnya</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
               </button>
             </div>
           </div>

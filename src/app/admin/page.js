@@ -1453,7 +1453,6 @@ export default function AdminDashboard() {
                     <IconKey className="h-4 w-4 text-purple-600" />
                     <span>Ubah Akun / Password Admin</span>
                   </div>
-                  <span className="text-slate-400">→</span>
                 </button>
 
                 <Link
@@ -1667,7 +1666,6 @@ export default function AdminDashboard() {
                     className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1"
                   >
                     <span>Lihat Semua</span>
-                    <span>→</span>
                   </button>
                 </div>
 
@@ -2953,7 +2951,7 @@ export default function AdminDashboard() {
                     target="_blank"
                     className="w-full sm:w-auto text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-xs font-bold transition-colors shrink-0"
                   >
-                    Buka Kamera Scanner →
+                    Buka Kamera Scanner
                   </Link>
                 </div>
               </div>
@@ -4105,7 +4103,7 @@ export default function AdminDashboard() {
                           rel="noreferrer"
                           className="inline-flex items-center gap-1 rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-700"
                         >
-                          Hubungi WA →
+                          Hubungi WA
                         </a>
                       )}
                     </div>

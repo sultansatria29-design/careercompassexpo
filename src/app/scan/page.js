@@ -440,7 +440,7 @@ function ScannerContent() {
                     disabled={loading || !inputCode.trim()}
                     className="flex-1 rounded-xl bg-gradient-to-r from-[#7226FF] to-[#EF17D8] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-purple-600/30 transition hover:scale-[1.01] disabled:opacity-50 cursor-pointer"
                   >
-                    {loading ? "Memverifikasi..." : "Verifikasi & Check-In Sekarang →"}
+                    {loading ? "Memverifikasi..." : "Verifikasi & Check-In Sekarang"}
                   </button>
                 </div>
               </form>
