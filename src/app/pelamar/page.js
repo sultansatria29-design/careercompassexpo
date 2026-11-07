@@ -248,7 +248,7 @@ function PelamarAuthContent() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-900 selection:bg-purple-100 selection:text-purple-900 flex flex-col justify-between overflow-x-hidden">
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 selection:bg-purple-100 selection:text-purple-900 flex flex-col justify-between overflow-x-clip">
       {/* Background Glow Orbs */}
       <div className="pointer-events-none fixed -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-purple-200/40 blur-[130px]" />
       <div className="pointer-events-none fixed -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-fuchsia-200/30 blur-[140px]" />
@@ -260,8 +260,8 @@ function PelamarAuthContent() {
         </div>
       )}
 
-      {/* Header Mini */}
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md px-4 sm:px-8 py-3.5 shadow-xs">
+      {/* Header Mini (Sticky / Fixed saat di-scroll di mobile & website) */}
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-8 py-3.5 shadow-xs transition-all">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-9 w-22 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 shadow-xs">
@@ -281,12 +281,6 @@ function PelamarAuthContent() {
               className="text-slate-600 hover:text-purple-600 transition font-semibold"
             >
               ← Kembali ke Beranda
-            </Link>
-            <Link
-              href="/mitra"
-              className="hidden sm:inline-block rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 hover:bg-slate-100 hover:text-purple-600 transition shadow-xs"
-            >
-              Portal Mitra HR
             </Link>
           </div>
         </div>
