@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { uploadToGoogleDrive, parseDataUrl } from "@/app/lib/googleDrive";
 
 export async function POST(request) {
   try {
@@ -163,6 +164,77 @@ export async function POST(request) {
         ? `Yang lain: ${info_source_other}`
         : info_source;
 
+      let savedTactlinkProof = tactlink_proof;
+      let tactlinkDriveUrl = null;
+      let tactlinkDriveId = null;
+      let tactlinkDriveThumb = null;
+      let tactlinkStorage = "base64";
+
+      // Jika ada bukti TactLink, proses penyimpanan berkas
+      if (tactlink_proof) {
+        let fileBuffer = null;
+        let fileMime = "image/jpeg";
+
+        if (tactlink_proof.startsWith("data:")) {
+          const parsed = parseDataUrl(tactlink_proof);
+          if (parsed) {
+            fileBuffer = parsed.buffer;
+            fileMime = parsed.mimeType;
+          }
+        }
+
+        if (fileBuffer) {
+          // A. Prioritas Utama: Upload ke Google Drive
+          try {
+            const driveRes = await uploadToGoogleDrive({
+              buffer: fileBuffer,
+              fileName: tactlink_filename || "bukti_tactlink.jpg",
+              mimeType: fileMime,
+              participantName: participantData.full_name,
+              registrationNumber: participantData.registration_number,
+              email: participantData.email,
+            });
+
+            if (driveRes && driveRes.success) {
+              savedTactlinkProof = driveRes.webViewLink;
+              tactlinkDriveUrl = driveRes.webViewLink;
+              tactlinkDriveId = driveRes.fileId;
+              tactlinkDriveThumb = driveRes.thumbnailLink;
+              tactlinkStorage = "google_drive";
+            }
+          } catch (driveErr) {
+            console.warn("Upload bukti ke Google Drive ditangguhkan / gagal:", driveErr.message);
+
+            // B. Cadangan: Upload ke Supabase Storage agar database tetap ringan
+            try {
+              const ext = (tactlink_filename || "bukti.jpg").split(".").pop() || "jpg";
+              const safeFileName = `bukti_${participantData.registration_number}_${Date.now()}.${ext}`;
+              const filePath = `bukti_registrasi/${safeFileName}`;
+
+              const { error: sbErr } = await supabase.storage
+                .from("resumes")
+                .upload(filePath, fileBuffer, {
+                  contentType: fileMime,
+                  upsert: true,
+                });
+
+              if (!sbErr) {
+                const { data: publicData } = supabase.storage
+                  .from("resumes")
+                  .getPublicUrl(filePath);
+
+                if (publicData?.publicUrl) {
+                  savedTactlinkProof = publicData.publicUrl;
+                  tactlinkStorage = "supabase";
+                }
+              }
+            } catch (sbErr) {
+              console.warn("Upload cadangan ke Supabase Storage juga gagal:", sbErr.message);
+            }
+          }
+        }
+      }
+
       await supabase.from("surveys").insert({
         participant_id: participantData.id,
         institution: institution || institution_type || null,
@@ -178,8 +250,12 @@ export async function POST(request) {
           expectations,
           semester: semester || null,
           domicile_other: domicile_other || null,
-          tactlink_proof: tactlink_proof || null,
+          tactlink_proof: savedTactlinkProof || null,
           tactlink_filename: tactlink_filename || null,
+          tactlink_drive_url: tactlinkDriveUrl || null,
+          tactlink_drive_id: tactlinkDriveId || null,
+          tactlink_drive_thumb: tactlinkDriveThumb || null,
+          tactlink_storage: tactlinkStorage,
         }),
       });
     } catch (surveyErr) {

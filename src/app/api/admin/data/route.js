@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkGoogleDriveConfig } from "@/app/lib/googleDrive";
 
 function getSupabase() {
   return createClient(
@@ -86,6 +87,10 @@ export async function GET() {
           expectations: parsedFeedback.expectations || null,
           tactlink_proof: parsedFeedback.tactlink_proof || null,
           tactlink_filename: parsedFeedback.tactlink_filename || null,
+          tactlink_drive_url: parsedFeedback.tactlink_drive_url || null,
+          tactlink_drive_id: parsedFeedback.tactlink_drive_id || null,
+          tactlink_drive_thumb: parsedFeedback.tactlink_drive_thumb || null,
+          tactlink_storage: parsedFeedback.tactlink_storage || (parsedFeedback.tactlink_drive_id ? "google_drive" : null),
         };
       }
     });
@@ -167,6 +172,24 @@ export async function GET() {
       return { key, label, average: avg, total_responses: validAnswers.length };
     });
 
+    let tactlinkCount = 0;
+    let driveCount = 0;
+    Object.values(surveyMap).forEach((s) => {
+      if (s.tactlink_proof) {
+        tactlinkCount++;
+        if (s.tactlink_drive_id || s.tactlink_storage === "google_drive") {
+          driveCount++;
+        }
+      }
+    });
+
+    let driveConfig = { configured: false, folderUrl: null };
+    try {
+      driveConfig = await checkGoogleDriveConfig();
+    } catch (dErr) {
+      console.warn("Drive config check error:", dErr);
+    }
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -176,6 +199,15 @@ export async function GET() {
         day2_attendances: day2Attendances,
         attendance_rate: totalParticipants > 0 ? Math.round((totalAttendances / totalParticipants) * 100) : 0,
         category_stats: categoryStats,
+        tactlink_stats: {
+          total_uploaded: tactlinkCount,
+          total_in_drive: driveCount,
+          pending_sync: Math.max(0, tactlinkCount - driveCount),
+          drive_configured: Boolean(driveConfig.configured),
+          drive_folder_url: driveConfig.folderUrl,
+          drive_folder_name: driveConfig.folderName || "Folder Google Drive",
+          drive_message: driveConfig.message,
+        },
       },
       presensi: presensiList,
       participants: (participants || []).map((p) => ({

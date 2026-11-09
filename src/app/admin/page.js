@@ -202,6 +202,19 @@ function IconDocument({ className = "h-4 w-4" }) {
   );
 }
 
+function IconGoogleDrive({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 87.3 78" fill="none">
+      <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da" />
+      <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47" />
+      <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335" />
+      <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d" />
+      <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc" />
+      <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00" />
+    </svg>
+  );
+}
+
 // ========================================================
 // KOMPONEN UTAMA DASHBOARD ADMIN
 // ========================================================
@@ -290,6 +303,86 @@ export default function AdminDashboard() {
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [mitraToast, setMitraToast] = useState(null);
+
+  // State untuk Google Drive Bukti TactLink
+  const [isSyncingDrive, setIsSyncingDrive] = useState(false);
+  const [syncingSingleId, setSyncingSingleId] = useState(null);
+  const [isDriveSetupModalOpen, setIsDriveSetupModalOpen] = useState(false);
+  const [driveToast, setDriveToast] = useState(null);
+
+  // Handle Sinkronisasi Masal Bukti TactLink ke Google Drive
+  async function handleSyncAllToDrive() {
+    setIsSyncingDrive(true);
+    setDriveToast(null);
+    try {
+      const res = await fetch("/api/admin/drive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync_all" }),
+      });
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        throw new Error(result.error || "Gagal menyinkronkan berkas ke Google Drive.");
+      }
+      setDriveToast({
+        type: "success",
+        message: result.message || `${result.syncedCount || 0} berkas berhasil diunggah ke Google Drive!`,
+      });
+      await loadAdminData();
+    } catch (err) {
+      setDriveToast({
+        type: "error",
+        message: err.message || "Gagal menghubungkan Google Drive. Periksa kredensial di .env.",
+      });
+    } finally {
+      setIsSyncingDrive(false);
+      setTimeout(() => setDriveToast(null), 8000);
+    }
+  }
+
+  // Handle Sinkronisasi Satu Peserta ke Google Drive
+  async function handleSyncSingleToDrive(participantId) {
+    if (!participantId) return;
+    setSyncingSingleId(participantId);
+    setDriveToast(null);
+    try {
+      const res = await fetch("/api/admin/drive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync_single", participant_id: participantId }),
+      });
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        throw new Error(result.error || "Gagal mengunggah berkas ke Google Drive.");
+      }
+      setDriveToast({
+        type: "success",
+        message: "Bukti TactLink peserta berhasil diunggah ke Google Drive!",
+      });
+      await loadAdminData();
+      if (selectedParticipant && selectedParticipant.id === participantId) {
+        setSelectedParticipant((prev) => ({
+          ...prev,
+          survey: {
+            ...prev.survey,
+            tactlink_proof: result.drive?.webViewLink || prev.survey.tactlink_proof,
+            tactlink_drive_url: result.drive?.webViewLink,
+            tactlink_drive_id: result.drive?.fileId,
+            tactlink_drive_thumb: result.drive?.thumbnailLink,
+            tactlink_storage: "google_drive",
+          },
+        }));
+      }
+    } catch (err) {
+      setDriveToast({
+        type: "error",
+        message: err.message || "Gagal mengunggah ke Google Drive.",
+      });
+    } finally {
+      setSyncingSingleId(null);
+      setTimeout(() => setDriveToast(null), 8000);
+    }
+  }
 
   // Helper: Ambil kredensial admin (tersimpan atau default)
   function getAdminCredentials() {
@@ -805,7 +898,7 @@ export default function AdminDashboard() {
         clean(plans),
         clean(s.info_source),
         clean(s.expectations),
-        clean(s.tactlink_proof ? "Sudah Diunggah" : "Belum Diunggah"),
+        clean(s.tactlink_drive_url ? s.tactlink_drive_url : (s.tactlink_proof ? "Sudah Diunggah" : "Belum Diunggah")),
         clean(p.has_checked_in ? "Sudah Hadir" : "Belum Hadir"),
       ];
     });
@@ -1711,6 +1804,73 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+
+            {/* Widget Status Integrasi Google Drive Bukti TactLink */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
+                    <IconGoogleDrive className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-[family-name:var(--font-montserrat)] text-sm font-extrabold text-slate-900">
+                        Penyimpanan Cloud Google Drive (Bukti TactLink)
+                      </h4>
+                      {data.stats.tactlink_stats?.drive_configured ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Terhubung
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 border border-amber-200">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                          Belum Dikonfigurasi
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {data.stats.tactlink_stats?.drive_configured
+                        ? `Berkas bukti pendaftaran otomatis tersimpan di folder "${data.stats.tactlink_stats?.drive_folder_name}".`
+                        : "Hubungkan Service Account Google Drive agar bukti upload otomatis tersimpan di cloud."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="text-right px-3 py-1 bg-slate-50 rounded-xl border border-slate-100 hidden sm:block">
+                    <div className="text-[10px] uppercase font-bold text-slate-400">Tersimpan di Drive</div>
+                    <div className="text-sm font-black text-slate-900">
+                      {data.stats.tactlink_stats?.total_in_drive || 0} / {data.stats.tactlink_stats?.total_uploaded || 0} Berkas
+                    </div>
+                  </div>
+
+                  {data.stats.tactlink_stats?.drive_folder_url && (
+                    <a
+                      href={data.stats.tactlink_stats.drive_folder_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs transition"
+                    >
+                      <IconGoogleDrive className="h-3.5 w-3.5" />
+                      <span>Buka Folder Drive</span>
+                      <span className="text-[10px] text-slate-400">↗</span>
+                    </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("registrasi");
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 px-3.5 py-2 text-xs font-bold text-white shadow-2xs transition cursor-pointer"
+                  >
+                    <span>Kelola di Registrasi</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1917,7 +2077,7 @@ export default function AdminDashboard() {
             ======================================================== */}
         {activeTab === "registrasi" && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <h1 className="font-[family-name:var(--font-montserrat)] text-2xl sm:text-3xl font-extrabold text-slate-900">
                   Data Registrasi Peserta
@@ -1927,14 +2087,83 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <button
-                onClick={exportRegistrasiCSV}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0 w-full sm:w-auto"
-              >
-                <IconDownload className="h-4 w-4 text-slate-500" />
-                <span>Ekspor CSV</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Google Drive Folder Link */}
+                {data.stats.tactlink_stats?.drive_folder_url && (
+                  <a
+                    href={data.stats.tactlink_stats.drive_folder_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition-colors shrink-0"
+                    title="Buka folder Google Drive tempat bukti TactLink tersimpan"
+                  >
+                    <IconGoogleDrive className="h-4 w-4" />
+                    <span>Folder Drive</span>
+                    <span className="text-[10px] text-slate-400">↗</span>
+                  </a>
+                )}
+
+                {/* Tombol Sinkronkan ke Google Drive */}
+                <button
+                  type="button"
+                  onClick={handleSyncAllToDrive}
+                  disabled={isSyncingDrive}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3.5 py-2.5 text-xs font-bold text-purple-700 shadow-xs transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                  title="Upload bukti TactLink yang belum tersimpan di Google Drive"
+                >
+                  <IconGoogleDrive className="h-4 w-4" />
+                  <span>
+                    {isSyncingDrive ? "Menyinkronkan..." : "Sinkron ke Drive"}
+                  </span>
+                  {data.stats.tactlink_stats?.pending_sync > 0 && !isSyncingDrive && (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] px-1.5 py-0.2 font-black">
+                      {data.stats.tactlink_stats.pending_sync}
+                    </span>
+                  )}
+                </button>
+
+                {/* Tombol Setup Drive */}
+                <button
+                  type="button"
+                  onClick={() => setIsDriveSetupModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-600 shadow-xs transition-colors shrink-0 cursor-pointer"
+                  title="Status & Panduan Konfigurasi Google Drive"
+                >
+                  <span className={`h-2 w-2 rounded-full ${data.stats.tactlink_stats?.drive_configured ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`} />
+                  <span>Setup Drive</span>
+                </button>
+
+                <button
+                  onClick={exportRegistrasiCSV}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0 w-full sm:w-auto cursor-pointer"
+                >
+                  <IconDownload className="h-4 w-4 text-slate-500" />
+                  <span>Ekspor CSV</span>
+                </button>
+              </div>
             </div>
+
+            {/* Notifikasi Toast Sinkronisasi Drive */}
+            {driveToast && (
+              <div
+                className={`rounded-xl border p-3.5 text-xs font-semibold flex items-center justify-between transition-all animate-fadeIn ${
+                  driveToast.type === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-rose-200 bg-rose-50 text-rose-800"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <IconGoogleDrive className="h-4 w-4" />
+                  <span>{driveToast.message}</span>
+                </div>
+                <button
+                  onClick={() => setDriveToast(null)}
+                  className="text-slate-500 hover:text-slate-800 font-bold ml-2 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
 
             {/* Filter Registrasi */}
             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -2014,11 +2243,23 @@ export default function AdminDashboard() {
                               <span className="font-bold text-slate-900">
                                 {p.full_name}
                               </span>
-                              {p.survey?.tactlink_proof && (
-                                <span className="inline-flex items-center rounded-sm bg-purple-50 text-[10px] font-bold text-purple-700 px-1.5 py-0.5 border border-purple-200" title="Sudah upload bukti TactLink">
+                              {p.survey?.tactlink_drive_url ? (
+                                <a
+                                  href={p.survey.tactlink_drive_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 rounded-sm bg-emerald-50 text-[10px] font-bold text-emerald-700 px-1.5 py-0.5 border border-emerald-200 hover:bg-emerald-100 transition"
+                                  title="Tersimpan di Google Drive - Klik untuk membuka berkas"
+                                >
+                                  <IconGoogleDrive className="h-3 w-3" />
+                                  <span>Drive ↗</span>
+                                </a>
+                              ) : p.survey?.tactlink_proof ? (
+                                <span className="inline-flex items-center rounded-sm bg-purple-50 text-[10px] font-bold text-purple-700 px-1.5 py-0.5 border border-purple-200" title="Sudah upload bukti TactLink (Belum disinkron ke Drive)">
                                   ✓ TactLink
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                             <div className="text-xs text-slate-500">
                               {p.email} • {p.phone}
@@ -3959,12 +4200,20 @@ export default function AdminDashboard() {
                   )}
 
                   {/* Bukti Unduh / Akun TactLink */}
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <div className="text-[10px] text-slate-400 uppercase font-bold mb-1.5 flex items-center justify-between">
-                      <span>Bukti Unduh / Akun TactLink</span>
-                      {selectedParticipant.survey.tactlink_proof ? (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                          Sudah Diunggah
+                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+                    <div className="text-[10px] text-slate-400 uppercase font-bold mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <IconGoogleDrive className="h-3.5 w-3.5" />
+                        <span>Bukti Unduh / Akun TactLink</span>
+                      </div>
+                      {selectedParticipant.survey.tactlink_drive_url ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Tersimpan di Google Drive
+                        </span>
+                      ) : selectedParticipant.survey.tactlink_proof ? (
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                          Tersimpan di Database
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
@@ -3973,23 +4222,62 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     {selectedParticipant.survey.tactlink_proof ? (
-                      <div className="mt-2 space-y-2">
-                        <div className="relative max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
+                      <div className="mt-2 space-y-2.5">
+                        <div className="relative max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 text-center">
                           <img
-                            src={selectedParticipant.survey.tactlink_proof}
+                            src={
+                              selectedParticipant.survey.tactlink_drive_thumb ||
+                              selectedParticipant.survey.tactlink_proof
+                            }
                             alt="Bukti TactLink"
                             className="w-full object-contain max-h-60 mx-auto rounded-lg cursor-pointer hover:opacity-90 transition"
                             onClick={() => {
-                              const w = window.open("");
-                              if (w) {
-                                w.document.write(`<title>Bukti Unduh TactLink - ${selectedParticipant.full_name}</title><body style="margin:0;background:#0f172a;display:flex;align-items:center;justify-center;min-height:100vh;"><img src="${selectedParticipant.survey.tactlink_proof}" style="max-width:90%;max-height:90vh;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);" /></body>`);
+                              if (selectedParticipant.survey.tactlink_drive_url) {
+                                window.open(selectedParticipant.survey.tactlink_drive_url, "_blank");
+                              } else {
+                                const w = window.open("");
+                                if (w) {
+                                  w.document.write(
+                                    `<title>Bukti Unduh TactLink - ${selectedParticipant.full_name}</title><body style="margin:0;background:#0f172a;display:flex;align-items:center;justify-center;min-height:100vh;"><img src="${selectedParticipant.survey.tactlink_proof}" style="max-width:90%;max-height:90vh;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);" /></body>`
+                                  );
+                                }
                               }
                             }}
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500 text-center">
-                          Klik gambar di atas untuk membuka tampilan ukuran penuh.
-                        </p>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          {selectedParticipant.survey.tactlink_drive_url ? (
+                            <a
+                              href={selectedParticipant.survey.tactlink_drive_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-800 transition"
+                            >
+                              <IconGoogleDrive className="h-3.5 w-3.5" />
+                              <span>Buka di Google Drive</span>
+                              <span className="text-[10px]">↗</span>
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSyncSingleToDrive(selectedParticipant.id)}
+                              disabled={syncingSingleId === selectedParticipant.id}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 text-xs font-bold text-purple-800 transition disabled:opacity-50 cursor-pointer"
+                            >
+                              <IconGoogleDrive className="h-3.5 w-3.5" />
+                              <span>
+                                {syncingSingleId === selectedParticipant.id
+                                  ? "Mengunggah..."
+                                  : "Upload ke Google Drive"}
+                              </span>
+                            </button>
+                          )}
+
+                          <span className="text-[11px] text-slate-400">
+                            {selectedParticipant.survey.tactlink_filename || "bukti_tactlink.jpg"}
+                          </span>
+                        </div>
                       </div>
                     ) : (
                       <p className="text-xs text-slate-400 italic">
@@ -4496,6 +4784,208 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL PANDUAN & STATUS GOOGLE DRIVE
+          ======================================================== */}
+      {isDriveSetupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200">
+            <button
+              onClick={() => setIsDriveSetupModalOpen(false)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 text-sm font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 shadow-2xs">
+                <IconGoogleDrive className="h-7 w-7" />
+              </div>
+              <div>
+                <h3 className="font-[family-name:var(--font-montserrat)] text-lg sm:text-xl font-extrabold text-slate-900">
+                  Integrasi Google Drive
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Penyimpanan cloud otomatis untuk bukti download / screenshot TactLink peserta.
+                </p>
+              </div>
+            </div>
+
+            {/* Status Koneksi */}
+            <div
+              className={`rounded-2xl p-4 border mb-5 ${
+                data.stats.tactlink_stats?.drive_configured
+                  ? "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                  : "bg-amber-50/70 border-amber-200 text-amber-950"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">Status Koneksi:</span>
+                {data.stats.tactlink_stats?.drive_configured ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">
+                    <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                    Terhubung & Aktif
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-2xs">
+                    Belum Dikonfigurasi di .env
+                  </span>
+                )}
+              </div>
+
+              <div className="text-xs space-y-1">
+                <p>{data.stats.tactlink_stats?.drive_message || "Memeriksa kredensial di file environment (.env)..."}</p>
+                {data.stats.tactlink_stats?.drive_folder_name && (
+                  <p className="font-semibold">
+                    Folder Target:{" "}
+                    <span className="font-mono bg-white/70 px-1.5 py-0.5 rounded border border-emerald-200">
+                      {data.stats.tactlink_stats.drive_folder_name}
+                    </span>
+                  </p>
+                )}
+              </div>
+
+              {data.stats.tactlink_stats?.drive_folder_url && (
+                <div className="mt-3 pt-2.5 border-t border-emerald-200/60 flex items-center justify-between">
+                  <span className="text-[11px] text-emerald-800 font-medium">Buka folder penyimpanan di web:</span>
+                  <a
+                    href={data.stats.tactlink_stats.drive_folder_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 underline hover:text-emerald-950"
+                  >
+                    <span>Buka Google Drive</span>
+                    <span>↗</span>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Statistik File */}
+            <div className="grid grid-cols-3 gap-3 mb-5 text-center">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="text-[10px] font-bold text-slate-500 uppercase">Total Bukti</div>
+                <div className="text-lg font-black text-slate-900 mt-0.5">{data.stats.tactlink_stats?.total_uploaded || 0}</div>
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
+                <div className="text-[10px] font-bold text-emerald-700 uppercase">Di Google Drive</div>
+                <div className="text-lg font-black text-emerald-700 mt-0.5">{data.stats.tactlink_stats?.total_in_drive || 0}</div>
+              </div>
+              <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
+                <div className="text-[10px] font-bold text-amber-700 uppercase">Pending Sync</div>
+                <div className="text-lg font-black text-amber-700 mt-0.5">{data.stats.tactlink_stats?.pending_sync || 0}</div>
+              </div>
+            </div>
+
+            {/* Panduan Setup & Solusi Kuota Gmail */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 mb-5 space-y-4">
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>💡</span>
+                  <span>Solusi Upload untuk Akun Gmail Pribadi (Web App Apps Script)</span>
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                  Google membatasi Service Account agar tidak dapat menyimpan file di folder akun Gmail gratisan (kuota 0 bytes). Cara paling mudah dan 100% gratis adalah memasang <strong>Google Apps Script Web App</strong> di akun Google Anda:
+                </p>
+              </div>
+
+              <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside leading-relaxed">
+                <li>
+                  Buka <a href="https://script.google.com/home/start" target="_blank" rel="noreferrer" className="text-purple-600 font-bold underline">script.google.com</a> lalu klik <strong>New Project</strong>.
+                </li>
+                <li>
+                  Ganti seluruh isi file <code>Code.gs</code> dengan kode berikut:
+                  <pre className="mt-1.5 p-2.5 bg-slate-900 text-slate-100 rounded-xl font-mono text-[10px] overflow-x-auto whitespace-pre">
+{`function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var folderId = data.folderId || "1LqRr_Vxi92_PZoUqWkaxo7N9ldveY2EM";
+    var folder = DriveApp.getFolderById(folderId);
+    var decoded = Utilities.base64Decode(data.base64);
+    var blob = Utilities.newBlob(decoded, data.mimeType || "image/jpeg", data.fileName || "bukti.jpg");
+    var file = folder.createFile(blob);
+    file.setDescription("Bukti TactLink: " + (data.participantName || "-") + " (" + (data.registrationNumber || "-") + ")");
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      fileId: file.getId(),
+      fileName: file.getName(),
+      webViewLink: file.getUrl(),
+      url: file.getUrl()
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}`}
+                  </pre>
+                </li>
+                <li>
+                  Klik tombol biru <strong>Deploy &gt; New deployment</strong>.
+                </li>
+                <li>
+                  Pilih tipe: <strong>Web app</strong>. Atur:
+                  <ul className="list-disc list-inside ml-4 mt-1 font-semibold text-slate-700">
+                    <li>Execute as: <strong>Me (email Google Anda)</strong></li>
+                    <li>Who has access: <strong>Anyone</strong> (agar server proyek dapat mengirim berkas)</li>
+                  </ul>
+                </li>
+                <li>
+                  Klik <strong>Deploy</strong>, izinkan akses akun (Authorize access), lalu salin <strong>Web App URL</strong> yang dihasilkan.
+                </li>
+                <li>
+                  Tambahkan baris berikut ke file <code className="bg-white border px-1 py-0.5 rounded font-mono text-[11px]">.env</code>:
+                  <pre className="mt-1.5 p-2 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre">
+{`GOOGLE_DRIVE_WEBHOOK_URL=https://script.google.com/macros/s/AKfycb.../exec`}
+                  </pre>
+                </li>
+              </ol>
+
+              <div className="pt-2 border-t border-slate-200">
+                <span className="text-[11px] font-bold text-slate-700">Opsi Alternatif (Google Workspace):</span>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Jika menggunakan akun kampus/perusahaan Google Workspace, Anda dapat membuat <strong>Shared Drive (Drive Bersama)</strong> dan mengundang email Service Account sebagai <strong>Content Manager</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                onClick={loadAdminData}
+                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 transition cursor-pointer"
+              >
+                Muat Ulang Status
+              </button>
+
+              <div className="flex gap-2">
+                {data.stats.tactlink_stats?.pending_sync > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDriveSetupModalOpen(false);
+                      handleSyncAllToDrive();
+                    }}
+                    className="rounded-xl bg-purple-600 hover:bg-purple-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition cursor-pointer"
+                  >
+                    Sinkronkan {data.stats.tactlink_stats.pending_sync} Berkas Sekarang
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsDriveSetupModalOpen(false)}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
