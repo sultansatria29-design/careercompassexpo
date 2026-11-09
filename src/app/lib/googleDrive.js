@@ -90,13 +90,14 @@ export async function checkGoogleDriveConfig() {
   }
 
   // Jika menggunakan Webhook Apps Script
-  if (webhookUrl && !drive) {
+  if (webhookUrl) {
     return {
       configured: true,
       mode: "webhook",
-      folderId: folderId || null,
-      folderUrl: folderId ? `https://drive.google.com/drive/folders/${folderId}` : null,
-      message: "Terhubung via Google Apps Script Webhook",
+      folderId: folderId || "1LqRr_Vxi92_PZoUqWkaxo7N9ldveY2EM",
+      folderName: "Bukti Download Tactlink",
+      folderUrl: folderId ? `https://drive.google.com/drive/folders/${folderId}` : "https://drive.google.com/drive/folders/1LqRr_Vxi92_PZoUqWkaxo7N9ldveY2EM",
+      message: "Terhubung & Aktif via Google Apps Script Webhook (Siap menyimpan berkas ke folder Google Drive)",
     };
   }
 
