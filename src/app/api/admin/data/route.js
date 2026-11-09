@@ -238,74 +238,138 @@ export async function DELETE(request) {
     const action = searchParams.get("action");
     const participantId = searchParams.get("participant_id");
     const attendanceId = searchParams.get("id");
+    const paramIds = searchParams.get("participant_ids");
+
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
 
     const supabase = getSupabase();
 
-    // 1. Hapus Peserta Lengkap (beserta seluruh riwayat presensi, survei, dan lamaran)
-    if (action === "delete_participant" || participantId) {
-      const targetId = participantId || attendanceId;
-      if (!targetId) {
+    // 1. Hapus Peserta (Single atau Bulk Masal)
+    if (
+      action === "delete_participant" ||
+      action === "bulk_delete_participants" ||
+      participantId ||
+      paramIds ||
+      (body.participant_ids && Array.isArray(body.participant_ids))
+    ) {
+      let targetIds = [];
+      if (body.participant_ids && Array.isArray(body.participant_ids)) {
+        targetIds = body.participant_ids.filter(Boolean);
+      } else if (paramIds) {
+        targetIds = paramIds.split(",").map((s) => s.trim()).filter(Boolean);
+      } else if (participantId) {
+        targetIds = [participantId];
+      } else if (attendanceId && action === "delete_participant") {
+        targetIds = [attendanceId];
+      }
+
+      if (targetIds.length === 0) {
         return NextResponse.json(
-          { success: false, message: "ID peserta diperlukan." },
+          { success: false, message: "ID peserta yang ingin dihapus tidak ditemukan." },
           { status: 400 }
         );
       }
 
-      // Ambil data peserta terlebih dahulu untuk referensi email jika ada
-      const { data: partData } = await supabase
+      // Ambil data peserta terlebih dahulu untuk referensi email (membersihkan survei kepuasan jika ada)
+      const { data: partsData } = await supabase
         .from("participants")
         .select("id, email")
-        .eq("id", targetId)
-        .maybeSingle();
+        .in("id", targetIds);
 
-      // Hapus data berelasi terlebih dahulu agar tidak terjadi foreign key constraint error
-      // a. Hapus catatan presensi (attendance)
-      await supabase.from("attendance").delete().eq("participant_id", targetId);
+      const emails = (partsData || [])
+        .map((p) => p.email?.toLowerCase().trim())
+        .filter(Boolean);
 
-      // b. Hapus survei registrasi awal berdasarkan participant_id
-      await supabase.from("surveys").delete().eq("participant_id", targetId);
+      // Cari semua ID lamaran yang terkait dengan peserta-peserta ini
+      const { data: userApps } = await supabase
+        .from("applications")
+        .select("id")
+        .in("participant_id", targetIds);
 
-      // c. Hapus survei kepuasan dengan email terkait jika ada
-      if (partData?.email) {
+      const appIds = (userApps || []).map((a) => a.id).filter(Boolean);
+
+      // HAPUS BERURUTAN SESUAI HIERARKI FOREIGN KEY:
+      // a. Hapus interviews berdasarkan application_id DAN participant_id
+      if (appIds.length > 0) {
+        const { error: intAppErr } = await supabase
+          .from("interviews")
+          .delete()
+          .in("application_id", appIds);
+        if (intAppErr) console.warn("Interviews by app cleanup warning:", intAppErr.message);
+      }
+
+      const { error: intPartErr } = await supabase
+        .from("interviews")
+        .delete()
+        .in("participant_id", targetIds);
+      if (intPartErr) console.warn("Interviews by participant cleanup warning:", intPartErr.message);
+
+      // b. Hapus lamaran pekerjaan (applications)
+      const { error: appErr } = await supabase
+        .from("applications")
+        .delete()
+        .in("participant_id", targetIds);
+      if (appErr) console.warn("Applications cleanup warning:", appErr.message);
+
+      // c. Hapus presensi (attendance)
+      const { error: attErr } = await supabase
+        .from("attendance")
+        .delete()
+        .in("participant_id", targetIds);
+      if (attErr) console.warn("Attendance cleanup warning:", attErr.message);
+
+      // d. Hapus survei registrasi awal (surveys) berdasarkan participant_id
+      const { error: survErr } = await supabase
+        .from("surveys")
+        .delete()
+        .in("participant_id", targetIds);
+      if (survErr) console.warn("Surveys cleanup warning:", survErr.message);
+
+      // e. Hapus survei kepuasan yang menyimpan email peserta di feedback JSON
+      if (emails.length > 0) {
         try {
-          const { data: matchedSurveys } = await supabase.from("surveys").select("id, feedback");
-          const toDelete = (matchedSurveys || [])
+          const { data: matchedSurveys } = await supabase
+            .from("surveys")
+            .select("id, feedback");
+          const toDeleteSurveyIds = (matchedSurveys || [])
             .filter((s) => {
               try {
                 const fb = typeof s.feedback === "string" ? JSON.parse(s.feedback) : s.feedback;
-                return fb && fb.email && fb.email.toLowerCase() === partData.email.toLowerCase();
+                return fb && fb.email && emails.includes(fb.email.toLowerCase().trim());
               } catch {
                 return false;
               }
             })
             .map((s) => s.id);
 
-          if (toDelete.length > 0) {
-            await supabase.from("surveys").delete().in("id", toDelete);
+          if (toDeleteSurveyIds.length > 0) {
+            await supabase.from("surveys").delete().in("id", toDeleteSurveyIds);
           }
         } catch (e) {
           console.warn("Survey cleanup by email warning:", e.message);
         }
       }
 
-      // d. Hapus lamaran pekerjaan (applications) jika ada
-      try {
-        await supabase.from("applications").delete().eq("participant_id", targetId);
-      } catch (e) {
-        console.warn("Applications cleanup warning:", e.message);
-      }
-
-      // e. Hapus data utama di tabel participants
+      // f. Hapus data utama di tabel participants
       const { error: partErr } = await supabase
         .from("participants")
         .delete()
-        .eq("id", targetId);
+        .in("id", targetIds);
 
       if (partErr) throw partErr;
 
       return NextResponse.json({
         success: true,
-        message: "Data peserta berhasil dihapus secara permanen beserta riwayat terkait.",
+        message:
+          targetIds.length === 1
+            ? "Data peserta berhasil dihapus secara permanen beserta seluruh riwayat terkait."
+            : `${targetIds.length} data peserta berhasil dihapus secara permanen.`,
+        deletedCount: targetIds.length,
       });
     }
 

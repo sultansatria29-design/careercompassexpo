@@ -258,6 +258,8 @@ export default function AdminDashboard() {
   // Search & Filter State untuk Data Registrasi
   const [searchRegistrasi, setSearchRegistrasi] = useState("");
   const [filterRegistrasiKategori, setFilterRegistrasiKategori] = useState("ALL");
+  const [selectedRegistrasiIds, setSelectedRegistrasiIds] = useState([]);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Search & Filter State untuk Indeks Kepuasan
   const [searchKepuasan, setSearchKepuasan] = useState("");
@@ -735,6 +737,26 @@ export default function AdminDashboard() {
     });
   }, [data.participants, searchRegistrasi, filterRegistrasiKategori]);
 
+  // Helper pilih semua atau per-item pada Data Registrasi (Bulk Delete)
+  const isAllRegistrasiSelected = useMemo(() => {
+    if (!filteredRegistrasi || filteredRegistrasi.length === 0) return false;
+    return filteredRegistrasi.every((p) => selectedRegistrasiIds.includes(p.id));
+  }, [filteredRegistrasi, selectedRegistrasiIds]);
+
+  const toggleSelectAllRegistrasi = () => {
+    if (isAllRegistrasiSelected) {
+      setSelectedRegistrasiIds([]);
+    } else {
+      setSelectedRegistrasiIds(filteredRegistrasi.map((p) => p.id));
+    }
+  };
+
+  const toggleSelectRegistrasi = (id) => {
+    setSelectedRegistrasiIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
   // Filtered Mitra Data (Penyaringan Mitra Perusahaan)
   const filteredMitra = useMemo(() => {
     return (mitraList || []).filter((item) => {
@@ -946,7 +968,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // Hapus Data Peserta Lengkap
+  // Hapus Data Peserta Lengkap (Single)
   async function handleDeleteParticipant(participant) {
     if (!participant) return;
     const confirmText = `Apakah Anda yakin ingin menghapus data peserta "${participant.full_name}"?\n\nPerhatian: Nomor registrasi (${participant.registration_number || "-"}), data presensi, survei, dan riwayat lamaran peserta ini akan dihapus secara permanen dari sistem.`;
@@ -966,9 +988,37 @@ export default function AdminDashboard() {
       if (selectedParticipant?.id === participant.id) {
         setSelectedParticipant(null);
       }
-      loadAdminData();
+      setSelectedRegistrasiIds((prev) => prev.filter((id) => id !== participant.id));
+      await loadAdminData();
     } catch (err) {
       alert("Error: " + err.message);
+    }
+  }
+
+  // Hapus Massal Data Peserta yang Dipilih (Bulk Delete)
+  async function handleBulkDeleteParticipants() {
+    if (selectedRegistrasiIds.length === 0) return;
+    const count = selectedRegistrasiIds.length;
+    const confirmText = `Apakah Anda yakin ingin menghapus ${count} data peserta yang dipilih secara permanen?\n\nPerhatian: Nomor registrasi, data presensi, survei, dan seluruh riwayat lamaran peserta terpilih akan dihapus secara permanen dari sistem. Tindakan ini tidak dapat dibatalkan.`;
+    if (!confirm(confirmText)) return;
+
+    setIsDeletingBulk(true);
+    try {
+      const res = await fetch("/api/admin/data?action=bulk_delete_participants", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participant_ids: selectedRegistrasiIds }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal menghapus data peserta terpilih.");
+      }
+      setSelectedRegistrasiIds([]);
+      await loadAdminData();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsDeletingBulk(false);
     }
   }
   async function handleManualCheckIn(participantId, eventDate) {
@@ -2088,6 +2138,24 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
+                {/* Tombol Hapus Masal Peserta Terpilih */}
+                {selectedRegistrasiIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDeleteParticipants}
+                    disabled={isDeletingBulk}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                    title={`Hapus ${selectedRegistrasiIds.length} data peserta terpilih`}
+                  >
+                    <IconTrash className="h-4 w-4 text-white" />
+                    <span>
+                      {isDeletingBulk
+                        ? "Menghapus..."
+                        : `Hapus Terpilih (${selectedRegistrasiIds.length})`}
+                    </span>
+                  </button>
+                )}
+
                 {/* Tombol Sinkronkan ke Google Drive */}
                 <button
                   type="button"
@@ -2179,8 +2247,20 @@ export default function AdminDashboard() {
                   <option value="Umum">Umum</option>
                 </select>
 
-                <div className="text-xs font-medium text-slate-500 whitespace-nowrap px-2">
-                  Total: {filteredRegistrasi.length} Pendaftar
+                <div className="text-xs font-medium text-slate-500 whitespace-nowrap px-2 flex items-center gap-1.5">
+                  <span>Total: {filteredRegistrasi.length} Pendaftar</span>
+                  {selectedRegistrasiIds.length > 0 && (
+                    <span className="font-bold text-purple-700">
+                      • {selectedRegistrasiIds.length} Terpilih{" "}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRegistrasiIds([])}
+                        className="text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer ml-1"
+                      >
+                        (Batal)
+                      </button>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -2191,6 +2271,16 @@ export default function AdminDashboard() {
                 <table className="w-full text-left text-sm">
                   <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500">
                     <tr>
+                      <th className="w-12 px-4 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isAllRegistrasiSelected}
+                          onChange={toggleSelectAllRegistrasi}
+                          disabled={filteredRegistrasi.length === 0}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
+                          title={isAllRegistrasiSelected ? "Batalkan pilih semua" : "Pilih semua pendaftar"}
+                        />
+                      </th>
                       <th className="px-6 py-4">Nomor Registrasi</th>
                       <th className="px-6 py-4">Nama & Kontak</th>
                       <th className="px-6 py-4">Kategori & Instansi</th>
@@ -2202,23 +2292,38 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-slate-100">
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className="py-12 text-center text-slate-400">
+                        <td colSpan={7} className="py-12 text-center text-slate-400">
                           Memuat data registrasi...
                         </td>
                       </tr>
                     ) : filteredRegistrasi.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-16 text-center text-slate-400">
+                        <td colSpan={7} className="py-16 text-center text-slate-400">
                           Tidak ada data pendaftar yang cocok dengan filter.
                         </td>
                       </tr>
                     ) : (
-                      filteredRegistrasi.map((p) => (
-                        <tr
-                          key={p.id}
-                          className="hover:bg-slate-50/80 transition-colors"
-                        >
-                          <td className="px-6 py-4 font-mono font-bold text-xs text-purple-700 whitespace-nowrap">
+                      filteredRegistrasi.map((p) => {
+                        const isSelected = selectedRegistrasiIds.includes(p.id);
+                        return (
+                          <tr
+                            key={p.id}
+                            className={`transition-colors ${
+                              isSelected ? "bg-purple-50/70" : "hover:bg-slate-50/80"
+                            }`}
+                          >
+                            <td
+                              className="w-12 px-4 py-4 text-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelectRegistrasi(p.id)}
+                                className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
+                              />
+                            </td>
+                            <td className="px-6 py-4 font-mono font-bold text-xs text-purple-700 whitespace-nowrap">
                             <span className="rounded-lg bg-purple-50 px-2.5 py-1 border border-purple-200">
                               {p.registration_number}
                             </span>
@@ -2307,8 +2412,9 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
+                      );
+                    })
+                  )}
                   </tbody>
                 </table>
               </div>
