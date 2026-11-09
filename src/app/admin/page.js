@@ -2088,21 +2088,6 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
-                {/* Google Drive Folder Link */}
-                {data.stats.tactlink_stats?.drive_folder_url && (
-                  <a
-                    href={data.stats.tactlink_stats.drive_folder_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition-colors shrink-0"
-                    title="Buka folder Google Drive tempat bukti TactLink tersimpan"
-                  >
-                    <IconGoogleDrive className="h-4 w-4" />
-                    <span>Folder Drive</span>
-                    <span className="text-[10px] text-slate-400">↗</span>
-                  </a>
-                )}
-
                 {/* Tombol Sinkronkan ke Google Drive */}
                 <button
                   type="button"
@@ -4878,80 +4863,6 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
                 <div className="text-[10px] font-bold text-amber-700 uppercase">Pending Sync</div>
                 <div className="text-lg font-black text-amber-700 mt-0.5">{data.stats.tactlink_stats?.pending_sync || 0}</div>
-              </div>
-            </div>
-
-            {/* Panduan Setup & Solusi Kuota Gmail */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 mb-5 space-y-4">
-              <div>
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <span>💡</span>
-                  <span>Solusi Upload untuk Akun Gmail Pribadi (Web App Apps Script)</span>
-                </h4>
-                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                  Google membatasi Service Account agar tidak dapat menyimpan file di folder akun Gmail gratisan (kuota 0 bytes). Cara paling mudah dan 100% gratis adalah memasang <strong>Google Apps Script Web App</strong> di akun Google Anda:
-                </p>
-              </div>
-
-              <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside leading-relaxed">
-                <li>
-                  Buka <a href="https://script.google.com/home/start" target="_blank" rel="noreferrer" className="text-purple-600 font-bold underline">script.google.com</a> lalu klik <strong>New Project</strong>.
-                </li>
-                <li>
-                  Ganti seluruh isi file <code>Code.gs</code> dengan kode berikut:
-                  <pre className="mt-1.5 p-2.5 bg-slate-900 text-slate-100 rounded-xl font-mono text-[10px] overflow-x-auto whitespace-pre">
-{`function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var folderId = data.folderId || "1LqRr_Vxi92_PZoUqWkaxo7N9ldveY2EM";
-    var folder = DriveApp.getFolderById(folderId);
-    var decoded = Utilities.base64Decode(data.base64);
-    var blob = Utilities.newBlob(decoded, data.mimeType || "image/jpeg", data.fileName || "bukti.jpg");
-    var file = folder.createFile(blob);
-    file.setDescription("Bukti TactLink: " + (data.participantName || "-") + " (" + (data.registrationNumber || "-") + ")");
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      fileId: file.getId(),
-      fileName: file.getName(),
-      webViewLink: file.getUrl(),
-      url: file.getUrl()
-    })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      error: err.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}`}
-                  </pre>
-                </li>
-                <li>
-                  Klik tombol biru <strong>Deploy &gt; New deployment</strong>.
-                </li>
-                <li>
-                  Pilih tipe: <strong>Web app</strong>. Atur:
-                  <ul className="list-disc list-inside ml-4 mt-1 font-semibold text-slate-700">
-                    <li>Execute as: <strong>Me (email Google Anda)</strong></li>
-                    <li>Who has access: <strong>Anyone</strong> (agar server proyek dapat mengirim berkas)</li>
-                  </ul>
-                </li>
-                <li>
-                  Klik <strong>Deploy</strong>, izinkan akses akun (Authorize access), lalu salin <strong>Web App URL</strong> yang dihasilkan.
-                </li>
-                <li>
-                  Tambahkan baris berikut ke file <code className="bg-white border px-1 py-0.5 rounded font-mono text-[11px]">.env</code>:
-                  <pre className="mt-1.5 p-2 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre">
-{`GOOGLE_DRIVE_WEBHOOK_URL=https://script.google.com/macros/s/AKfycb.../exec`}
-                  </pre>
-                </li>
-              </ol>
-
-              <div className="pt-2 border-t border-slate-200">
-                <span className="text-[11px] font-bold text-slate-700">Opsi Alternatif (Google Workspace):</span>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Jika menggunakan akun kampus/perusahaan Google Workspace, Anda dapat membuat <strong>Shared Drive (Drive Bersama)</strong> dan mengundang email Service Account sebagai <strong>Content Manager</strong>.
-                </p>
               </div>
             </div>
 
