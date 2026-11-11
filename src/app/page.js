@@ -75,7 +75,7 @@ export default function Home() {
         <img
           src="/images/icons/wave%204.png"
           alt=""
-          className="pointer-events-none absolute -right-16 top-6 w-60 sm:w-80 md:w-96 lg:w-[28rem] opacity-45 select-none"
+          className="pointer-events-none absolute -right-16 -top-10 w-60 sm:w-80 md:w-96 lg:w-[28rem] opacity-45 select-none"
         />
         <img
           src="/images/icons/wave%202.png"
