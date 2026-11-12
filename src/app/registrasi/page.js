@@ -324,7 +324,7 @@ export default function RegistrasiPage() {
   }
 
   const fieldStyle =
-    "w-full rounded-xl border border-purple-200 bg-white px-4 py-3 text-[#1E0C36] outline-none transition focus:border-[#7226FF] focus:ring-2 focus:ring-[#7226FF]/20";
+    "w-full rounded-xl border-2 border-[#7226FF]/60 hover:border-[#7226FF] focus:border-[#7226FF] bg-white px-4 py-3 text-[#1E0C36] outline-none transition shadow-xs focus:ring-4 focus:ring-[#7226FF]/20";
 
   // Tampilan Halaman Sukses
   if (result) {
@@ -595,7 +595,7 @@ export default function RegistrasiPage() {
                   <label className="mb-2 block font-bold text-sm text-gray-800">
                     Domisili <span className="text-[#EF17D8]">*</span>
                   </label>
-                  <div className="space-y-2 rounded-xl border border-purple-100 bg-purple-50/40 p-4">
+                  <div className="space-y-2 rounded-xl border-2 border-[#7226FF]/50 bg-purple-50/30 p-4">
                     {["Tangerang Selatan", "DKI Jakarta", "Depok", "Kota Tangerang"].map((item) => (
                       <label key={item} className="flex items-center gap-3 cursor-pointer text-sm font-medium text-gray-700">
                         <input
@@ -642,10 +642,10 @@ export default function RegistrasiPage() {
                     {["Mahasiswa", "Alumni", "Umum"].map((item) => (
                       <label
                         key={item}
-                        className={`flex flex-col items-center justify-center rounded-xl border p-3 cursor-pointer text-center transition-all ${
+                        className={`flex flex-col items-center justify-center rounded-xl border-2 p-3 cursor-pointer text-center transition-all ${
                           form.participant_status === item
                             ? "border-[#7226FF] bg-purple-50 text-[#7226FF] font-bold shadow-sm"
-                            : "border-gray-200 text-gray-700 hover:border-purple-200"
+                            : "border-[#7226FF]/40 text-gray-700 hover:border-[#7226FF] bg-white"
                         }`}
                       >
                         <input
@@ -667,7 +667,7 @@ export default function RegistrasiPage() {
                   <label className="mb-2 block font-bold text-sm text-gray-800">
                     Asal Instansi <span className="text-[#EF17D8]">*</span>
                   </label>
-                  <div className="space-y-2 rounded-xl border border-purple-100 bg-purple-50/40 p-4">
+                  <div className="space-y-2 rounded-xl border-2 border-[#7226FF]/50 bg-purple-50/30 p-4">
                     <label className="flex items-center gap-3 cursor-pointer text-sm font-medium text-gray-700">
                       <input
                         type="radio"
@@ -706,7 +706,7 @@ export default function RegistrasiPage() {
 
                 {/* Bagian Khusus Mahasiswa / Alumni UIN */}
                 {isUIN && (
-                  <div className="space-y-4 rounded-2xl border border-purple-200 bg-purple-50/60 p-5">
+                  <div className="space-y-4 rounded-2xl border-2 border-[#7226FF]/40 bg-purple-50/30 p-5">
                     <p className="text-xs font-extrabold uppercase tracking-wider text-[#7226FF]">
                       Data Mahasiswa / Alumni UIN Jakarta
                     </p>
@@ -796,7 +796,7 @@ export default function RegistrasiPage() {
             {step === 2 && (
               <div className="space-y-6">
                 {/* 1. Pilihan Hari Kehadiran */}
-                <div className="rounded-2xl border border-purple-200 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border-2 border-[#7226FF]/30 bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <label className="block font-bold text-base text-gray-900">
                       Pilihan Hari Kehadiran <span className="text-[#EF17D8]">*</span>
@@ -814,10 +814,10 @@ export default function RegistrasiPage() {
                       return (
                         <label
                           key={day.id}
-                          className={`flex items-start gap-3.5 rounded-xl border p-4 cursor-pointer transition-all ${
+                          className={`flex items-start gap-3.5 rounded-xl border-2 p-4 cursor-pointer transition-all ${
                             isSelected
                               ? "border-[#7226FF] bg-purple-50/80 shadow-md ring-2 ring-[#7226FF]/20"
-                              : "border-gray-200 hover:border-purple-200 bg-white hover:bg-gray-50/60"
+                              : "border-[#7226FF]/30 hover:border-[#7226FF] bg-white hover:bg-purple-50/20"
                           }`}
                         >
                           <input
@@ -845,7 +845,7 @@ export default function RegistrasiPage() {
                 </div>
 
                 {/* 2. Rencana Kunjungan CCE */}
-                <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border-2 border-[#7226FF]/30 bg-white p-5 shadow-sm">
                   <label className="mb-1 block font-bold text-base text-gray-900">
                     Rencana Kunjungan CCE <span className="text-[#EF17D8]">*</span>
                   </label>
@@ -858,10 +858,10 @@ export default function RegistrasiPage() {
                       return (
                         <label
                           key={opt.id}
-                          className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all ${
+                          className={`flex items-start gap-3 rounded-xl border-2 p-3.5 cursor-pointer transition-all ${
                             checked
                               ? "border-[#7226FF] bg-purple-50/70"
-                              : "border-gray-200 hover:border-purple-200 bg-white"
+                              : "border-[#7226FF]/30 hover:border-[#7226FF] bg-white"
                           }`}
                         >
                           <input
@@ -881,7 +881,7 @@ export default function RegistrasiPage() {
                 </div>
 
                 {/* 3. Dari Mana Kamu Mengetahui Kegiatan ini */}
-                <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border-2 border-[#7226FF]/30 bg-white p-5 shadow-sm">
                   <label className="mb-3 block font-bold text-base text-gray-900">
                     Dari Mana Kamu Mengetahui Kegiatan ini <span className="text-[#EF17D8]">*</span>
                   </label>
@@ -914,7 +914,7 @@ export default function RegistrasiPage() {
                 </div>
 
                 {/* 4. Harapan dalam menghadiri acara ini */}
-                <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border-2 border-[#7226FF]/30 bg-white p-5 shadow-sm">
                   <label htmlFor="expectations" className="mb-2 block font-bold text-base text-gray-900">
                     Harapan dalam menghadiri acara ini <span className="text-[#EF17D8]">*</span>
                   </label>
@@ -1029,7 +1029,7 @@ export default function RegistrasiPage() {
                 </div>
 
                 {/* Form Unggah Bukti Screenshot Download TactLink */}
-                <div className="rounded-2xl border-2 border-dashed border-purple-300 bg-purple-50/40 p-5 sm:p-6 transition">
+                <div className="rounded-2xl border-2 border-dashed border-[#7226FF]/40 bg-purple-50/30 p-5 sm:p-6 transition">
                   <div className="flex items-center justify-between mb-2">
                     <label className="block font-bold text-sm sm:text-base text-gray-900">
                       Unggah Bukti Screenshot Download TactLink <span className="text-[#EF17D8]">*</span>
@@ -1043,7 +1043,7 @@ export default function RegistrasiPage() {
                   </p>
 
                   {!form.tactlink_proof ? (
-                    <label className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-purple-300 bg-white p-6 cursor-pointer hover:bg-purple-50/60 hover:border-[#7226FF] transition group">
+                    <label className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#7226FF]/50 bg-white p-6 cursor-pointer hover:bg-purple-50/60 hover:border-[#7226FF] transition group">
                       <input
                         type="file"
                         accept="image/png, image/jpeg, image/jpg, image/webp"
