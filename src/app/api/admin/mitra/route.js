@@ -289,38 +289,109 @@ export async function PATCH(request) {
   }
 }
 
-// DELETE: Hapus data mitra jika pendaftaran terindikasi spam
+// DELETE: Hapus data mitra jika pendaftaran terindikasi spam / dibatalkan
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
     const company_id = searchParams.get("id");
+    const paramIds = searchParams.get("company_ids");
 
-    if (!company_id) {
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
+
+    let targetIds = [];
+    if (body.company_ids && Array.isArray(body.company_ids)) {
+      targetIds = body.company_ids.filter(Boolean);
+    } else if (paramIds) {
+      targetIds = paramIds.split(",").map((s) => s.trim()).filter(Boolean);
+    } else if (company_id) {
+      targetIds = [company_id];
+    }
+
+    if (targetIds.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Company ID diperlukan." },
+        { success: false, message: "ID perusahaan diperlukan." },
         { status: 400 }
       );
     }
 
     const supabase = getSupabase();
 
-    // 1. Ambil jobs milik perusahaan
-    const { data: jobs } = await supabase.from("jobs").select("id").eq("company_id", company_id);
-    const jobIds = (jobs || []).map((j) => j.id);
+    // 1. Ambil seluruh lowongan (jobs) milik perusahaan target
+    const { data: jobs, error: jErr } = await supabase
+      .from("jobs")
+      .select("id")
+      .in("company_id", targetIds);
 
-    // 2. Hapus applications yang terhubung
+    if (jErr) throw jErr;
+
+    const jobIds = (jobs || []).map((j) => j.id).filter(Boolean);
+
     if (jobIds.length > 0) {
-      await supabase.from("applications").delete().in("job_id", jobIds);
-      await supabase.from("jobs").delete().eq("company_id", company_id);
+      // 2. Ambil seluruh applications (lamaran) yang terhubung dengan lowongan tersebut
+      const { data: apps, error: aErr } = await supabase
+        .from("applications")
+        .select("id")
+        .in("job_id", jobIds);
+
+      if (aErr) throw aErr;
+
+      const appIds = (apps || []).map((a) => a.id).filter(Boolean);
+
+      // 3. Hapus jadwal wawancara (interviews) terlebih dahulu untuk menghindari pelanggaran foreign key
+      if (appIds.length > 0) {
+        const { error: intAppErr } = await supabase
+          .from("interviews")
+          .delete()
+          .in("application_id", appIds);
+
+        if (intAppErr) {
+          console.warn("Interviews by application cleanup warning:", intAppErr.message);
+        }
+      }
+
+      // Bersihkan juga jika tabel interviews menyimpan company_id langsung
+      try {
+        await supabase
+          .from("interviews")
+          .delete()
+          .in("company_id", targetIds);
+      } catch (err) {
+        // Kolom company_id di interviews bersifat opsional
+      }
+
+      // 4. Hapus data lamaran pekerjaan (applications)
+      const { error: delAppErr } = await supabase
+        .from("applications")
+        .delete()
+        .in("job_id", jobIds);
+
+      if (delAppErr) throw delAppErr;
+
+      // 5. Hapus lowongan pekerjaan (jobs)
+      const { error: delJobErr } = await supabase
+        .from("jobs")
+        .delete()
+        .in("id", jobIds);
+
+      if (delJobErr) throw delJobErr;
     }
 
-    // 3. Hapus perusahaan
-    const { error: dErr } = await supabase.from("companies").delete().eq("id", company_id);
+    // 6. Hapus perusahaan dari tabel companies
+    const { error: dErr } = await supabase
+      .from("companies")
+      .delete()
+      .in("id", targetIds);
+
     if (dErr) throw dErr;
 
     return NextResponse.json({
       success: true,
-      message: "Data perusahaan dan data terkait berhasil dihapus.",
+      message: `Data ${targetIds.length > 1 ? `${targetIds.length} mitra` : "mitra perusahaan"} dan seluruh lowongan terkait berhasil dihapus.`,
     });
   } catch (error) {
     console.error("Admin mitra delete error:", error);
@@ -330,3 +401,4 @@ export async function DELETE(request) {
     );
   }
 }
+

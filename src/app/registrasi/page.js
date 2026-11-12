@@ -350,8 +350,8 @@ export default function RegistrasiPage() {
         : "Day 1 — Rabu, 18 November 2026");
 
     return (
-      <main className="min-h-screen bg-gradient-to-br from-[#1E0C36] via-[#4B1E85] to-[#7226FF] px-4 py-12 flex items-center justify-center">
-        <div className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 text-center text-[#1E0C36] shadow-2xl relative overflow-hidden">
+      <main className="min-h-screen bg-white text-slate-900 px-4 py-12 flex items-center justify-center selection:bg-purple-100 selection:text-purple-900">
+        <div className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 text-center text-[#1E0C36] shadow-xl border border-slate-200/80 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-[#7226FF] via-[#EF17D8] to-[#7226FF]" />
           
           <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-50 p-2">
@@ -469,17 +469,17 @@ export default function RegistrasiPage() {
   const isUIN = form.institution_type === "UIN Syarif Hidayatullah Jakarta";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#1E0C36] via-[#4B1E85] to-[#7226FF] px-4 py-12">
+    <main className="min-h-screen bg-white text-slate-900 px-4 py-12 selection:bg-purple-100 selection:text-purple-900">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-2 font-semibold text-white/90 hover:text-white transition-colors"
+          className="mb-6 inline-flex items-center gap-2 font-semibold text-slate-600 hover:text-[#7226FF] transition-colors"
         >
           <span>←</span>
           <span>Kembali ke Beranda</span>
         </Link>
 
-        <div className="overflow-hidden rounded-3xl bg-white shadow-2xl">
+        <div className="overflow-hidden rounded-3xl bg-white shadow-xl border border-slate-200/80">
           {/* Header Kartu */}
           <div className="bg-gradient-to-r from-[#7226FF] to-[#EF17D8] p-8 text-white relative">
             <div className="flex items-center justify-between">
