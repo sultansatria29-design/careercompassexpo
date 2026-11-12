@@ -304,6 +304,8 @@ export default function AdminDashboard() {
   const [rejectModalMitra, setRejectModalMitra] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [selectedMitraIds, setSelectedMitraIds] = useState([]);
+  const [isDeletingBulkMitra, setIsDeletingBulkMitra] = useState(false);
   const [mitraToast, setMitraToast] = useState(null);
 
   // State untuk Google Drive Bukti TactLink
@@ -621,12 +623,44 @@ export default function AdminDashboard() {
         throw new Error(json.message || "Gagal menghapus perusahaan.");
       }
       showMitraFeedback("success", json.message);
+      setSelectedMitraIds((prev) => prev.filter((id) => id !== companyId));
       if (selectedMitraDetail?.id === companyId) setSelectedMitraDetail(null);
       await loadMitraData();
     } catch (err) {
       showMitraFeedback("error", err.message);
     } finally {
       setActionLoadingId(null);
+    }
+  }
+
+  // Handle Hapus Massal Mitra Perusahaan (Bulk Delete)
+  async function handleBulkDeleteMitra() {
+    if (selectedMitraIds.length === 0) return;
+    const count = selectedMitraIds.length;
+    const confirmText = `Apakah Anda yakin ingin menghapus ${count} data perusahaan mitra yang dipilih secara permanen?\n\nPerhatian: Seluruh lowongan pekerjaan, data lamaran, dan jadwal wawancara terkait perusahaan terpilih juga akan terhapus secara permanen dari sistem. Tindakan ini tidak dapat dibatalkan.`;
+    if (!confirm(confirmText)) return;
+
+    setIsDeletingBulkMitra(true);
+    try {
+      const res = await fetch("/api/admin/mitra", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_ids: selectedMitraIds }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal menghapus data mitra terpilih.");
+      }
+      showMitraFeedback("success", json.message || `${count} data mitra berhasil dihapus.`);
+      setSelectedMitraIds([]);
+      if (selectedMitraDetail && selectedMitraIds.includes(selectedMitraDetail.id)) {
+        setSelectedMitraDetail(null);
+      }
+      await loadMitraData();
+    } catch (err) {
+      showMitraFeedback("error", err.message);
+    } finally {
+      setIsDeletingBulkMitra(false);
     }
   }
 
@@ -775,6 +809,26 @@ export default function AdminDashboard() {
       return matchSearch && matchStatus;
     });
   }, [mitraList, searchMitra, filterMitraStatus]);
+
+  // Helper pilih semua atau per-item pada Mitra Perusahaan (Bulk Delete)
+  const isAllMitraSelected = useMemo(() => {
+    if (!filteredMitra || filteredMitra.length === 0) return false;
+    return filteredMitra.every((m) => selectedMitraIds.includes(m.id));
+  }, [filteredMitra, selectedMitraIds]);
+
+  const toggleSelectAllMitra = () => {
+    if (isAllMitraSelected) {
+      setSelectedMitraIds([]);
+    } else {
+      setSelectedMitraIds(filteredMitra.map((m) => m.id));
+    }
+  };
+
+  const toggleSelectMitra = (id) => {
+    setSelectedMitraIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   // Filtered Lowongan Mitra untuk Kurasi Walk-In Interview (Khusus Admin)
   const filteredMitraJobs = useMemo(() => {
@@ -3315,7 +3369,25 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Tombol Hapus Massal Mitra Terpilih */}
+                {selectedMitraIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDeleteMitra}
+                    disabled={isDeletingBulkMitra}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                    title={`Hapus ${selectedMitraIds.length} data mitra terpilih`}
+                  >
+                    <IconTrash className="h-4 w-4 text-white" />
+                    <span>
+                      {isDeletingBulkMitra
+                        ? "Menghapus..."
+                        : `Hapus Terpilih (${selectedMitraIds.length})`}
+                    </span>
+                  </button>
+                )}
+
                 <button
                   onClick={loadMitraData}
                   disabled={loadingMitra}
@@ -3526,9 +3598,23 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
-                <span>
-                  Menampilkan <strong>{filteredMitra.length}</strong> dari <strong>{mitraList.length}</strong> perusahaan
-                </span>
+                <div className="flex items-center gap-2">
+                  <span>
+                    Menampilkan <strong>{filteredMitra.length}</strong> dari <strong>{mitraList.length}</strong> perusahaan
+                  </span>
+                  {selectedMitraIds.length > 0 && (
+                    <span className="font-bold text-purple-700">
+                      • {selectedMitraIds.length} Terpilih{" "}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMitraIds([])}
+                        className="text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer ml-1"
+                      >
+                        (Batal)
+                      </button>
+                    </span>
+                  )}
+                </div>
                 {filterMitraStatus !== "ALL" && (
                   <button
                     onClick={() => setFilterMitraStatus("ALL")}
@@ -3546,6 +3632,16 @@ export default function AdminDashboard() {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      <th className="w-12 px-4 py-3.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isAllMitraSelected}
+                          onChange={toggleSelectAllMitra}
+                          disabled={filteredMitra.length === 0}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
+                          title={isAllMitraSelected ? "Batalkan pilih semua" : "Pilih semua perusahaan"}
+                        />
+                      </th>
                       <th className="px-4 py-3.5">Perusahaan &amp; Website</th>
                       <th className="px-4 py-3.5">PIC &amp; Kontak</th>
                       <th className="px-4 py-3.5">Industri &amp; Skala</th>
@@ -3557,7 +3653,7 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-slate-100">
                     {loadingMitra ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                           <div className="flex flex-col items-center justify-center gap-2">
                             <IconRefresh className="h-6 w-6 animate-spin text-purple-600" />
                             <span>Memuat data mitra perusahaan...</span>
@@ -3566,7 +3662,7 @@ export default function AdminDashboard() {
                       </tr>
                     ) : filteredMitra.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                           <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
                             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                               <IconBuilding className="h-6 w-6" />
@@ -3583,12 +3679,31 @@ export default function AdminDashboard() {
                     ) : (
                       filteredMitra.map((item) => {
                         const isActionLoading = actionLoadingId === item.id;
+                        const isSelected = selectedMitraIds.includes(item.id);
                         const waLink = item.phone && item.phone !== "-"
                           ? `https://wa.me/${item.phone.replace(/[^0-9]/g, "").replace(/^0/, "62")}`
                           : null;
 
                         return (
-                          <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                          <tr
+                            key={item.id}
+                            className={`transition-colors ${
+                              isSelected ? "bg-purple-50/70" : "hover:bg-slate-50/80"
+                            }`}
+                          >
+                            {/* Checkbox Pilih Perusahaan */}
+                            <td
+                              className="w-12 px-4 py-3.5 text-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelectMitra(item.id)}
+                                className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
+                              />
+                            </td>
+
                             {/* Perusahaan & Website */}
                             <td className="px-4 py-3.5">
                               <div className="flex items-start gap-3">
