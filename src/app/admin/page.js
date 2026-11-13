@@ -1935,7 +1935,7 @@ export default function AdminDashboard() {
                 >
                   <div className="flex items-center gap-2.5">
                     <IconBriefcase className="h-4 w-4 text-indigo-600 shrink-0" />
-                    <span>Data Registrasi Lowongan &amp; Walk-In</span>
+                    <span>Lowongan &amp; Walk-In</span>
                   </div>
                   {activeTab === "pelamar-walkin" ? (
                     <span className="rounded-full bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
