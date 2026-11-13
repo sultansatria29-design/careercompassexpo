@@ -1674,10 +1674,10 @@ export default function AdminDashboard() {
           TOP NAVIGATION HEADER (Base Putih, Font Hitam Sesuai Drive)
           ======================================================== */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-3 sm:px-6 py-2.5">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 xl:gap-3 px-3 sm:px-6 py-2.5">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="flex h-9 w-20 sm:h-10 sm:w-28 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200 shrink-0">
+          <div className="flex items-center gap-2 xl:gap-3 shrink-0">
+            <div className="flex h-8 w-16 xl:h-9 xl:w-24 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200 shrink-0">
               <img
                 src="/images/logo-puskar.png"
                 alt="Pusat Karier UIN Jakarta"
@@ -1686,25 +1686,25 @@ export default function AdminDashboard() {
             </div>
             <div className="flex flex-col shrink-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-[family-name:var(--font-montserrat)] text-sm sm:text-base font-black tracking-tight text-slate-900 whitespace-nowrap">
+                <span className="font-[family-name:var(--font-montserrat)] text-xs sm:text-sm xl:text-base font-black tracking-tight text-slate-900 whitespace-nowrap">
                   CCE <span className="text-purple-600">2026</span>
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] xl:text-[10px] font-bold text-emerald-700 border border-emerald-200 whitespace-nowrap">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live Gate
                 </span>
               </div>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+              <span className="hidden xl:inline text-[10px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 ADMIN CONSOLE
               </span>
             </div>
           </div>
 
           {/* Desktop Navigation Pill Tabs (>= lg) */}
-          <nav className="hidden lg:flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-0.5 text-xs font-semibold shrink min-w-0 overflow-x-auto no-scrollbar">
+          <nav className="hidden lg:flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-0.5 text-xs font-semibold shrink-0">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "overview"
                   ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
@@ -1715,7 +1715,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("presensi")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "presensi"
                   ? "bg-white text-emerald-800 shadow-xs font-bold border-b-2 border-emerald-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
@@ -1726,7 +1726,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("registrasi")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "registrasi"
                   ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
@@ -1737,14 +1737,14 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("pelamar-walkin")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "pelamar-walkin"
                   ? "bg-white text-indigo-900 shadow-xs font-bold border-b-2 border-indigo-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
               <IconBriefcase className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-              <span>Lowongan &amp; Walk-In</span>
+              <span>Lowongan<span className="hidden xl:inline"> &amp; Walk-In</span></span>
               {(data?.job_registrations?.length || 0) > 0 && (
                 <span className="rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0">
                   {data.job_registrations.length}
@@ -1753,18 +1753,18 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("indeks-kepuasan")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "indeks-kepuasan"
                   ? "bg-white text-amber-800 shadow-xs font-bold border-b-2 border-amber-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
               <IconStar className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span>Indeks Kepuasan</span>
+              <span><span className="hidden xl:inline">Indeks </span>Kepuasan</span>
             </button>
             <button
               onClick={() => setActiveTab("qr-gate")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "qr-gate"
                   ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
@@ -1775,14 +1775,14 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("mitra")}
-              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer relative ${
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer relative ${
                 activeTab === "mitra"
                   ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
               <IconBuilding className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-              <span>Mitra Perusahaan</span>
+              <span>Mitra<span className="hidden xl:inline"> Perusahaan</span></span>
               {mitraStats.pending > 0 && (
                 <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0 animate-pulse">
                   {mitraStats.pending}
@@ -1810,22 +1810,24 @@ export default function AdminDashboard() {
                 setIsSettingsModalOpen(true);
               }}
               title="Ubah Email & Password Admin"
-              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2 xl:px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer shrink-0"
             >
               <IconKey className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-              <span className="whitespace-nowrap">Ubah Akun</span>
+              <span className="hidden 2xl:inline whitespace-nowrap">Ubah Akun</span>
             </button>
             <Link
               href="/"
               target="_blank"
-              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs shrink-0"
+              title="Buka Halaman Web Publik"
+              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2 xl:px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs shrink-0"
             >
-              <span className="whitespace-nowrap">Web Publik</span>
+              <span className="hidden 2xl:inline whitespace-nowrap">Web Publik</span>
               <IconExternal className="h-3.5 w-3.5 text-slate-400 shrink-0" />
             </Link>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1 h-8 rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+              title="Keluar dari Console"
+              className="inline-flex items-center gap-1 h-8 rounded-lg border border-rose-200 bg-rose-50 px-2 xl:px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
             >
               <span className="whitespace-nowrap">Keluar</span>
               <IconLogout className="h-3.5 w-3.5 text-rose-600 shrink-0" />
