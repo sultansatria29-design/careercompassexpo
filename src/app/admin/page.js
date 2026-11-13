@@ -3487,7 +3487,7 @@ export default function AdminDashboard() {
                       <th className="px-4 py-3">Nama</th>
                       <th className="px-4 py-3">Kategori &amp; Instansi</th>
                       <th className="px-4 py-3">Perusahaan</th>
-                      <th className="px-4 py-3">Mendaftar Ke Lowongan Mana</th>
+                      <th className="px-4 py-3">Mendaftar Ke Lowongan</th>
                       <th className="px-4 py-3">Jadwal Walk In Interview</th>
                       <th className="px-4 py-3 text-center">Aksi</th>
                     </tr>
