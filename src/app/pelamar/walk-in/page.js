@@ -28,6 +28,7 @@ function WalkInFormContent() {
   // Form Fields
   const [selectedCompanyId, setSelectedCompanyId] = useState(initialCompanyId);
   const [selectedJobId, setSelectedJobId] = useState(initialJobId);
+  const [interviewDay, setInterviewDay] = useState("Rabu"); // "Rabu" | "Kamis"
   const [portfolioUrl, setPortfolioUrl] = useState("");
   const [applicantNotes, setApplicantNotes] = useState("");
 
@@ -289,6 +290,7 @@ function WalkInFormContent() {
           cv_path: cvUrl,
           portfolio_url: portfolioUrl || null,
           notes: applicantNotes || null,
+          interview_day: interviewDay,
         }),
       });
 
@@ -774,6 +776,85 @@ function WalkInFormContent() {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* SEKSI: Penjadwalan Wawancara Walk-In (Hari: Rabu atau Kamis) */}
+            <div className="space-y-3 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-bold text-slate-900">
+                  Penjadwalan Wawancara Walk-In <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-purple-700 font-semibold bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                  Pilih Hari Kehadiran
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 -mt-1">
+                Silakan pilih hari kehadiran Anda untuk sesi wawancara langsung (walk-in interview) di booth perusahaan:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Opsi Hari Rabu */}
+                <label
+                  onClick={() => setInterviewDay("Rabu")}
+                  className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                    interviewDay === "Rabu"
+                      ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
+                      : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
+                  }`}
+                >
+                  <div
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                      interviewDay === "Rabu"
+                        ? "border-purple-600 bg-purple-600"
+                        : "border-slate-300 bg-slate-50"
+                    }`}
+                  >
+                    {interviewDay === "Rabu" && <div className="h-2 w-2 rounded-full bg-white" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      <span>Rabu</span>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md">
+                        Hari 1
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">
+                      18 November 2026
+                    </div>
+                  </div>
+                </label>
+
+                {/* Opsi Hari Kamis */}
+                <label
+                  onClick={() => setInterviewDay("Kamis")}
+                  className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                    interviewDay === "Kamis"
+                      ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
+                      : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
+                  }`}
+                >
+                  <div
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                      interviewDay === "Kamis"
+                        ? "border-purple-600 bg-purple-600"
+                        : "border-slate-300 bg-slate-50"
+                    }`}
+                  >
+                    {interviewDay === "Kamis" && <div className="h-2 w-2 rounded-full bg-white" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      <span>Kamis</span>
+                      <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-md">
+                        Hari 2
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">
+                      19 November 2026
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
 
             {/* SEKSI 2: Masukkan CV * (Upload Berkas Gambar 3) */}

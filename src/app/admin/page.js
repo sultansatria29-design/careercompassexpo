@@ -279,6 +279,14 @@ export default function AdminDashboard() {
       question_averages: [],
       list: [],
     },
+    job_registrations: [],
+    job_registration_stats: {
+      total_applications: 0,
+      walk_in_applications: 0,
+      regular_applications: 0,
+      rabu_interviews: 0,
+      kamis_interviews: 0,
+    },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -293,6 +301,14 @@ export default function AdminDashboard() {
   const [filterRegistrasiKategori, setFilterRegistrasiKategori] = useState("ALL");
   const [selectedRegistrasiIds, setSelectedRegistrasiIds] = useState([]);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+
+  // Search & Filter State untuk Data Registrasi Lowongan & Walk-In
+  const [searchJobReg, setSearchJobReg] = useState("");
+  const [filterJobRegTipe, setFilterJobRegTipe] = useState("ALL"); // "ALL" | "WALKIN" | "REGULAR"
+  const [filterJobRegHari, setFilterJobRegHari] = useState("ALL"); // "ALL" | "Rabu" | "Kamis"
+  const [filterJobRegKategori, setFilterJobRegKategori] = useState("ALL");
+  const [selectedJobRegIds, setSelectedJobRegIds] = useState([]);
+  const [isDeletingBulkJobReg, setIsDeletingBulkJobReg] = useState(false);
 
   // Search & Filter State untuk Indeks Kepuasan
   const [searchKepuasan, setSearchKepuasan] = useState("");
@@ -723,7 +739,7 @@ export default function AdminDashboard() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["overview", "presensi", "registrasi", "indeks-kepuasan", "qr-gate", "mitra"].includes(tabParam)) {
+      if (tabParam && ["overview", "presensi", "registrasi", "pelamar-walkin", "indeks-kepuasan", "qr-gate", "mitra"].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
@@ -820,6 +836,59 @@ export default function AdminDashboard() {
 
   const toggleSelectRegistrasi = (id) => {
     setSelectedRegistrasiIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Filtered Data Registrasi Lowongan & Walk-In Interview
+  const filteredJobRegistrations = useMemo(() => {
+    const list = data?.job_registrations || [];
+    return list.filter((item) => {
+      const q = searchJobReg.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        item.full_name?.toLowerCase().includes(q) ||
+        item.registration_number?.toLowerCase().includes(q) ||
+        item.email?.toLowerCase().includes(q) ||
+        item.phone?.toLowerCase().includes(q) ||
+        item.institution?.toLowerCase().includes(q) ||
+        item.faculty?.toLowerCase().includes(q) ||
+        item.major?.toLowerCase().includes(q) ||
+        item.company_name?.toLowerCase().includes(q) ||
+        item.job_title?.toLowerCase().includes(q);
+
+      const matchTipe =
+        filterJobRegTipe === "ALL" ||
+        (filterJobRegTipe === "WALKIN" && item.is_walk_in) ||
+        (filterJobRegTipe === "REGULAR" && !item.is_walk_in);
+
+      const matchHari =
+        filterJobRegHari === "ALL" ||
+        (item.interview_day_label || "").toLowerCase().includes(filterJobRegHari.toLowerCase());
+
+      const matchKategori =
+        filterJobRegKategori === "ALL" ||
+        item.participant_status === filterJobRegKategori;
+
+      return matchSearch && matchTipe && matchHari && matchKategori;
+    });
+  }, [data?.job_registrations, searchJobReg, filterJobRegTipe, filterJobRegHari, filterJobRegKategori]);
+
+  const isAllJobRegSelected = useMemo(() => {
+    if (!filteredJobRegistrations || filteredJobRegistrations.length === 0) return false;
+    return filteredJobRegistrations.every((j) => selectedJobRegIds.includes(j.id));
+  }, [filteredJobRegistrations, selectedJobRegIds]);
+
+  const toggleSelectAllJobReg = () => {
+    if (isAllJobRegSelected) {
+      setSelectedJobRegIds([]);
+    } else {
+      setSelectedJobRegIds(filteredJobRegistrations.map((j) => j.id));
+    }
+  };
+
+  const toggleSelectJobReg = (id) => {
+    setSelectedJobRegIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
@@ -1254,6 +1323,110 @@ export default function AdminDashboard() {
       setIsDeletingBulk(false);
     }
   }
+
+  // Ekspor CSV Data Registrasi Lowongan & Walk-In
+  function exportJobRegistrationsCSV() {
+    if (!filteredJobRegistrations || filteredJobRegistrations.length === 0) {
+      alert("Belum ada data registrasi lowongan untuk diekspor.");
+      return;
+    }
+
+    const headers = [
+      "No",
+      "Waktu Pendaftaran",
+      "Nomor Registrasi",
+      "Nama Lengkap",
+      "Email",
+      "Nomor WhatsApp / HP",
+      "Domisili",
+      "Kategori Peserta",
+      "Instansi / Kampus",
+      "Fakultas",
+      "Program Studi",
+      "Perusahaan Tujuan",
+      "Posisi Lowongan",
+      "Tipe Pekerjaan",
+      "Jalur Pendaftaran",
+      "Jadwal Walk In Interview",
+      "Status Lamaran",
+      "Link CV",
+    ];
+
+    const clean = (val) =>
+      `"${String(val || "-").replace(/"/g, '""').replace(/[\r\n]+/g, " ")}"`;
+
+    const rows = filteredJobRegistrations.map((item, idx) => {
+      const appDate = item.created_at
+        ? new Date(item.created_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WIB"
+        : "-";
+
+      return [
+        idx + 1,
+        clean(appDate),
+        clean(item.registration_number),
+        clean(item.full_name),
+        clean(item.email),
+        clean(item.phone),
+        clean(item.domicile),
+        clean(item.participant_status),
+        clean(item.institution),
+        clean(item.faculty),
+        clean(item.major),
+        clean(item.company_name),
+        clean(item.job_title),
+        clean(item.job_type),
+        clean(item.is_walk_in ? "Walk In Interview" : "Lamaran Reguler"),
+        clean(item.is_walk_in ? (item.interview_day_label || "Belum Ditentukan") : "-"),
+        clean(item.status),
+        clean(item.cv_path ? (typeof window !== "undefined" ? `${window.location.origin}${item.cv_path}` : item.cv_path) : "-"),
+      ];
+    });
+
+    downloadCSV(headers, rows, `data-registrasi-lowongan-walkin-cce2026-${new Date().toISOString().slice(0, 10)}.csv`);
+  }
+
+  // Hapus Data Pendaftaran Lowongan (Single)
+  async function handleDeleteJobRegistration(item) {
+    if (!item) return;
+    const confirmText = `Hapus pendaftaran ${item.full_name} untuk lowongan "${item.job_title}" di ${item.company_name}?\n\nData lamaran${item.is_walk_in ? " dan jadwal walk-in interview" : ""} akan dihapus dari sistem.`;
+    if (!confirm(confirmText)) return;
+
+    try {
+      const res = await fetch(`/api/admin/data?action=delete_application&application_id=${item.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.message || "Gagal menghapus pendaftaran lowongan.");
+      setSelectedJobRegIds((prev) => prev.filter((id) => id !== item.id));
+      await loadAdminData();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  // Hapus Massal Data Pendaftaran Lowongan (Bulk Delete)
+  async function handleBulkDeleteJobRegistrations() {
+    if (selectedJobRegIds.length === 0) return;
+    const count = selectedJobRegIds.length;
+    const confirmText = `Apakah Anda yakin ingin menghapus ${count} pendaftaran lowongan yang dipilih secara permanen?\n\nData pendaftaran dan jadwal walk-in terkait akan dihapus dari sistem. Tindakan ini tidak dapat dibatalkan.`;
+    if (!confirm(confirmText)) return;
+
+    setIsDeletingBulkJobReg(true);
+    try {
+      const res = await fetch("/api/admin/data?action=bulk_delete_applications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ application_ids: selectedJobRegIds }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.message || "Gagal menghapus data pendaftaran terpilih.");
+      setSelectedJobRegIds([]);
+      await loadAdminData();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsDeletingBulkJobReg(false);
+    }
+  }
+
   async function handleManualCheckIn(participantId, eventDate) {
     try {
       const res = await fetch("/api/admin/data", {
@@ -1563,6 +1736,22 @@ export default function AdminDashboard() {
               <span>Data Registrasi</span>
             </button>
             <button
+              onClick={() => setActiveTab("pelamar-walkin")}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+                activeTab === "pelamar-walkin"
+                  ? "bg-white text-indigo-950 shadow-xs font-bold border-b-2 border-indigo-600"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <IconBriefcase className="h-4 w-4 text-indigo-600" />
+              <span>Data Registrasi Lowongan &amp; Walk-In</span>
+              {(data?.job_registrations?.length || 0) > 0 && (
+                <span className="rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black px-1.5 py-0.5">
+                  {data.job_registrations.length}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab("indeks-kepuasan")}
               className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
                 activeTab === "indeks-kepuasan"
@@ -1730,6 +1919,32 @@ export default function AdminDashboard() {
                   </div>
                   {activeTab === "registrasi" && (
                     <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveTab("pelamar-walkin");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "pelamar-walkin"
+                      ? "bg-indigo-50 text-indigo-950 border border-indigo-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <IconBriefcase className="h-4 w-4 text-indigo-600 shrink-0" />
+                    <span>Data Registrasi Lowongan &amp; Walk-In</span>
+                  </div>
+                  {activeTab === "pelamar-walkin" ? (
+                    <span className="rounded-full bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  ) : (
+                    (data?.job_registrations?.length || 0) > 0 && (
+                      <span className="rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5">
+                        {data.job_registrations.length}
+                      </span>
+                    )
                   )}
                 </button>
 
@@ -3057,6 +3272,417 @@ export default function AdminDashboard() {
                       );
                     })
                   )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB: DATA REGISTRASI LOWONGAN & WALK IN INTERVIEW
+            ======================================================== */}
+        {activeTab === "pelamar-walkin" && (
+          <div className="space-y-6">
+            {/* Header Tab */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-indigo-600 animate-pulse" />
+                  <h1 className="font-[family-name:var(--font-montserrat)] text-2xl sm:text-3xl font-extrabold text-slate-900">
+                    Data Registrasi Lowongan &amp; Walk In Interview
+                  </h1>
+                </div>
+                <p className="mt-1 text-sm text-slate-600">
+                  Tracking pelamar lowongan kerja dan jadwal wawancara Walk In Interview Career Compass Expo 2026.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Tombol Hapus Masal Pendaftaran Terpilih */}
+                {selectedJobRegIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDeleteJobRegistrations}
+                    disabled={isDeletingBulkJobReg}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                    title={`Hapus ${selectedJobRegIds.length} data pendaftaran lowongan terpilih`}
+                  >
+                    <IconTrash className="h-4 w-4 text-white" />
+                    <span>
+                      {isDeletingBulkJobReg
+                        ? "Menghapus..."
+                        : `Hapus Terpilih (${selectedJobRegIds.length})`}
+                    </span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={exportJobRegistrationsCSV}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition-colors shrink-0 cursor-pointer"
+                >
+                  <IconDownload className="h-4 w-4 text-slate-500" />
+                  <span>Ekspor CSV</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={loadAdminData}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-3.5 py-2.5 text-xs sm:text-sm shadow-xs transition cursor-pointer"
+                >
+                  <IconRefresh className="h-4 w-4" />
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Stat Cards Ringkasan */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Total Pendaftaran
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <IconBriefcase className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-3xl font-black text-slate-900">
+                    {data?.job_registration_stats?.total_applications || (data?.job_registrations?.length || 0)}
+                  </span>
+                  <span className="ml-1.5 text-xs text-slate-500">berkas</span>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">Total lamaran masuk ke semua lowongan</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Walk In Interview
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                    <IconUsers className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-3xl font-black text-purple-700">
+                    {data?.job_registration_stats?.walk_in_applications || 0}
+                  </span>
+                  <span className="ml-1.5 text-xs text-slate-500">kandidat</span>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">Jalur wawancara langsung di booth</p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                    Jadwal Hari 1 (Rabu)
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <IconCalendar className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-3xl font-black text-emerald-900">
+                    {data?.job_registration_stats?.rabu_interviews || 0}
+                  </span>
+                  <span className="ml-1.5 text-xs text-emerald-700">wawancara</span>
+                </div>
+                <p className="mt-1 text-xs text-emerald-700/80">Rabu, 18 November 2026</p>
+              </div>
+
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-800">
+                    Jadwal Hari 2 (Kamis)
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                    <IconCalendar className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-3xl font-black text-blue-900">
+                    {data?.job_registration_stats?.kamis_interviews || 0}
+                  </span>
+                  <span className="ml-1.5 text-xs text-blue-700">wawancara</span>
+                </div>
+                <p className="mt-1 text-xs text-blue-700/80">Kamis, 19 November 2026</p>
+              </div>
+            </div>
+
+            {/* Tabel Pendaftar Lowongan & Walk-In */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs overflow-hidden">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="font-[family-name:var(--font-montserrat)] text-lg font-bold text-slate-900">
+                    Daftar Pelamar Lowongan &amp; Walk-In Interview ({filteredJobRegistrations.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Mentracking nama pelamar, asal instansi, mitra perusahaan, posisi lowongan, dan jadwal hari wawancara walk-in.
+                  </p>
+                </div>
+
+                {/* Filter & Search Bar */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative min-w-[220px]">
+                    <IconSearch className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={searchJobReg}
+                      onChange={(e) => setSearchJobReg(e.target.value)}
+                      placeholder="Cari pelamar, no reg, perusahaan, posisi..."
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3.5 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <select
+                    value={filterJobRegTipe}
+                    onChange={(e) => setFilterJobRegTipe(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Jalur</option>
+                    <option value="WALKIN">Walk-In Interview</option>
+                    <option value="REGULAR">Lamaran Reguler</option>
+                  </select>
+
+                  <select
+                    value={filterJobRegHari}
+                    onChange={(e) => setFilterJobRegHari(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Hari Wawancara</option>
+                    <option value="Rabu">Hari 1: Rabu (18 Nov)</option>
+                    <option value="Kamis">Hari 2: Kamis (19 Nov)</option>
+                  </select>
+
+                  <select
+                    value={filterJobRegKategori}
+                    onChange={(e) => setFilterJobRegKategori(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Kategori</option>
+                    <option value="Mahasiswa">Mahasiswa</option>
+                    <option value="Alumni">Alumni</option>
+                    <option value="Umum">Umum</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                    <tr>
+                      <th className="w-12 px-4 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isAllJobRegSelected}
+                          onChange={toggleSelectAllJobReg}
+                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                        />
+                      </th>
+                      <th className="px-4 py-3">No</th>
+                      <th className="px-4 py-3">Nama</th>
+                      <th className="px-4 py-3">Kategori &amp; Instansi</th>
+                      <th className="px-4 py-3">Perusahaan</th>
+                      <th className="px-4 py-3">Mendaftar Ke Lowongan Mana</th>
+                      <th className="px-4 py-3">Jadwal Walk In Interview</th>
+                      <th className="px-4 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-slate-400">
+                          Memuat data registrasi lowongan &amp; walk-in interview...
+                        </td>
+                      </tr>
+                    ) : filteredJobRegistrations.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-16 text-center text-slate-400">
+                          Tidak ada data pendaftaran yang sesuai dengan pencarian atau filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredJobRegistrations.map((item, idx) => {
+                        const isSelected = selectedJobRegIds.includes(item.id);
+                        const isRabu = (item.interview_day_label || "").includes("Rabu");
+                        const isKamis = (item.interview_day_label || "").includes("Kamis");
+
+                        return (
+                          <tr
+                            key={item.id}
+                            className={`transition-colors ${
+                              isSelected ? "bg-indigo-50/70" : "hover:bg-slate-50/80"
+                            }`}
+                          >
+                            <td className="w-12 px-4 py-4 text-center">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelectJobReg(item.id)}
+                                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                              />
+                            </td>
+                            <td className="px-4 py-4 font-mono text-slate-400 font-bold whitespace-nowrap">
+                              {idx + 1}
+                            </td>
+                            <td className="px-4 py-4 min-w-[200px]">
+                              <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>{item.full_name}</span>
+                                {item.cv_path && (
+                                  <a
+                                    href={item.cv_path}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100 transition"
+                                    title="Lihat Berkas CV"
+                                  >
+                                    <IconDocument className="h-3 w-3" />
+                                    <span>CV</span>
+                                  </a>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-slate-500 mt-0.5">
+                                {item.email} • {item.phone}
+                              </div>
+                              {item.registration_number && item.registration_number !== "-" && (
+                                <div className="mt-1">
+                                  <span className="font-mono text-[10px] rounded bg-slate-100 px-1.5 py-0.5 text-slate-600 font-semibold border border-slate-200">
+                                    {item.registration_number}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 min-w-[180px]">
+                              <span
+                                className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                                  item.participant_status === "Mahasiswa"
+                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                    : item.participant_status === "Alumni"
+                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                }`}
+                              >
+                                {item.participant_status || "Umum"}
+                              </span>
+                              <div className="mt-1 font-semibold text-slate-800 text-xs truncate max-w-[220px]">
+                                {item.institution || "-"}
+                              </div>
+                              {(item.faculty !== "-" || item.major !== "-") && (
+                                <div className="text-[11px] text-slate-500 truncate max-w-[220px]">
+                                  {item.faculty !== "-" ? item.faculty : ""}
+                                  {item.faculty !== "-" && item.major !== "-" ? " / " : ""}
+                                  {item.major !== "-" ? item.major : ""}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 min-w-[180px]">
+                              <div className="flex items-center gap-2">
+                                {item.company_logo ? (
+                                  <img
+                                    src={item.company_logo}
+                                    alt={item.company_name}
+                                    className="h-7 w-7 rounded-lg object-contain border border-slate-200 bg-white p-0.5 shrink-0"
+                                  />
+                                ) : (
+                                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs shrink-0">
+                                    {(item.company_name || "P").slice(0, 1).toUpperCase()}
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="font-bold text-slate-900 truncate">
+                                    {item.company_name || "-"}
+                                  </p>
+                                  {item.company_industry && item.company_industry !== "-" && (
+                                    <p className="text-[10px] text-slate-400 truncate">
+                                      {item.company_industry}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 min-w-[200px]">
+                              <p className="font-bold text-slate-900 text-xs">
+                                {item.job_title || "-"}
+                              </p>
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                {item.is_walk_in ? (
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+                                    <span>Walk-In</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                    Reguler
+                                  </span>
+                                )}
+                                {item.job_type && (
+                                  <span className="text-[10px] text-slate-500 font-medium">
+                                    {item.job_type}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap min-w-[180px]">
+                              {item.is_walk_in ? (
+                                isRabu ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
+                                    <IconCalendar className="h-3.5 w-3.5 text-emerald-600" />
+                                    <span>Rabu, 18 Nov 2026</span>
+                                  </span>
+                                ) : isKamis ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 border border-blue-300">
+                                    <IconCalendar className="h-3.5 w-3.5 text-blue-600" />
+                                    <span>Kamis, 19 Nov 2026</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
+                                    <IconClock className="h-3.5 w-3.5 text-amber-500" />
+                                    <span>{item.interview_day_label || "Menunggu Jadwal"}</span>
+                                  </span>
+                                )
+                              ) : (
+                                <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-400">
+                                  —
+                                </span>
+                              )}
+                              {item.interview_notes && (
+                                <p className="text-[10px] text-slate-400 mt-0.5 truncate max-w-xs">
+                                  {item.interview_notes}
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-center whitespace-nowrap">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {item.cv_path && (
+                                  <a
+                                    href={item.cv_path}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition inline-flex items-center gap-1"
+                                    title="Unduh / Buka CV Pelamar"
+                                  >
+                                    <IconExternal className="h-3 w-3 text-slate-400" />
+                                    <span>CV</span>
+                                  </a>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteJobRegistration(item)}
+                                  className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition cursor-pointer"
+                                  title="Hapus Data Pendaftaran Ini"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>

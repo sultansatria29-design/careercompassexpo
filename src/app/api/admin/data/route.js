@@ -44,6 +44,51 @@ export async function GET() {
 
     if (sErr) throw sErr;
 
+    // 4. Ambil seluruh data pendaftaran lamaran & walk-in interview
+    const { data: rawApps } = await supabase
+      .from("applications")
+      .select("id, participant_id, job_id, status, cv_path, portfolio_url, created_at")
+      .order("created_at", { ascending: false });
+
+    // 5. Ambil data jobs untuk judul lowongan, perusahaan, dan flag walk-in
+    const { data: rawJobs } = await supabase
+      .from("jobs")
+      .select("id, company_id, title, location, employment_type, is_walk_in, description");
+
+    const jobMap = {};
+    (rawJobs || []).forEach((j) => {
+      let descObj = {};
+      try {
+        descObj = typeof j.description === "string" ? JSON.parse(j.description) : j.description || {};
+      } catch {
+        descObj = {};
+      }
+      jobMap[j.id] = {
+        ...j,
+        is_walk_in: Boolean(j.is_walk_in || descObj.is_walk_in),
+      };
+    });
+
+    // 6. Ambil data companies untuk nama perusahaan & logo
+    const { data: rawCompanies } = await supabase
+      .from("companies")
+      .select("id, name, logo_url, website, industry");
+
+    const companyMap = {};
+    (rawCompanies || []).forEach((c) => {
+      companyMap[c.id] = c;
+    });
+
+    // 7. Ambil data interviews untuk informasi jadwal wawancara walk-in
+    const { data: rawInterviews } = await supabase
+      .from("interviews")
+      .select("id, application_id, participant_id, company_id, status, interview_date, notes");
+
+    const interviewMap = {};
+    (rawInterviews || []).forEach((item) => {
+      interviewMap[item.application_id] = item;
+    });
+
     // Buat map survei registrasi awal berdasarkan participant_id
     // DAN kumpulkan data Indeks Kepuasan Peserta
     const surveyMap = {};
@@ -121,6 +166,68 @@ export async function GET() {
         participant_status: part.participant_status || "Umum",
         institution: part.institution || "-",
         survey: part.survey || null,
+      };
+    });
+
+    // 8. Bentuk daftar pendaftaran lowongan & walk-in interview lengkap
+    const jobRegistrationsList = (rawApps || []).map((app) => {
+      const part = participantMap[app.participant_id] || {};
+      const job = jobMap[app.job_id] || {};
+      const comp = companyMap[job.company_id] || {};
+      const interview = interviewMap[app.id] || null;
+
+      // Format label hari wawancara
+      let dayLabel = null;
+      const rawDate = interview?.interview_date;
+      const rawNotes = interview?.notes || "";
+      if (rawDate === "2026-11-18" || rawNotes.includes("Rabu") || rawNotes.includes("18 Nov")) {
+        dayLabel = "Rabu, 18 Nov 2026";
+      } else if (rawDate === "2026-11-19" || rawNotes.includes("Kamis") || rawNotes.includes("19 Nov")) {
+        dayLabel = "Kamis, 19 Nov 2026";
+      } else if (rawDate) {
+        dayLabel = rawDate;
+      }
+
+      const isWalkIn = Boolean(job.is_walk_in || interview || dayLabel);
+
+      return {
+        id: app.id,
+        application_id: app.id,
+        created_at: app.created_at,
+        status: app.status || "submitted",
+        cv_path: app.cv_path || null,
+        portfolio_url: app.portfolio_url || null,
+
+        // Data Peserta / Pelamar
+        participant_id: app.participant_id,
+        registration_number: part.registration_number || "-",
+        full_name: part.full_name || "Tanpa Nama",
+        email: part.email || "-",
+        phone: part.phone || "-",
+        domicile: part.domicile || "-",
+        participant_status: part.participant_status || "Umum",
+        institution: part.institution || "-",
+        faculty: part.survey?.faculty || "-",
+        major: part.survey?.major || "-",
+
+        // Data Perusahaan
+        company_id: comp.id || job.company_id || null,
+        company_name: comp.name || "-",
+        company_logo: comp.logo_url || null,
+        company_industry: comp.industry || "-",
+
+        // Data Lowongan
+        job_id: app.job_id,
+        job_title: job.title || "Posisi Lowongan",
+        job_location: job.location || "Jakarta",
+        job_type: job.employment_type || "Full-time",
+        is_walk_in: isWalkIn,
+
+        // Jadwal Walk-In Interview
+        interview_date: rawDate || null,
+        interview_day_label: isWalkIn ? (dayLabel || "Belum Ditentukan") : null,
+        interview_notes: interview?.notes || null,
+        interview_status: interview?.status || null,
       };
     });
 
@@ -208,6 +315,12 @@ export async function GET() {
           drive_folder_name: driveConfig.folderName || "Folder Google Drive",
           drive_message: driveConfig.message,
         },
+        job_registration_stats: {
+          total: jobRegistrationsList.length,
+          walk_in_total: jobRegistrationsList.filter((j) => j.is_walk_in).length,
+          day1_total: jobRegistrationsList.filter((j) => j.interview_day_label?.includes("Rabu")).length,
+          day2_total: jobRegistrationsList.filter((j) => j.interview_day_label?.includes("Kamis")).length,
+        },
       },
       presensi: presensiList,
       participants: (participants || []).map((p) => ({
@@ -215,6 +328,7 @@ export async function GET() {
         survey: surveyMap[p.id] || null,
         has_checked_in: (attendances || []).some((a) => a.participant_id === p.id),
       })),
+      job_registrations: jobRegistrationsList,
       indeks_kepuasan: {
         total_respondents: totalSurveys,
         overall_average: overallAvgScore,
@@ -248,6 +362,37 @@ export async function DELETE(request) {
     }
 
     const supabase = getSupabase();
+
+    // 0. Hapus Data Lamaran / Pendaftaran Lowongan (Single atau Bulk Masal)
+    if (
+      action === "delete_application" ||
+      action === "bulk_delete_applications" ||
+      searchParams.get("application_id") ||
+      searchParams.get("application_ids") ||
+      (body.application_ids && Array.isArray(body.application_ids))
+    ) {
+      let targetAppIds = [];
+      if (body.application_ids && Array.isArray(body.application_ids)) {
+        targetAppIds = body.application_ids.filter(Boolean);
+      } else if (searchParams.get("application_ids")) {
+        targetAppIds = searchParams.get("application_ids").split(",").map((s) => s.trim()).filter(Boolean);
+      } else if (searchParams.get("application_id")) {
+        targetAppIds = [searchParams.get("application_id")];
+      }
+
+      if (targetAppIds.length > 0) {
+        // Hapus interviews terkait dulu
+        await supabase.from("interviews").delete().in("application_id", targetAppIds);
+        // Hapus applications
+        const { error: delAppErr } = await supabase.from("applications").delete().in("id", targetAppIds);
+        if (delAppErr) throw delAppErr;
+
+        return NextResponse.json({
+          success: true,
+          message: `${targetAppIds.length} data pendaftaran lowongan berhasil dihapus.`,
+        });
+      }
+    }
 
     // 1. Hapus Peserta (Single atau Bulk Masal)
     if (

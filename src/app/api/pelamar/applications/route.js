@@ -162,7 +162,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { participant_id, job_id, cv_path, portfolio_url } = body;
+    const { participant_id, job_id, cv_path, portfolio_url, interview_day } = body;
 
     if (!participant_id) {
       return NextResponse.json(
@@ -215,6 +215,9 @@ export async function POST(request) {
       );
     }
 
+    const interviewDate = interview_day === "Kamis" ? "2026-11-19" : "2026-11-18";
+    const interviewNotes = `Jadwal Walk-In: ${interview_day === "Kamis" ? "Kamis, 19 Nov 2026" : "Rabu, 18 Nov 2026"}`;
+
     // Cek apakah pelamar sudah pernah melamar ke lowongan ini
     const { data: existingApp } = await supabase
       .from("applications")
@@ -237,6 +240,34 @@ export async function POST(request) {
 
       if (uErr) throw uErr;
 
+      // Update / insert penjadwalan interview jika ada
+      if (interview_day) {
+        const { data: existingInt } = await supabase
+          .from("interviews")
+          .select("id")
+          .eq("application_id", existingApp.id)
+          .maybeSingle();
+
+        if (existingInt) {
+          await supabase
+            .from("interviews")
+            .update({
+              interview_date: interviewDate,
+              notes: interviewNotes,
+            })
+            .eq("id", existingInt.id);
+        } else {
+          await supabase.from("interviews").insert({
+            application_id: existingApp.id,
+            participant_id,
+            company_id: job.company_id,
+            status: "waiting",
+            interview_date: interviewDate,
+            notes: interviewNotes,
+          });
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: `Berkas lamaran untuk posisi "${job.title}" di ${job.companies?.name || "perusahaan"} berhasil diperbarui!`,
@@ -258,6 +289,18 @@ export async function POST(request) {
       .single();
 
     if (insErr) throw insErr;
+
+    // Simpan jadwal interview jika ada interview_day
+    if (interview_day) {
+      await supabase.from("interviews").insert({
+        application_id: newApp.id,
+        participant_id,
+        company_id: job.company_id,
+        status: "waiting",
+        interview_date: interviewDate,
+        notes: interviewNotes,
+      });
+    }
 
     return NextResponse.json({
       success: true,
