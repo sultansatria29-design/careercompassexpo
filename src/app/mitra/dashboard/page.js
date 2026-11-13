@@ -75,6 +75,20 @@ export default function MitraDashboardPage() {
   const [toastMsg, setToastMsg] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+  // State Edit Profil Perusahaan Mitra
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    industry: "",
+    company_size: "",
+    website: "",
+    pic_name: "",
+    phone: "",
+    address: "",
+    bio: "",
+  });
+
   // Load Session Perusahaan saat mount & guard akses
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -286,6 +300,79 @@ export default function MitraDashboardPage() {
     } finally {
       setIsUploadingCompanyLogo(false);
       e.target.value = "";
+    }
+  }
+
+  // Buka Modal Edit Profil Perusahaan
+  function openEditProfileModal() {
+    setProfileForm({
+      name: company?.name || "",
+      industry: company?.industry || "",
+      company_size: company?.company_size || "",
+      website: company?.website || "",
+      pic_name: company?.pic_name || "",
+      phone: company?.phone || "",
+      address: company?.address || "",
+      bio: company?.bio || "",
+    });
+    setIsEditProfileOpen(true);
+  }
+
+  // Simpan Perubahan Profil Perusahaan ke Database
+  async function handleSaveProfile(e) {
+    e.preventDefault();
+    if (!profileForm.name.trim()) {
+      showToast("Nama perusahaan wajib diisi.");
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      if (company?.id && !company.id.startsWith("demo-")) {
+        const res = await fetch("/api/mitra/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_profile",
+            company_id: company.id,
+            name: profileForm.name.trim(),
+            industry: profileForm.industry,
+            company_size: profileForm.company_size,
+            website: profileForm.website,
+            pic_name: profileForm.pic_name,
+            phone: profileForm.phone,
+            address: profileForm.address,
+            bio: profileForm.bio,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Gagal memperbarui profil perusahaan.");
+      }
+
+      const updated = {
+        ...company,
+        name: profileForm.name.trim(),
+        industry: profileForm.industry,
+        company_size: profileForm.company_size,
+        website: profileForm.website,
+        pic_name: profileForm.pic_name,
+        phone: profileForm.phone,
+        address: profileForm.address,
+        bio: profileForm.bio,
+      };
+
+      setCompany(updated);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cce_mitra_session", JSON.stringify(updated));
+      }
+
+      showToast("Profil perusahaan berhasil diperbarui!");
+      setIsEditProfileOpen(false);
+    } catch (err) {
+      showToast(`Gagal menyimpan profil: ${err.message}`);
+    } finally {
+      setIsSavingProfile(false);
     }
   }
 
@@ -1481,10 +1568,25 @@ export default function MitraDashboardPage() {
         {/* ============================================================== */}
         {activeMainTab === "profile" && (
           <div className="max-w-2xl mx-auto rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">Profil Perusahaan Mitra CCE 2026</h2>
-            <p className="text-xs text-slate-500 mb-6">
-              Informasi ini akan ditampilkan kepada kandidat peserta saat melihat lowongan dan booth expo.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Profil Perusahaan Mitra CCE 2026</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Informasi ini akan ditampilkan kepada kandidat peserta saat melihat lowongan dan booth expo.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openEditProfileModal}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition shadow-xs shrink-0 cursor-pointer"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span>Edit Profil</span>
+              </button>
+            </div>
 
             <div className="space-y-4 text-sm">
               <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1517,7 +1619,7 @@ export default function MitraDashboardPage() {
                   </div>
                   <div>
                     <div className="font-bold text-slate-900 text-base">{company?.name}</div>
-                    <div className="text-xs text-slate-500">{company?.industry}</div>
+                    <div className="text-xs text-slate-500">{company?.industry || "Industri Belum Diatur"}</div>
                     <div className="text-[11px] text-purple-700 font-mono mt-0.5 font-medium">ID: {company?.id}</div>
                   </div>
                 </div>
@@ -1560,6 +1662,14 @@ export default function MitraDashboardPage() {
                     {company?.website || "-"}
                   </div>
                 </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                  <div className="text-[11px] font-bold text-slate-500">Sektor Industri</div>
+                  <div className="font-semibold text-slate-900 mt-0.5">{company?.industry || "-"}</div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                  <div className="text-[11px] font-bold text-slate-500">Skala Perusahaan</div>
+                  <div className="font-semibold text-slate-900 mt-0.5">{company?.company_size || "-"}</div>
+                </div>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
@@ -1569,12 +1679,163 @@ export default function MitraDashboardPage() {
 
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
                 <div className="text-[11px] font-bold text-slate-500">Tentang Perusahaan</div>
-                <div className="text-xs text-slate-700 mt-1 leading-relaxed">{company?.bio || "-"}</div>
+                <div className="text-xs text-slate-700 mt-1 leading-relaxed whitespace-pre-line">{company?.bio || "-"}</div>
               </div>
             </div>
           </div>
         )}
       </main>
+
+      {/* ============================================================== */}
+      {/* MODAL: EDIT PROFIL PERUSAHAAN MITRA                            */}
+      {/* ============================================================== */}
+      {isEditProfileOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl max-h-[92vh] overflow-y-auto text-slate-900">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+              <h3 className="flex items-center gap-2 text-base font-black text-slate-900">
+                <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span>Edit Informasi Perusahaan</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEditProfileOpen(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="mt-4 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Nama Perusahaan <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  placeholder="Misal: PT Teknologi Maju Bersama"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Sektor Industri</label>
+                  <input
+                    type="text"
+                    value={profileForm.industry}
+                    onChange={(e) => setProfileForm({ ...profileForm, industry: e.target.value })}
+                    placeholder="Misal: Teknologi & IT, FMCG"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Skala Perusahaan</label>
+                  <select
+                    value={profileForm.company_size}
+                    onChange={(e) => setProfileForm({ ...profileForm, company_size: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-slate-800 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                  >
+                    <option value="">Pilih Skala</option>
+                    <option value="1 - 50 Karyawan">1 - 50 Karyawan (Startup/Small)</option>
+                    <option value="51 - 200 Karyawan">51 - 200 Karyawan (Medium)</option>
+                    <option value="201 - 1.000 Karyawan">201 - 1.000 Karyawan (Large)</option>
+                    <option value="1.000+ Karyawan">1.000+ Karyawan (Enterprise)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Website Resmi Perusahaan</label>
+                <input
+                  type="text"
+                  value={profileForm.website}
+                  onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
+                  placeholder="https://perusahaan.co.id"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Nama PIC / Narahubung</label>
+                  <input
+                    type="text"
+                    value={profileForm.pic_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, pic_name: e.target.value })}
+                    placeholder="Nama Lengkap PIC"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">WhatsApp PIC</label>
+                  <input
+                    type="text"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    placeholder="081234567890"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Alamat Kantor / Headquarter</label>
+                <input
+                  type="text"
+                  value={profileForm.address}
+                  onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
+                  placeholder="Contoh: Menara BCA Lt. 30, Jl. M.H. Thamrin, Jakarta Pusat"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Tentang Perusahaan / Bio Singkat</label>
+                <textarea
+                  rows={3}
+                  value={profileForm.bio}
+                  onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                  placeholder="Jelaskan secara singkat visi, produk/layanan, atau profil perusahaan..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:bg-white focus:outline-none transition"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsEditProfileOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingProfile}
+                  className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold transition flex items-center gap-2 cursor-pointer shadow-xs"
+                >
+                  {isSavingProfile ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>Simpan Perubahan</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* MODAL: BUAT / EDIT LOWONGAN                                    */}

@@ -215,6 +215,39 @@ function IconGoogleDrive({ className = "h-4 w-4" }) {
   );
 }
 
+function IconMapPin({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function IconTrendingUp({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    </svg>
+  );
+}
+
+function IconMegaphone({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+    </svg>
+  );
+}
+
+function IconChartBar({ className = "h-4 w-4" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  );
+}
+
 // ========================================================
 // KOMPONEN UTAMA DASHBOARD ADMIN
 // ========================================================
@@ -790,6 +823,152 @@ export default function AdminDashboard() {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
+
+  // Analitik Pengunjung Registrasi CCE 2026 (Komprehensif)
+  const registrationAnalytics = useMemo(() => {
+    const participants = data.participants || [];
+    const total = participants.length;
+
+    let day1Only = 0;
+    let day2Only = 0;
+    let bothDays = 0;
+    let notSpecified = 0;
+
+    const domicileCounts = {};
+    let uinCount = 0;
+    let nonUinCount = 0;
+    const facultyCounts = {};
+    const planCounts = {};
+    const infoCounts = {};
+    let withTactlink = 0;
+    const dailyCounts = {};
+
+    participants.forEach((p) => {
+      // 1. Pilihan Hari Kehadiran
+      const day = p.survey?.attendance_day?.toUpperCase();
+      if (day === "DAY1") day1Only++;
+      else if (day === "DAY2") day2Only++;
+      else if (day === "BOTH") bothDays++;
+      else notSpecified++;
+
+      // 2. Sebaran Domisili
+      const rawDom = p.domicile?.trim();
+      const dom = rawDom || "Tidak Disebutkan";
+      domicileCounts[dom] = (domicileCounts[dom] || 0) + 1;
+
+      // 3. Institusi & Fakultas
+      const inst = (p.institution || "").toLowerCase();
+      const isUin = inst.includes("uin") || inst.includes("syarif hidayatullah");
+      if (isUin) {
+        uinCount++;
+        const fac = p.survey?.faculty?.trim() || "Fakultas Lain / Belum Isi";
+        facultyCounts[fac] = (facultyCounts[fac] || 0) + 1;
+      } else {
+        nonUinCount++;
+      }
+
+      // 4. Rencana Kunjungan / Minat Agenda
+      const plans = p.survey?.visit_plans;
+      if (Array.isArray(plans)) {
+        plans.forEach((pl) => {
+          if (pl && typeof pl === "string") {
+            const cleanPlan = pl.trim();
+            if (cleanPlan) {
+              planCounts[cleanPlan] = (planCounts[cleanPlan] || 0) + 1;
+            }
+          }
+        });
+      }
+
+      // 5. Sumber Saluran Informasi
+      const rawInfo = p.survey?.info_source?.trim();
+      const info = rawInfo || "Lainnya / Tidak Disebutkan";
+      infoCounts[info] = (infoCounts[info] || 0) + 1;
+
+      // 6. Bukti Verifikasi TactLink
+      if (p.survey?.tactlink_proof) {
+        withTactlink++;
+      }
+
+      // 7. Tren Registrasi Harian
+      if (p.created_at) {
+        try {
+          const dateStr = p.created_at.slice(0, 10);
+          dailyCounts[dateStr] = (dailyCounts[dateStr] || 0) + 1;
+        } catch {}
+      }
+    });
+
+    const expectedDay1 = day1Only + bothDays;
+    const expectedDay2 = day2Only + bothDays;
+
+    const topDomiciles = Object.entries(domicileCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const topFaculties = Object.entries(facultyCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        pct: uinCount > 0 ? Math.round((count / uinCount) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const sortedPlans = Object.entries(planCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const sortedInfo = Object.entries(infoCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const sortedDaily = Object.entries(dailyCounts)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return {
+      total,
+      attendance: {
+        day1Only,
+        day2Only,
+        bothDays,
+        notSpecified,
+        expectedDay1,
+        expectedDay2,
+        day1Pct: total > 0 ? Math.round((day1Only / total) * 100) : 0,
+        day2Pct: total > 0 ? Math.round((day2Only / total) * 100) : 0,
+        bothPct: total > 0 ? Math.round((bothDays / total) * 100) : 0,
+      },
+      topDomiciles,
+      institution: {
+        uinCount,
+        nonUinCount,
+        uinPct: total > 0 ? Math.round((uinCount / total) * 100) : 0,
+        nonUinPct: total > 0 ? Math.round((nonUinCount / total) * 100) : 0,
+        topFaculties,
+      },
+      sortedPlans,
+      sortedInfo,
+      tactlink: {
+        withTactlink,
+        withoutTactlink: Math.max(0, total - withTactlink),
+        pct: total > 0 ? Math.round((withTactlink / total) * 100) : 0,
+      },
+      sortedDaily,
+    };
+  }, [data.participants]);
 
   // Filtered Mitra Data (Penyaringan Mitra Perusahaan)
   const filteredMitra = useMemo(() => {
@@ -1775,6 +1954,415 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-2 text-xs text-indigo-600">
                   Kamis, 19 November 2026
+                </div>
+              </div>
+            </div>
+
+            {/* ========================================================
+                SECTION: ANALITIK PENGUNJUNG REGISTRASI (DEMOGRAFI & PREFERENSI)
+                ======================================================== */}
+            <div className="rounded-3xl border border-purple-200/80 bg-linear-to-b from-purple-50/40 via-white to-white p-5 sm:p-7 shadow-xs space-y-6">
+              {/* Header Analitik */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-purple-100">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7226FF] to-[#9B51E0] text-white shadow-md shadow-purple-500/20 shrink-0">
+                    <IconChartBar className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-100 text-purple-700 border border-purple-200">
+                        Analitik Registrasi
+                      </span>
+                      <span className="text-xs text-slate-400">• Total {registrationAnalytics.total} Pendaftar</span>
+                    </div>
+                    <h2 className="font-[family-name:var(--font-montserrat)] text-lg sm:text-xl font-black text-slate-900 mt-0.5">
+                      Demografi &amp; Preferensi Pengunjung Terdaftar
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Insight mendalam komitmen kehadiran, sebaran domisili, afiliasi kampus/fakultas, minat agenda, hingga kanal informasi.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveTab("registrasi")}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-purple-200 bg-white hover:bg-purple-50 text-xs font-bold text-purple-700 transition shadow-2xs cursor-pointer"
+                  >
+                    <IconRegistrasi className="h-4 w-4 text-purple-600" />
+                    <span>Buka Data Registrasi</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ROW 1: Estimasi Keramaian Hari Kehadiran (Attendance Crowd Projection) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Estimasi Day 1 */}
+                <div className="rounded-2xl border border-purple-200 bg-white p-5 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-purple-100/40 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-700 uppercase tracking-wider">
+                    <span>ESTIMASI PENGUNJUNG DAY 1</span>
+                    <span className="px-2 py-0.5 rounded-md bg-purple-100 text-[10px] font-extrabold text-purple-800 border border-purple-200">18 NOV</span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="font-[family-name:var(--font-montserrat)] text-3xl font-black text-purple-900">
+                      {registrationAnalytics.attendance.expectedDay1}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">orang diproyeksikan</span>
+                  </div>
+                  <div className="mt-3 text-[11px] text-slate-600 space-y-1.5 pt-2 border-t border-purple-100/80">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Pilih Day 1 Saja:</span>
+                      <span className="font-semibold text-slate-800">{registrationAnalytics.attendance.day1Only} orang ({registrationAnalytics.attendance.day1Pct}%)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Pilih Kedua Hari:</span>
+                      <span className="font-semibold text-slate-800">{registrationAnalytics.attendance.bothDays} orang ({registrationAnalytics.attendance.bothPct}%)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estimasi Day 2 */}
+                <div className="rounded-2xl border border-indigo-200 bg-white p-5 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-100/40 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center justify-between text-xs font-bold text-indigo-700 uppercase tracking-wider">
+                    <span>ESTIMASI PENGUNJUNG DAY 2</span>
+                    <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-[10px] font-extrabold text-indigo-800 border border-indigo-200">19 NOV</span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="font-[family-name:var(--font-montserrat)] text-3xl font-black text-indigo-900">
+                      {registrationAnalytics.attendance.expectedDay2}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">orang diproyeksikan</span>
+                  </div>
+                  <div className="mt-3 text-[11px] text-slate-600 space-y-1.5 pt-2 border-t border-indigo-100/80">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Pilih Day 2 Saja:</span>
+                      <span className="font-semibold text-slate-800">{registrationAnalytics.attendance.day2Only} orang ({registrationAnalytics.attendance.day2Pct}%)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Pilih Kedua Hari:</span>
+                      <span className="font-semibold text-slate-800">{registrationAnalytics.attendance.bothDays} orang ({registrationAnalytics.attendance.bothPct}%)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Segmented Bar Komitmen Hari */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      KOMITMEN PILIHAN HARI PESERTA
+                    </div>
+                    <div className="h-3 rounded-full bg-slate-100 overflow-hidden flex w-full">
+                      <div
+                        className="h-full bg-purple-500 transition-all"
+                        style={{ width: `${registrationAnalytics.attendance.day1Pct}%` }}
+                        title={`Day 1 Saja: ${registrationAnalytics.attendance.day1Only}`}
+                      />
+                      <div
+                        className="h-full bg-indigo-500 transition-all"
+                        style={{ width: `${registrationAnalytics.attendance.day2Pct}%` }}
+                        title={`Day 2 Saja: ${registrationAnalytics.attendance.day2Only}`}
+                      />
+                      <div
+                        className="h-full bg-emerald-500 transition-all"
+                        style={{ width: `${registrationAnalytics.attendance.bothPct}%` }}
+                        title={`Kedua Hari: ${registrationAnalytics.attendance.bothDays}`}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 pt-3 text-[11px] border-t border-slate-100 mt-3">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1 font-bold text-purple-700">
+                        <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0 inline-block" />
+                        <span className="truncate">Day 1</span>
+                      </div>
+                      <span className="font-mono font-bold text-slate-800 mt-0.5">
+                        {registrationAnalytics.attendance.day1Only} <span className="text-slate-400 font-normal">({registrationAnalytics.attendance.day1Pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1 font-bold text-indigo-700">
+                        <span className="h-2 w-2 rounded-full bg-indigo-500 shrink-0 inline-block" />
+                        <span className="truncate">Day 2</span>
+                      </div>
+                      <span className="font-mono font-bold text-slate-800 mt-0.5">
+                        {registrationAnalytics.attendance.day2Only} <span className="text-slate-400 font-normal">({registrationAnalytics.attendance.day2Pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1 font-bold text-emerald-700">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 inline-block" />
+                        <span className="truncate">Keduanya</span>
+                      </div>
+                      <span className="font-mono font-bold text-slate-800 mt-0.5">
+                        {registrationAnalytics.attendance.bothDays} <span className="text-slate-400 font-normal">({registrationAnalytics.attendance.bothPct}%)</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROW 2: Domisili & Afiliasi Akademik */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Sebaran Domisili */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+                          <IconMapPin className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                            Sebaran Wilayah &amp; Domisili
+                          </h3>
+                          <p className="text-[11px] text-slate-500">Asal tempat tinggal pengunjung terdaftar</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-400 font-mono">
+                        {registrationAnalytics.topDomiciles.length} Wilayah
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {registrationAnalytics.topDomiciles.slice(0, 6).map((item, idx) => (
+                        <div key={idx}>
+                          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                            <span className="truncate pr-2">{item.name}</span>
+                            <span className="font-mono font-bold text-slate-900 shrink-0">
+                              {item.count} orang <span className="text-slate-400 font-normal">({item.pct}%)</span>
+                            </span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              className="h-full bg-purple-600 rounded-full transition-all"
+                              style={{ width: `${item.pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      {registrationAnalytics.topDomiciles.length === 0 && (
+                        <div className="py-6 text-center text-xs text-slate-400">Belum ada data domisili.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Afiliasi Kampus & Fakultas UIN */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
+                          <IconAcademic className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                            Afiliasi Kampus &amp; Fakultas
+                          </h3>
+                          <p className="text-[11px] text-slate-500">Internal UIN Jakarta vs kampus/institusi luar</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Comparison Bar UIN vs Outside */}
+                    <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3 mb-4">
+                      <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                        <span className="text-purple-700">UIN Jakarta: {registrationAnalytics.institution.uinCount} ({registrationAnalytics.institution.uinPct}%)</span>
+                        <span className="text-slate-600">Institusi Luar: {registrationAnalytics.institution.nonUinCount} ({registrationAnalytics.institution.nonUinPct}%)</span>
+                      </div>
+                      <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
+                        <div
+                          className="h-full bg-[#7226FF] transition-all"
+                          style={{ width: `${registrationAnalytics.institution.uinPct}%` }}
+                          title={`UIN Jakarta: ${registrationAnalytics.institution.uinCount}`}
+                        />
+                        <div
+                          className="h-full bg-slate-400 transition-all"
+                          style={{ width: `${registrationAnalytics.institution.nonUinPct}%` }}
+                          title={`Luar UIN: ${registrationAnalytics.institution.nonUinCount}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Top Fakultas UIN */}
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                      Top Fakultas Mahasiswa &amp; Alumni UIN
+                    </div>
+                    <div className="space-y-2.5">
+                      {registrationAnalytics.institution.topFaculties.slice(0, 5).map((fac, idx) => (
+                        <div key={idx}>
+                          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                            <span className="truncate pr-2">{fac.name}</span>
+                            <span className="font-mono font-bold text-slate-900 shrink-0">
+                              {fac.count} <span className="text-slate-400 font-normal">({fac.pct}%)</span>
+                            </span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full transition-all"
+                              style={{ width: `${fac.pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      {registrationAnalytics.institution.topFaculties.length === 0 && (
+                        <div className="py-4 text-center text-xs text-slate-400">Belum ada rincian data fakultas.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROW 3: Minat Agenda Expo & Saluran Informasi */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Minat Agenda Expo */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-200">
+                      <IconBriefcase className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                        Minat Agenda &amp; Aktivitas Kunjungan
+                      </h3>
+                      <p className="text-[11px] text-slate-500">Rencana aktivitas yang paling diminati pengunjung</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {registrationAnalytics.sortedPlans.map((plan, idx) => (
+                      <div key={idx} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-800 mb-1.5">
+                          <span>{plan.name}</span>
+                          <span className="font-mono text-purple-700">{plan.count} peminat ({plan.pct}%)</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-500 to-purple-600 rounded-full transition-all"
+                            style={{ width: `${plan.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {registrationAnalytics.sortedPlans.length === 0 && (
+                      <div className="py-6 text-center text-xs text-slate-400">Belum ada data preferensi agenda.</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sumber Saluran Informasi */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <IconMegaphone className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                        Saluran Informasi &amp; Promosi
+                      </h3>
+                      <p className="text-[11px] text-slate-500">Kanal marketing paling efektif mendatangkan pendaftar</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {registrationAnalytics.sortedInfo.slice(0, 6).map((info, idx) => (
+                      <div key={idx}>
+                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                          <span className="truncate pr-2">{info.name}</span>
+                          <span className="font-mono font-bold text-slate-900 shrink-0">
+                            {info.count} <span className="text-slate-400 font-normal">({info.pct}%)</span>
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all"
+                            style={{ width: `${info.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {registrationAnalytics.sortedInfo.length === 0 && (
+                      <div className="py-6 text-center text-xs text-slate-400">Belum ada data sumber promosi.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* ROW 4: Tren Registrasi Harian & Kepatuhan TactLink */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Tren Pendaftaran Harian */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs lg:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+                        <IconTrendingUp className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                          Tren Kecepatan Registrasi Harian
+                        </h3>
+                        <p className="text-[11px] text-slate-500">Pertumbuhan jumlah pendaftar baru per hari</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {registrationAnalytics.sortedDaily.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+                      {registrationAnalytics.sortedDaily.slice(-6).map((d, i) => (
+                        <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                          <div className="text-[10px] font-bold text-slate-400 font-mono">
+                            {new Date(d.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                          </div>
+                          <div className="mt-1 font-[family-name:var(--font-montserrat)] text-xl font-extrabold text-[#7226FF]">
+                            +{d.count}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-medium">pendaftar</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-xs text-slate-400">Belum ada data timeline pendaftaran.</div>
+                  )}
+                </div>
+
+                {/* Bukti TactLink */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs lg:col-span-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+                        <IconCheckCircle className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-[family-name:var(--font-montserrat)] text-sm font-bold text-slate-900">
+                          Adopsi Bukti TactLink
+                        </h3>
+                        <p className="text-[11px] text-slate-500">Status unggah bukti verifikasi</p>
+                      </div>
+                    </div>
+
+                    <div className="my-3 flex items-center justify-center">
+                      <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-purple-50 border-4 border-[#7226FF] shadow-inner">
+                        <div className="text-center">
+                          <span className="font-[family-name:var(--font-montserrat)] text-xl font-black text-purple-900">
+                            {registrationAnalytics.tactlink.pct}%
+                          </span>
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-purple-700">Terunggah</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-center text-xs pt-2 border-t border-slate-100">
+                      <div className="rounded-lg bg-emerald-50/60 p-2 border border-emerald-100">
+                        <div className="text-emerald-700 font-bold font-mono text-base">{registrationAnalytics.tactlink.withTactlink}</div>
+                        <div className="text-[10px] text-emerald-600 font-medium">Ada Bukti</div>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 p-2 border border-slate-100">
+                        <div className="text-slate-700 font-bold font-mono text-base">{registrationAnalytics.tactlink.withoutTactlink}</div>
+                        <div className="text-[10px] text-slate-500 font-medium">Belum Unggah</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
