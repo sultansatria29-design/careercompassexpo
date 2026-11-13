@@ -1736,6 +1736,22 @@ export default function AdminDashboard() {
               <span>Registrasi</span>
             </button>
             <button
+              onClick={() => setActiveTab("mitra")}
+              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer relative ${
+                activeTab === "mitra"
+                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
+              }`}
+            >
+              <IconBuilding className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span>Mitra<span className="hidden xl:inline"> Perusahaan</span></span>
+              {mitraStats.pending > 0 && (
+                <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0 animate-pulse">
+                  {mitraStats.pending}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab("pelamar-walkin")}
               className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "pelamar-walkin"
@@ -1772,22 +1788,6 @@ export default function AdminDashboard() {
             >
               <IconQr className="h-3.5 w-3.5 text-purple-600 shrink-0" />
               <span>QR Gate</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("mitra")}
-              className={`h-8 px-2 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer relative ${
-                activeTab === "mitra"
-                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
-              }`}
-            >
-              <IconBuilding className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-              <span>Mitra<span className="hidden xl:inline"> Perusahaan</span></span>
-              {mitraStats.pending > 0 && (
-                <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0 animate-pulse">
-                  {mitraStats.pending}
-                </span>
-              )}
             </button>
           </nav>
 
@@ -1926,6 +1926,30 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => {
+                    setActiveTab("mitra");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
+                    activeTab === "mitra"
+                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <IconBuilding className="h-4 w-4 text-purple-600 shrink-0" />
+                    <span>Mitra Perusahaan (Verifikasi)</span>
+                  </div>
+                  {mitraStats.pending > 0 ? (
+                    <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 animate-pulse">
+                      {mitraStats.pending} Menunggu
+                    </span>
+                  ) : activeTab === "mitra" ? (
+                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
+                  ) : null}
+                </button>
+
+                <button
+                  onClick={() => {
                     setActiveTab("pelamar-walkin");
                     setIsMobileMenuOpen(false);
                   }}
@@ -1988,30 +2012,6 @@ export default function AdminDashboard() {
                   {activeTab === "qr-gate" && (
                     <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
                   )}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setActiveTab("mitra");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center justify-between rounded-xl px-3.5 py-3 text-xs font-bold transition text-left cursor-pointer ${
-                    activeTab === "mitra"
-                      ? "bg-purple-50 text-purple-950 border border-purple-200 shadow-xs"
-                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <IconBuilding className="h-4 w-4 text-purple-600 shrink-0" />
-                    <span>Mitra Perusahaan (Verifikasi)</span>
-                  </div>
-                  {mitraStats.pending > 0 ? (
-                    <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 animate-pulse">
-                      {mitraStats.pending} Menunggu
-                    </span>
-                  ) : activeTab === "mitra" ? (
-                    <span className="rounded-full bg-purple-600 text-white text-[10px] font-black px-2 py-0.5">Aktif</span>
-                  ) : null}
                 </button>
               </div>
 
