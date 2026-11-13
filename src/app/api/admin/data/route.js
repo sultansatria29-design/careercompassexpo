@@ -53,7 +53,7 @@ export async function GET() {
     // 5. Ambil data jobs untuk judul lowongan, perusahaan, dan flag walk-in
     const { data: rawJobs } = await supabase
       .from("jobs")
-      .select("id, company_id, title, location, employment_type, is_walk_in, description");
+      .select("id, company_id, title, location, employment_type, description");
 
     const jobMap = {};
     (rawJobs || []).forEach((j) => {
@@ -65,18 +65,29 @@ export async function GET() {
       }
       jobMap[j.id] = {
         ...j,
-        is_walk_in: Boolean(j.is_walk_in || descObj.is_walk_in),
+        is_walk_in: Boolean(descObj.is_walk_in),
       };
     });
 
     // 6. Ambil data companies untuk nama perusahaan & logo
     const { data: rawCompanies } = await supabase
       .from("companies")
-      .select("id, name, logo_url, website, industry");
+      .select("id, name, logo_url, website, description");
 
     const companyMap = {};
     (rawCompanies || []).forEach((c) => {
-      companyMap[c.id] = c;
+      let meta = {};
+      if (c.description) {
+        try {
+          meta = typeof c.description === "string" ? JSON.parse(c.description) : c.description;
+        } catch {
+          meta = {};
+        }
+      }
+      companyMap[c.id] = {
+        ...c,
+        industry: meta.industry || "-",
+      };
     });
 
     // 7. Ambil data interviews untuk informasi jadwal wawancara walk-in
@@ -173,8 +184,9 @@ export async function GET() {
     const jobRegistrationsList = (rawApps || []).map((app) => {
       const part = participantMap[app.participant_id] || {};
       const job = jobMap[app.job_id] || {};
-      const comp = companyMap[job.company_id] || {};
       const interview = interviewMap[app.id] || null;
+      const targetCompanyId = job.company_id || interview?.company_id || null;
+      const comp = companyMap[targetCompanyId] || {};
 
       // Format label hari wawancara
       let dayLabel = null;
