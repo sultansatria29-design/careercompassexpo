@@ -1674,131 +1674,131 @@ export default function AdminDashboard() {
           TOP NAVIGATION HEADER (Base Putih, Font Hitam Sesuai Drive)
           ======================================================== */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-3">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-3 sm:px-6 py-2.5">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-9 w-20 sm:h-10 sm:w-28 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="flex h-9 w-20 sm:h-10 sm:w-28 items-center justify-center rounded-lg bg-slate-100 p-1 border border-slate-200 shrink-0">
               <img
                 src="/images/logo-puskar.png"
                 alt="Pusat Karier UIN Jakarta"
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col shrink-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-[family-name:var(--font-montserrat)] text-sm sm:text-lg font-black tracking-tight text-slate-900">
+                <span className="font-[family-name:var(--font-montserrat)] text-sm sm:text-base font-black tracking-tight text-slate-900 whitespace-nowrap">
                   CCE <span className="text-purple-600">2026</span>
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 whitespace-nowrap">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live Gate
                 </span>
               </div>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 ADMIN CONSOLE
               </span>
             </div>
           </div>
 
-          {/* Desktop Navigation Pill Tabs (>= md) */}
-          <nav className="hidden md:flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-1 text-xs font-semibold">
+          {/* Desktop Navigation Pill Tabs (>= lg) */}
+          <nav className="hidden lg:flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 gap-0.5 text-xs font-semibold shrink min-w-0 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "overview"
-                  ? "bg-white text-slate-900 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconOverview className="h-4 w-4 text-purple-600" />
+              <IconOverview className="h-3.5 w-3.5 text-purple-600 shrink-0" />
               <span>Overview</span>
             </button>
             <button
               onClick={() => setActiveTab("presensi")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "presensi"
-                  ? "bg-white text-emerald-700 shadow-xs font-bold border-b-2 border-emerald-600"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-emerald-800 shadow-xs font-bold border-b-2 border-emerald-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconPresensi className="h-4 w-4 text-emerald-600" />
-              <span>Data Presensi</span>
+              <IconPresensi className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <span>Presensi</span>
             </button>
             <button
               onClick={() => setActiveTab("registrasi")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "registrasi"
-                  ? "bg-white text-slate-900 shadow-xs font-bold border-b-2 border-purple-600"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconRegistrasi className="h-4 w-4 text-purple-600" />
-              <span>Data Registrasi</span>
+              <IconRegistrasi className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span>Registrasi</span>
             </button>
             <button
               onClick={() => setActiveTab("pelamar-walkin")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "pelamar-walkin"
-                  ? "bg-white text-indigo-950 shadow-xs font-bold border-b-2 border-indigo-600"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-indigo-900 shadow-xs font-bold border-b-2 border-indigo-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconBriefcase className="h-4 w-4 text-indigo-600" />
-              <span>Data Registrasi Lowongan &amp; Walk-In</span>
+              <IconBriefcase className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+              <span>Lowongan &amp; Walk-In</span>
               {(data?.job_registrations?.length || 0) > 0 && (
-                <span className="rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black px-1.5 py-0.5">
+                <span className="rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0">
                   {data.job_registrations.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab("indeks-kepuasan")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "indeks-kepuasan"
-                  ? "bg-white text-amber-700 shadow-xs font-bold border-b-2 border-amber-600"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-amber-800 shadow-xs font-bold border-b-2 border-amber-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconStar className="h-4 w-4 text-amber-500" />
+              <IconStar className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <span>Indeks Kepuasan</span>
             </button>
             <button
               onClick={() => setActiveTab("qr-gate")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === "qr-gate"
-                  ? "bg-white text-purple-700 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconQr className="h-4 w-4 text-purple-600" />
-              <span>QR Code Gate</span>
+              <IconQr className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span>QR Gate</span>
             </button>
             <button
               onClick={() => setActiveTab("mitra")}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 transition-all cursor-pointer relative ${
+              className={`h-8 px-2.5 xl:px-3 rounded-lg flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0 transition-all cursor-pointer relative ${
                 activeTab === "mitra"
-                  ? "bg-white text-purple-700 shadow-xs font-bold border-b-2 border-purple-600"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-purple-900 shadow-xs font-bold border-b-2 border-purple-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
               }`}
             >
-              <IconBuilding className="h-4 w-4 text-purple-600" />
+              <IconBuilding className="h-3.5 w-3.5 text-purple-600 shrink-0" />
               <span>Mitra Perusahaan</span>
               {mitraStats.pending > 0 && (
-                <span className="ml-1 rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 animate-pulse">
+                <span className="rounded-full bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 leading-none shrink-0 animate-pulse">
                   {mitraStats.pending}
                 </span>
               )}
             </button>
           </nav>
 
-          {/* Desktop Right Actions (>= md) */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Desktop Right Actions (>= lg) */}
+          <div className="hidden lg:flex items-center gap-1.5 shrink-0">
             <button
               onClick={loadAdminData}
               title="Refresh Data"
-              className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer shrink-0"
             >
-              <IconRefresh className="h-4 w-4" />
+              <IconRefresh className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => {
@@ -1810,30 +1810,30 @@ export default function AdminDashboard() {
                 setIsSettingsModalOpen(true);
               }}
               title="Ubah Email & Password Admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer shrink-0"
             >
-              <IconKey className="h-3.5 w-3.5 text-purple-600" />
-              <span>Ubah Akun</span>
+              <IconKey className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span className="whitespace-nowrap">Ubah Akun</span>
             </button>
             <Link
               href="/"
               target="_blank"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 px-2.5 text-xs font-semibold text-slate-700 transition-colors shadow-xs shrink-0"
             >
-              <span>Web Publik</span>
-              <IconExternal className="h-3.5 w-3.5 text-slate-400" />
+              <span className="whitespace-nowrap">Web Publik</span>
+              <IconExternal className="h-3.5 w-3.5 text-slate-400 shrink-0" />
             </Link>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 h-8 rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
             >
-              <span>Keluar</span>
-              <IconLogout className="h-3.5 w-3.5 text-rose-600" />
+              <span className="whitespace-nowrap">Keluar</span>
+              <IconLogout className="h-3.5 w-3.5 text-rose-600 shrink-0" />
             </button>
           </div>
 
-          {/* Mobile Right Controls: Tombol Hamburger (< md) */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile Right Controls: Tombol Hamburger (< lg) */}
+          <div className="flex lg:hidden items-center">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -1853,9 +1853,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer Menu (< md) - Masuk ke Hamburger Semua */}
+        {/* Mobile Dropdown Drawer Menu (< lg) - Masuk ke Hamburger Semua */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 shadow-xl animate-fadeIn">
+          <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-4 shadow-xl animate-fadeIn">
             <div className="space-y-3">
               <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
                 <span>Navigasi Menu Konsol</span>
