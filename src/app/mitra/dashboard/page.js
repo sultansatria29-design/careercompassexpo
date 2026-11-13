@@ -70,6 +70,7 @@ export default function MitraDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [detailModalApplicant, setDetailModalApplicant] = useState(null);
   const [interviewForm, setInterviewForm] = useState({ date: "", notes: "" });
+  const [isSavingInterview, setIsSavingInterview] = useState(false);
 
   // State Toast & Feedback
   const [toastMsg, setToastMsg] = useState("");
@@ -561,12 +562,24 @@ export default function MitraDashboardPage() {
       // Update state lokal secara instan
       setApplicants((prev) =>
         prev.map((app) =>
-          app.id === applicantId ? { ...app, status: newStage } : app
+          app.id === applicantId
+            ? {
+                ...app,
+                status: newStage,
+                interview_date: interviewForm.date || app.interview_date,
+                interview_notes: interviewForm.notes !== undefined ? interviewForm.notes : app.interview_notes,
+              }
+            : app
         )
       );
 
       if (detailModalApplicant && detailModalApplicant.id === applicantId) {
-        setDetailModalApplicant((prev) => ({ ...prev, status: newStage }));
+        setDetailModalApplicant((prev) => ({
+          ...prev,
+          status: newStage,
+          interview_date: interviewForm.date || prev.interview_date,
+          interview_notes: interviewForm.notes !== undefined ? interviewForm.notes : prev.interview_notes,
+        }));
       }
 
       const stageObj = RECRUITMENT_STAGES.find((s) => s.id === newStage);
@@ -576,6 +589,75 @@ export default function MitraDashboardPage() {
       showToast(`Gagal mengubah tahap: ${err.message}`);
     } finally {
       setIsUpdatingStatus(false);
+    }
+  }
+
+  // Simpan Jadwal & Catatan Interview Pelamar
+  async function handleSaveInterviewSchedule(closeAfter = false) {
+    if (!detailModalApplicant) return;
+    setIsSavingInterview(true);
+    try {
+      const res = await fetch("/api/mitra/applicants", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          application_id: detailModalApplicant.id,
+          status: detailModalApplicant.status,
+          company_id: company?.id,
+          interview_date: interviewForm.date || null,
+          interview_notes: interviewForm.notes || "",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan jadwal wawancara.");
+
+      // Update state lokal pelamar
+      setApplicants((prev) =>
+        prev.map((app) =>
+          app.id === detailModalApplicant.id
+            ? {
+                ...app,
+                interview_date: interviewForm.date || null,
+                interview_notes: interviewForm.notes || "",
+              }
+            : app
+        )
+      );
+
+      setDetailModalApplicant((prev) =>
+        prev
+          ? {
+              ...prev,
+              interview_date: interviewForm.date || null,
+              interview_notes: interviewForm.notes || "",
+            }
+          : null
+      );
+
+      showToast("Jadwal wawancara & catatan berhasil disimpan!");
+      if (closeAfter) {
+        setDetailModalApplicant(null);
+      }
+    } catch (err) {
+      showToast(`Gagal menyimpan: ${err.message}`);
+    } finally {
+      setIsSavingInterview(false);
+    }
+  }
+
+  // Tutup Modal Detail Pelamar (Auto-save jika ada perubahan tanggal / catatan)
+  async function handleCloseDetailModal() {
+    if (!detailModalApplicant) return;
+    const initialDate = detailModalApplicant.interview_date || "";
+    const initialNotes = detailModalApplicant.interview_notes || "";
+    const currentDate = interviewForm.date || "";
+    const currentNotes = interviewForm.notes || "";
+
+    if (currentDate !== initialDate || currentNotes !== initialNotes) {
+      await handleSaveInterviewSchedule(true);
+    } else {
+      setDetailModalApplicant(null);
     }
   }
 
@@ -2081,8 +2163,9 @@ export default function MitraDashboardPage() {
               <h3 className="text-base font-black text-slate-900">Detail Kandidat Pelamar</h3>
               <button
                 type="button"
-                onClick={() => setDetailModalApplicant(null)}
+                onClick={handleCloseDetailModal}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+                title="Tutup Modal"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2242,16 +2325,68 @@ export default function MitraDashboardPage() {
               </div>
 
               {/* Form Catatan / Jadwal Wawancara */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
-                <div className="font-bold text-slate-700">Jadwal / Catatan Interview Booth:</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Wawancara</label>
+                    <div className="font-bold text-slate-800 text-xs sm:text-sm">Jadwal &amp; Catatan Interview Booth:</div>
+                    <div className="text-[10px] text-slate-400">Atur tanggal sesi wawancara dan catatan evaluasi HR</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveInterviewSchedule(false)}
+                    disabled={isSavingInterview}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition cursor-pointer disabled:opacity-50 shrink-0 self-start sm:self-auto"
+                    title="Simpan perubahan tanggal dan catatan sekarang"
+                  >
+                    {isSavingInterview ? (
+                      <span>Menyimpan...</span>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Simpan Jadwal</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tanggal Wawancara</label>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setInterviewForm({ ...interviewForm, date: "2026-11-18" })}
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded border transition cursor-pointer ${
+                            interviewForm.date === "2026-11-18"
+                              ? "bg-purple-100 text-purple-800 border-purple-300"
+                              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                          }`}
+                          title="Set ke Hari 1: 18 Nov 2026"
+                        >
+                          Rabu (18 Nov)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setInterviewForm({ ...interviewForm, date: "2026-11-19" })}
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded border transition cursor-pointer ${
+                            interviewForm.date === "2026-11-19"
+                              ? "bg-purple-100 text-purple-800 border-purple-300"
+                              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                          }`}
+                          title="Set ke Hari 2: 19 Nov 2026"
+                        >
+                          Kamis (19 Nov)
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="date"
                       value={interviewForm.date}
                       onChange={(e) => setInterviewForm({ ...interviewForm, date: e.target.value })}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 focus:border-purple-600 focus:outline-none transition"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800 focus:border-purple-600 focus:outline-none transition font-medium"
                     />
                   </div>
                   <div>
@@ -2261,20 +2396,44 @@ export default function MitraDashboardPage() {
                       value={interviewForm.notes}
                       onChange={(e) => setInterviewForm({ ...interviewForm, notes: e.target.value })}
                       placeholder="Misal: Lolos tahap 1, hadir pukul 10:00"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:outline-none transition"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800 placeholder-slate-400 focus:border-purple-600 focus:outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Close Button */}
-              <div className="pt-2 text-right">
+              {/* Footer Buttons: Tutup & Simpan Perubahan */}
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setDetailModalApplicant(null)}
-                  className="rounded-xl border border-slate-200 bg-slate-100 px-5 py-2.5 font-bold text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition cursor-pointer"
+                  onClick={handleCloseDetailModal}
+                  disabled={isSavingInterview}
+                  className="rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 font-bold text-slate-700 transition cursor-pointer text-xs"
                 >
                   Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSaveInterviewSchedule(false)}
+                  disabled={isSavingInterview}
+                  className="rounded-xl bg-purple-600 hover:bg-purple-700 px-5 py-2.5 font-bold text-white shadow-xs transition cursor-pointer flex items-center gap-2 text-xs disabled:opacity-50"
+                >
+                  {isSavingInterview ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                      </svg>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Simpan Perubahan</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

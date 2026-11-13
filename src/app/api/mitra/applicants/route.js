@@ -184,43 +184,55 @@ export async function PUT(request) {
     const body = await request.json();
     const { application_id, status, interview_date, interview_notes, company_id } = body;
 
-    if (!application_id || !status) {
+    if (!application_id) {
       return NextResponse.json(
-        { error: "Application ID dan Status/Tahap wajib diisi." },
+        { error: "Application ID wajib diisi." },
         { status: 400 }
       );
     }
 
-    // Mapping status agar selalu kompatibel dengan check constraint database:
-    // applications: ('submitted', 'reviewed', 'shortlisted', 'accepted', 'rejected')
-    const STATUS_MAP = {
-      submitted: "submitted",
-      screening: "reviewed",
-      reviewed: "reviewed",
-      assessment: "shortlisted",
-      interview: "shortlisted",
-      shortlisted: "shortlisted",
-      accepted: "accepted",
-      rejected: "rejected",
-    };
-
-    const targetStatus = STATUS_MAP[status] || status;
-
     const supabase = getSupabase();
 
-    // 1. Update status pada tabel applications
-    const { data: updatedApp, error: uErr } = await supabase
-      .from("applications")
-      .update({ status: targetStatus })
-      .eq("id", application_id)
-      .select()
-      .single();
+    // 1. Ambil atau update data application
+    let targetStatus = null;
+    let appData = null;
 
-    if (uErr) throw uErr;
+    if (status) {
+      const STATUS_MAP = {
+        submitted: "submitted",
+        screening: "reviewed",
+        reviewed: "reviewed",
+        assessment: "shortlisted",
+        interview: "shortlisted",
+        shortlisted: "shortlisted",
+        accepted: "accepted",
+        rejected: "rejected",
+      };
+      targetStatus = STATUS_MAP[status] || status;
 
-    // 2. Jika tahap wawancara/shortlist atau ada catatan interview, simpan ke tabel interviews
-    // interviews constraint allows: ('waiting', 'called', 'completed', 'cancelled')
-    if (targetStatus === "shortlisted" || interview_date || interview_notes) {
+      const { data: updatedApp, error: uErr } = await supabase
+        .from("applications")
+        .update({ status: targetStatus })
+        .eq("id", application_id)
+        .select()
+        .single();
+
+      if (uErr) throw uErr;
+      appData = updatedApp;
+    } else {
+      const { data: currentApp, error: cErr } = await supabase
+        .from("applications")
+        .select("*")
+        .eq("id", application_id)
+        .single();
+
+      if (cErr) throw cErr;
+      appData = currentApp;
+      targetStatus = currentApp?.status;
+    }
+
+    // 2. Simpan jadwal / catatan interview jika tahap wawancara atau parameter diberikan
+    if (targetStatus === "shortlisted" || interview_date !== undefined || interview_notes !== undefined) {
       // Cek apakah sudah ada record di interviews
       const { data: existingInt } = await supabase
         .from("interviews")
@@ -228,20 +240,37 @@ export async function PUT(request) {
         .eq("application_id", application_id)
         .maybeSingle();
 
+      // Dapatkan company_id efektif
+      let effectiveCompanyId = company_id;
+      if (!effectiveCompanyId && appData?.job_id) {
+        const { data: jData } = await supabase
+          .from("jobs")
+          .select("company_id")
+          .eq("id", appData.job_id)
+          .maybeSingle();
+        if (jData) effectiveCompanyId = jData.company_id;
+      }
+
       if (existingInt) {
+        const updatePayload = {
+          status: "waiting",
+        };
+        if (interview_date !== undefined) {
+          updatePayload.interview_date = interview_date ? interview_date : null;
+        }
+        if (interview_notes !== undefined) {
+          updatePayload.notes = interview_notes;
+        }
+
         await supabase
           .from("interviews")
-          .update({
-            status: "waiting",
-            interview_date: interview_date || undefined,
-            notes: interview_notes || undefined,
-          })
+          .update(updatePayload)
           .eq("id", existingInt.id);
-      } else if (company_id && updatedApp.participant_id) {
+      } else if (appData?.participant_id) {
         await supabase.from("interviews").insert({
           application_id: application_id,
-          participant_id: updatedApp.participant_id,
-          company_id: company_id,
+          participant_id: appData.participant_id,
+          company_id: effectiveCompanyId || null,
           status: "waiting",
           interview_date: interview_date || new Date().toISOString().split("T")[0],
           notes: interview_notes || "Dijadwalkan untuk wawancara di Booth CCE 2026",
@@ -251,8 +280,12 @@ export async function PUT(request) {
 
     return NextResponse.json({
       success: true,
-      message: `Tahap seleksi berhasil diubah menjadi "${targetStatus.toUpperCase()}".`,
-      application: updatedApp,
+      message: "Data pelamar dan jadwal wawancara berhasil disimpan.",
+      application: appData,
+      interview: {
+        interview_date: interview_date || null,
+        notes: interview_notes || null,
+      },
     });
   } catch (err) {
     console.error("Error in PUT /api/mitra/applicants:", err);
