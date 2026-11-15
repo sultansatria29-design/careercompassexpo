@@ -19,7 +19,7 @@ function getSupabaseServer() {
 }
 
 function parseJobDescription(desc) {
-  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false };
+  if (!desc) return { text: "", poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
   try {
     if (typeof desc === "string" && desc.trim().startsWith("{")) {
       const parsed = JSON.parse(desc);
@@ -41,10 +41,11 @@ function parseJobDescription(desc) {
         start_date,
         end_date,
         is_expired,
+        is_walk_in: Boolean(parsed.is_walk_in),
       };
     }
   } catch {}
-  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false };
+  return { text: desc, poster_url: "", start_date: "", end_date: "", is_expired: false, is_walk_in: false };
 }
 
 async function getJobById(id) {
@@ -83,6 +84,7 @@ async function getJobById(id) {
       start_date: descObj.start_date,
       end_date: descObj.end_date,
       is_expired: descObj.is_expired,
+      is_walk_in: descObj.is_walk_in,
       company_name: job.companies?.name || "Perusahaan Rekanan",
       company_logo: job.companies?.logo_url || "",
       company_website: job.companies?.website || "",

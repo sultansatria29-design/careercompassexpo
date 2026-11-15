@@ -204,7 +204,7 @@ export async function POST(request) {
     // Verifikasi lowongan ada
     const { data: job, error: jErr } = await supabase
       .from("jobs")
-      .select("id, title, company_id, companies(name)")
+      .select("id, title, company_id, description, companies(name)")
       .eq("id", job_id)
       .single();
 
@@ -215,8 +215,19 @@ export async function POST(request) {
       );
     }
 
-    const interviewDate = interview_day === "Kamis" ? "2026-11-19" : "2026-11-18";
-    const interviewNotes = `Jadwal Walk-In: ${interview_day === "Kamis" ? "Kamis, 19 Nov 2026" : "Rabu, 18 Nov 2026"}`;
+    // Periksa status kurasi Walk-In lowongan dari admin
+    let jobMeta = {};
+    try {
+      jobMeta = typeof job.description === "string" ? JSON.parse(job.description) : job.description || {};
+    } catch {
+      jobMeta = {};
+    }
+    const isJobWalkIn = Boolean(jobMeta.is_walk_in);
+
+    // HANYA buat jadwal wawancara jika lowongan tersebut memang dikurasi oleh admin sebagai Walk-In
+    const validInterviewDay = isJobWalkIn ? interview_day : null;
+    const interviewDate = validInterviewDay === "Kamis" ? "2026-11-19" : validInterviewDay === "Rabu" ? "2026-11-18" : null;
+    const interviewNotes = validInterviewDay ? `Jadwal Walk-In: ${validInterviewDay === "Kamis" ? "Kamis, 19 Nov 2026" : "Rabu, 18 Nov 2026"}` : null;
 
     // Cek apakah pelamar sudah pernah melamar ke lowongan ini
     const { data: existingApp } = await supabase
@@ -240,8 +251,8 @@ export async function POST(request) {
 
       if (uErr) throw uErr;
 
-      // Update / insert penjadwalan interview jika ada
-      if (interview_day) {
+      // Update / insert penjadwalan interview HANYA jika validInterviewDay ada
+      if (validInterviewDay && interviewDate) {
         const { data: existingInt } = await supabase
           .from("interviews")
           .select("id")
@@ -266,6 +277,12 @@ export async function POST(request) {
             notes: interviewNotes,
           });
         }
+      } else {
+        // Jika bukan lowongan walk-in, bersihkan record interview jika ada
+        await supabase
+          .from("interviews")
+          .delete()
+          .eq("application_id", existingApp.id);
       }
 
       return NextResponse.json({
@@ -290,8 +307,8 @@ export async function POST(request) {
 
     if (insErr) throw insErr;
 
-    // Simpan jadwal interview jika ada interview_day
-    if (interview_day) {
+    // Simpan jadwal interview HANYA jika posisi ini valid Walk-In Interview
+    if (validInterviewDay && interviewDate) {
       await supabase.from("interviews").insert({
         application_id: newApp.id,
         participant_id,

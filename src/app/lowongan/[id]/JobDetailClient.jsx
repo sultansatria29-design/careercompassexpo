@@ -89,10 +89,11 @@ export default function JobDetailClient({ initialJob, jobId }) {
     }
   }
 
-  const walkInTarget = `/pelamar/walk-in?job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}`;
+  const isWalkInJob = Boolean(job.is_walk_in);
+  const walkInTarget = `/pelamar/walk-in?job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}&type=${isWalkInJob ? "walkin" : "regular"}`;
   const applyUrl = isLoggedInPelamar
     ? walkInTarget
-    : `/pelamar?redirect=${encodeURIComponent(walkInTarget)}&job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}`;
+    : `/pelamar?redirect=${encodeURIComponent(walkInTarget)}&job=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company_id || "")}&type=${isWalkInJob ? "walkin" : "regular"}`;
   const shareWaText = encodeURIComponent(
     `Halo! Ada lowongan menarik "${job.title}" di ${companyName} pada Career Compass Expo 2026 UIN Jakarta. Cek detail dan kirim lamaran di: ${typeof window !== "undefined" ? window.location.href : ""}`
   );
@@ -343,6 +344,17 @@ export default function JobDetailClient({ initialJob, jobId }) {
                   </span>
                 )}
 
+                {job.is_walk_in ? (
+                  <span className="rounded-full bg-fuchsia-50 px-3.5 py-1 text-xs font-bold text-fuchsia-700 border border-fuchsia-200 flex items-center gap-1.5 shadow-2xs">
+                    <span className="h-2 w-2 rounded-full bg-fuchsia-500 animate-pulse" />
+                    <span>✓ Sesi Walk-In Interview</span>
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-slate-100 px-3.5 py-1 text-xs font-semibold text-slate-700 border border-slate-200 flex items-center gap-1.5">
+                    <span>📄 Jalur Lamaran Reguler</span>
+                  </span>
+                )}
+
                 {job.quota && (
                   <span className="rounded-full bg-slate-100 px-3.5 py-1 text-xs font-semibold text-slate-700 border border-slate-200 flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -488,6 +500,8 @@ export default function JobDetailClient({ initialJob, jobId }) {
                         </span>
                         <span>Periode Pendaftaran Telah Berakhir</span>
                       </>
+                    ) : job.is_walk_in ? (
+                      "Tertarik Mengikuti Walk-In Interview?"
                     ) : (
                       "Tertarik Mengisi Posisi Ini?"
                     )}
@@ -495,7 +509,9 @@ export default function JobDetailClient({ initialJob, jobId }) {
                   <p className="text-xs text-slate-600 max-w-md leading-relaxed">
                     {isExpired
                       ? "Batas waktu pendaftaran untuk lowongan ini telah lewat. Lowongan ini diarsipkan dan tidak lagi menerima kiriman berkas baru."
-                      : "Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra di Career Compass Expo 2026."}
+                      : job.is_walk_in
+                      ? "Daftar untuk mengikuti sesi wawancara langsung (walk-in interview) di booth mitra CCE 2026."
+                      : "Kirim berkas lamaran dan CV Anda sekarang. Lamaran akan langsung terhubung ke dashboard HR mitra untuk peninjauan secara online (tanpa sesi walk-in)."}
                   </p>
                 </div>
 
@@ -515,7 +531,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
                     href={applyUrl}
                     className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-md shadow-purple-600/20 transition-all duration-200 hover:scale-105 cursor-pointer"
                   >
-                    <span>Lamar Sekarang</span>
+                    <span>{job.is_walk_in ? "Daftar Walk-In Interview" : "Lamar Sekarang (Reguler)"}</span>
                   </Link>
                 )}
               </div>

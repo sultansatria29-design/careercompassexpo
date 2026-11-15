@@ -82,9 +82,9 @@ function WalkInFormContent() {
               }
             });
             if (foundJob) {
-              if (foundJob.is_walk_in && !searchParams.get("type")) {
+              if (foundJob.is_walk_in && (!searchParams.get("type") || searchParams.get("type") === "walkin")) {
                 setFormType("walkin");
-              } else if (!foundJob.is_walk_in && !searchParams.get("type")) {
+              } else {
                 setFormType("regular");
               }
               if (foundCompany) {
@@ -95,6 +95,11 @@ function WalkInFormContent() {
             }
           } else if (initialCompanyId) {
             setSelectedCompanyId(initialCompanyId);
+            const targetComp = data.companies.find((c) => c.id === initialCompanyId);
+            const hasWalkIn = (targetComp?.jobs || []).some((j) => j.is_walk_in);
+            if (!hasWalkIn) {
+              setFormType("regular");
+            }
           }
         }
       } catch (err) {
@@ -111,9 +116,17 @@ function WalkInFormContent() {
     setTimeout(() => setToastMsg(""), 4000);
   }
 
+  // Dapatkan data perusahaan aktif di database (tanpa filter mode)
+  const rawSelectedCompany = companies.find((c) => c.id === selectedCompanyId) || null;
+  const companyHasWalkIn = Boolean(rawSelectedCompany?.jobs?.some((j) => j.is_walk_in));
+
   // Switcher Mode Formulir: 'regular' vs 'walkin'
   function handleSwitchFormType(newType) {
     if (newType === formType) return;
+    if (newType === "walkin" && selectedCompanyId && !companyHasWalkIn) {
+      showToast(`Perusahaan "${rawSelectedCompany?.name || "ini"}" tidak membuka sesi Walk-In Interview. Hanya tersedia jalur Lamaran Reguler.`);
+      return;
+    }
     setFormType(newType);
     setErrorMsg("");
 
@@ -166,6 +179,7 @@ function WalkInFormContent() {
   const availableJobs = selectedCompany ? selectedCompany.jobs || [] : [];
   // Detail lowongan terpilih
   const selectedJob = availableJobs.find((j) => j.id === selectedJobId) || null;
+  const isWalkInJob = Boolean(selectedJob?.is_walk_in && formType === "walkin");
 
   // Handle Pilih File CV (PDF, DOC, DOCX, PNG, JPG maks 10MB)
   async function handleCvChange(e) {
@@ -290,7 +304,7 @@ function WalkInFormContent() {
           cv_path: cvUrl,
           portfolio_url: portfolioUrl || null,
           notes: applicantNotes || null,
-          interview_day: interviewDay,
+          interview_day: isWalkInJob ? interviewDay : null,
         }),
       });
 
@@ -298,9 +312,9 @@ function WalkInFormContent() {
       if (!res.ok) throw new Error(data.error || "Gagal mengirim formulir lamaran.");
 
       showToast(
-        formType === "walkin"
+        isWalkInJob
           ? "Lamaran Walk-In Interview berhasil dikirim!"
-          : "Lamaran Pekerjaan berhasil dikirim!"
+          : "Lamaran Pekerjaan (Reguler) berhasil dikirim!"
       );
 
       // Arahkan ke dashboard pelamar
@@ -432,11 +446,19 @@ function WalkInFormContent() {
 
           <button
             type="button"
-            onClick={() => handleSwitchFormType("walkin")}
-            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
-              formType === "walkin"
-                ? "border-purple-300 bg-white shadow-md ring-2 ring-purple-500/20"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80 shadow-xs"
+            onClick={() => {
+              if (selectedCompanyId && !companyHasWalkIn) {
+                showToast(`Perusahaan "${rawSelectedCompany?.name || "ini"}" tidak membuka sesi Walk-In Interview. Hanya tersedia jalur Lamaran Reguler.`);
+                return;
+              }
+              handleSwitchFormType("walkin");
+            }}
+            className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3.5 ${
+              selectedCompanyId && !companyHasWalkIn
+                ? "border-slate-200 bg-slate-100/60 opacity-60 cursor-not-allowed"
+                : formType === "walkin"
+                ? "border-purple-300 bg-white shadow-md ring-2 ring-purple-500/20 cursor-pointer"
+                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80 shadow-xs cursor-pointer"
             }`}
           >
             <div className={`p-2.5 rounded-xl shrink-0 ${formType === "walkin" ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-xs" : "bg-slate-100 text-slate-500"}`}>
@@ -449,12 +471,16 @@ function WalkInFormContent() {
                 <span className={`font-extrabold text-sm sm:text-base ${formType === "walkin" ? "text-purple-900" : "text-slate-900"}`}>
                   Formulir Walk-In Interview
                 </span>
-                {formType === "walkin" && (
+                {selectedCompanyId && !companyHasWalkIn ? (
+                  <span className="rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 shrink-0">Tidak Tersedia</span>
+                ) : formType === "walkin" ? (
                   <span className="rounded-full bg-gradient-to-r from-[#7226FF] to-[#EF17D8] text-white text-[10px] font-bold px-2 py-0.5 shrink-0">Dipilih</span>
-                )}
+                ) : null}
               </div>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Pendaftaran wawancara langsung di booth expo UIN Jakarta (khusus posisi pilihan admin).
+                {selectedCompanyId && !companyHasWalkIn
+                  ? "Perusahaan terpilih tidak menyelenggarakan sesi walk-in interview di booth expo."
+                  : "Pendaftaran wawancara langsung di booth expo UIN Jakarta (khusus posisi pilihan admin)."}
               </p>
             </div>
           </button>
@@ -729,7 +755,13 @@ function WalkInFormContent() {
                     return (
                       <label
                         key={job.id}
-                        onClick={() => setSelectedJobId(job.id)}
+                        onClick={() => {
+                          setSelectedJobId(job.id);
+                          if (!job.is_walk_in && formType === "walkin") {
+                            setFormType("regular");
+                            showToast(`Posisi "${job.title}" dialihkan ke formulir Lamaran Reguler karena tidak menyediakan sesi walk-in.`);
+                          }
+                        }}
                         className={`flex items-start justify-between p-3.5 rounded-xl border transition cursor-pointer ${
                           isSelected
                             ? "border-purple-500 bg-purple-50/60 shadow-xs ring-1 ring-purple-500/20"
@@ -752,9 +784,13 @@ function WalkInFormContent() {
                             </span>
                             <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
                               <span>{job.location || "Jakarta"}</span>
-                              {job.is_walk_in && (
+                              {job.is_walk_in ? (
                                 <span className="rounded-full bg-fuchsia-50 px-2 py-0.5 text-[9px] font-extrabold text-fuchsia-700 border border-fuchsia-200">
                                   ✓ Walk-In Interview
+                                </span>
+                              ) : (
+                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-semibold text-slate-600 border border-slate-200">
+                                  📄 Lamaran Reguler
                                 </span>
                               )}
                             </div>
@@ -778,84 +814,100 @@ function WalkInFormContent() {
               )}
             </div>
 
-            {/* SEKSI: Penjadwalan Wawancara Walk-In (Hari: Rabu atau Kamis) */}
-            <div className="space-y-3 pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <label className="block text-sm font-bold text-slate-900">
-                  Penjadwalan Wawancara Walk-In <span className="text-rose-500">*</span>
-                </label>
-                <span className="text-[11px] text-purple-700 font-semibold bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
-                  Pilih Hari Kehadiran
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 -mt-1">
-                Silakan pilih hari kehadiran Anda untuk sesi wawancara langsung (walk-in interview) di booth perusahaan:
-              </p>
+            {/* SEKSI: Penjadwalan Wawancara Walk-In (Hari: Rabu atau Kamis) HANYA untuk posisi Walk-In */}
+            {isWalkInJob ? (
+              <div className="space-y-3 pt-2 border-t border-slate-100 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-bold text-slate-900">
+                    Penjadwalan Wawancara Walk-In <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-purple-700 font-semibold bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                    Pilih Hari Kehadiran
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 -mt-1">
+                  Silakan pilih hari kehadiran Anda untuk sesi wawancara langsung (walk-in interview) di booth perusahaan:
+                </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Opsi Hari Rabu */}
-                <label
-                  onClick={() => setInterviewDay("Rabu")}
-                  className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
-                    interviewDay === "Rabu"
-                      ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
-                      : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
-                  }`}
-                >
-                  <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Opsi Hari Rabu */}
+                  <label
+                    onClick={() => setInterviewDay("Rabu")}
+                    className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
                       interviewDay === "Rabu"
-                        ? "border-purple-600 bg-purple-600"
-                        : "border-slate-300 bg-slate-50"
+                        ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
+                        : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
                     }`}
                   >
-                    {interviewDay === "Rabu" && <div className="h-2 w-2 rounded-full bg-white" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                      <span>Rabu</span>
-                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md">
-                        Hari 1
-                      </span>
+                    <div
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                        interviewDay === "Rabu"
+                          ? "border-purple-600 bg-purple-600"
+                          : "border-slate-300 bg-slate-50"
+                      }`}
+                    >
+                      {interviewDay === "Rabu" && <div className="h-2 w-2 rounded-full bg-white" />}
                     </div>
-                    <div className="text-xs text-slate-500 font-medium mt-0.5">
-                      18 November 2026
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>Rabu</span>
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md">
+                          Hari 1
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium mt-0.5">
+                        18 November 2026
+                      </div>
                     </div>
-                  </div>
-                </label>
+                  </label>
 
-                {/* Opsi Hari Kamis */}
-                <label
-                  onClick={() => setInterviewDay("Kamis")}
-                  className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
-                    interviewDay === "Kamis"
-                      ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
-                      : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
-                  }`}
-                >
-                  <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                  {/* Opsi Hari Kamis */}
+                  <label
+                    onClick={() => setInterviewDay("Kamis")}
+                    className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
                       interviewDay === "Kamis"
-                        ? "border-purple-600 bg-purple-600"
-                        : "border-slate-300 bg-slate-50"
+                        ? "border-purple-600 bg-purple-50/70 shadow-xs ring-2 ring-purple-600/20"
+                        : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50/80"
                     }`}
                   >
-                    {interviewDay === "Kamis" && <div className="h-2 w-2 rounded-full bg-white" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                      <span>Kamis</span>
-                      <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-md">
-                        Hari 2
-                      </span>
+                    <div
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+                        interviewDay === "Kamis"
+                          ? "border-purple-600 bg-purple-600"
+                          : "border-slate-300 bg-slate-50"
+                      }`}
+                    >
+                      {interviewDay === "Kamis" && <div className="h-2 w-2 rounded-full bg-white" />}
                     </div>
-                    <div className="text-xs text-slate-500 font-medium mt-0.5">
-                      19 November 2026
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>Kamis</span>
+                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-md">
+                          Hari 2
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium mt-0.5">
+                        19 November 2026
+                      </div>
                     </div>
-                  </div>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 flex items-start gap-3 shadow-2xs animate-fadeIn">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700 border border-blue-200 mt-0.5">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </span>
+                <div className="leading-relaxed">
+                  <span className="font-bold text-sm block mb-0.5 text-blue-950">
+                    Jalur Lamaran Reguler (Peninjauan Online)
+                  </span>
+                  Posisi pada perusahaan ini adalah jalur lamaran reguler. Anda tidak perlu memilih jadwal hari kehadiran di booth; berkas lamaran dan CV Anda akan langsung terhubung ke dashboard HR mitra untuk diseleksi secara online.
+                </div>
+              </div>
+            )}
 
             {/* SEKSI 2: Masukkan CV * (Upload Berkas Gambar 3) */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -981,7 +1033,7 @@ function WalkInFormContent() {
                 ) : (
                   <>
                     <span>
-                      {formType === "walkin" ? "Kirim Lamaran Walk-In Interview" : "Kirim Lamaran Pekerjaan"}
+                      {isWalkInJob ? "Kirim Lamaran Walk-In Interview" : "Kirim Lamaran Pekerjaan (Reguler)"}
                     </span>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

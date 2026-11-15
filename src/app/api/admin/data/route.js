@@ -188,7 +188,7 @@ export async function GET() {
       const targetCompanyId = job.company_id || interview?.company_id || null;
       const comp = companyMap[targetCompanyId] || {};
 
-      // Format label hari wawancara
+      // Format label hari wawancara (hanya jika posisi memang kurasi Walk-In)
       let dayLabel = null;
       const rawDate = interview?.interview_date;
       const rawNotes = interview?.notes || "";
@@ -200,7 +200,8 @@ export async function GET() {
         dayLabel = rawDate;
       }
 
-      const isWalkIn = Boolean(job.is_walk_in || interview || dayLabel);
+      // Validasi mutlak: hanya posisi yang dikurasi oleh admin sebagai Walk-In yang berstatus is_walk_in = true
+      const isWalkIn = Boolean(job.is_walk_in);
 
       return {
         id: app.id,
@@ -236,10 +237,10 @@ export async function GET() {
         is_walk_in: isWalkIn,
 
         // Jadwal Walk-In Interview
-        interview_date: rawDate || null,
-        interview_day_label: isWalkIn ? (dayLabel || "Belum Ditentukan") : null,
-        interview_notes: interview?.notes || null,
-        interview_status: interview?.status || null,
+        interview_date: isWalkIn ? (rawDate || null) : null,
+        interview_day_label: isWalkIn ? (dayLabel || "Belum Ditentukan") : "-",
+        interview_notes: isWalkIn ? (interview?.notes || null) : null,
+        interview_status: isWalkIn ? (interview?.status || null) : null,
       };
     });
 
