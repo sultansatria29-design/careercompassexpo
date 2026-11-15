@@ -31,7 +31,7 @@ export async function GET(request) {
     const supabase = getSupabase();
 
     // 1. Ambil seluruh job id milik perusahaan ini
-    let jobsQuery = supabase.from("jobs").select("id, title, employment_type, location").eq("company_id", company_id);
+    let jobsQuery = supabase.from("jobs").select("id, title, employment_type, location, description").eq("company_id", company_id);
     if (job_id && job_id !== "all") {
       jobsQuery = jobsQuery.eq("id", job_id);
     }
@@ -40,7 +40,17 @@ export async function GET(request) {
 
     const jobMap = {};
     (companyJobs || []).forEach((j) => {
-      jobMap[j.id] = j;
+      let isWalkIn = false;
+      try {
+        const meta = typeof j.description === "string" ? JSON.parse(j.description) : j.description;
+        isWalkIn = Boolean(meta?.is_walk_in);
+      } catch {
+        isWalkIn = false;
+      }
+      jobMap[j.id] = {
+        ...j,
+        is_walk_in: isWalkIn,
+      };
     });
 
     const targetJobIds = Object.keys(jobMap);
@@ -131,10 +141,28 @@ export async function GET(request) {
       const job = jobMap[app.job_id] || {
         title: "Posisi Tidak Diketahui",
         employment_type: "Full-time",
+        is_walk_in: false,
       };
 
       const interview = interviewMap[app.id] || null;
       const sData = (surveyMap && surveyMap[app.participant_id]) || {};
+
+      // Cek apakah lamaran ini adalah Walk-In Interview yang valid
+      const isWalkIn = Boolean(job.is_walk_in && interview);
+      let dayLabel = "-";
+      if (isWalkIn) {
+        const rawDate = interview?.interview_date;
+        const notes = interview?.notes || "";
+        if (rawDate === "2026-11-18" || notes.includes("Rabu")) {
+          dayLabel = "Rabu (18 Nov)";
+        } else if (rawDate === "2026-11-19" || notes.includes("Kamis")) {
+          dayLabel = "Kamis (19 Nov)";
+        } else if (rawDate) {
+          dayLabel = rawDate;
+        } else {
+          dayLabel = "Rabu / Kamis";
+        }
+      }
 
       return {
         id: app.id,
@@ -143,6 +171,9 @@ export async function GET(request) {
         job_id: app.job_id,
         job_title: job.title,
         job_type: job.employment_type,
+        is_walk_in: isWalkIn,
+        interview_day_label: dayLabel,
+        apply_type: isWalkIn ? "walkin" : "regular",
         full_name: participant.full_name,
         email: participant.email,
         phone: participant.phone,
