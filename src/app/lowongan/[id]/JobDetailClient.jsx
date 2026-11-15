@@ -531,7 +531,7 @@ export default function JobDetailClient({ initialJob, jobId }) {
                     href={applyUrl}
                     className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#7226FF] via-[#9C27B0] to-[#EF17D8] px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-md shadow-purple-600/20 transition-all duration-200 hover:scale-105 cursor-pointer"
                   >
-                    <span>{job.is_walk_in ? "Daftar Walk-In Interview" : "Lamar Sekarang (Reguler)"}</span>
+                    <span>{job.is_walk_in ? "Daftar Walk-In Interview" : "Lamar Sekarang"}</span>
                   </Link>
                 )}
               </div>
