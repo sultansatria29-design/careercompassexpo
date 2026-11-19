@@ -1233,8 +1233,6 @@ export default function MitraDashboardPage() {
                             <td className="px-4 py-4">
                               <span className="font-semibold text-slate-800">{app.job_title}</span>
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-[10px] text-slate-500">{app.job_type}</span>
-                                <span className="text-slate-300">•</span>
                                 {app.is_walk_in ? (
                                   <span
                                     className="inline-flex items-center gap-1 rounded-md bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-700 shadow-2xs"
@@ -2222,7 +2220,7 @@ export default function MitraDashboardPage() {
                 <div className="font-bold text-slate-900 text-base">{detailModalApplicant.full_name}</div>
                 <div className="text-slate-600 mt-0.5">{detailModalApplicant.institution}</div>
                 <div className="text-[11px] text-purple-700 mt-1 font-medium">
-                  Melamar: <strong className="text-purple-900">{detailModalApplicant.job_title}</strong> ({detailModalApplicant.job_type})
+                  Melamar: <strong className="text-purple-900">{detailModalApplicant.job_title}</strong>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-slate-200/80">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Jalur Pendaftaran:</span>
